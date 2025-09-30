@@ -7,3 +7,6 @@ psycopg2-binary==2.9.10
 PyJWT==2.10.1
 sqlparse==0.5.3
 tzdata==2025.2
+dj-database-url==3.0.1
+python-dotenv==1.1.1
+django-cors-headers==4.9.0
