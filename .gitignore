@@ -63,3 +63,11 @@ coverage.xml
 /staticfiles/
 # macOS
 .DS_Store
+
+# React / Frontend
+gamevault_frontend/node_modules/
+gamevault_frontend/build/
+gamevault_frontend/.env.local
+gamevault_frontend/.env.development.local
+gamevault_frontend/.env.test.local
+gamevault_frontend/.env.production.local
