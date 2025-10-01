@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Games - GameVault{% endblock %}
+
+{% block content %}
+<div class="game-list-container">
+    <h1>Game Store</h1>
+    
+    <!-- Search and filter form -->
+    <div class="filter-section">
+        <form method="get" class="filter-form">
+            <input type="text" name="search" placeholder="Search games..." value="{{ search_query }}">
+            <select name="category">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Filter</button>
+            <a href="{% url 'store:game_list' %}" class="button">Clear</a>
+        </form>
+    </div>
+
+    <!-- Game grid -->
+    <div class="game-grid">
+        {% for game in games %}
+            <div class="game-card">
+                {% if game.screenshot_url %}
+                    <img src="{{ game.screenshot_url }}" alt="{{ game.title }}">
+                {% else %}
+                    <div class="no-image">No Image</div>
+                {% endif %}
+                <h3>{{ game.title }}</h3>
+                <p class="game-category">{{ game.category }}</p>
+                <p class="game-description">{{ game.description|truncatewords:20 }}</p>
+                <p class="game-price">${{ game.price }}</p>
+                <div class="game-actions">
+                    <a href="{% url 'store:game_detail' game.id %}" class="button">View Details</a>
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'store:add_to_cart' game.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="button">Add to Cart</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <p>No games found.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

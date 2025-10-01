@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - GameVault{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-container">
+    <h1>Admin Dashboard</h1>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Games</h3>
+            <p class="stat-number">{{ total_games }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Users</h3>
+            <p class="stat-number">{{ total_users }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Transactions</h3>
+            <p class="stat-number">{{ total_transactions }}</p>
+        </div>
+    </div>
+    
+    <div class="admin-actions">
+        <a href="{% url 'store:admin_game_list' %}" class="button">Manage Games</a>
+        <a href="{% url 'store:admin_game_create' %}" class="button">Add New Game</a>
+    </div>
+    
+    <h2>Recent Admin Actions</h2>
+    <table class="action-log-table">
+        <thead>
+            <tr>
+                <th>Admin</th>
+                <th>Action</th>
+                <th>Game</th>
+                <th>Time</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for action in recent_actions %}
+                <tr>
+                    <td>{{ action.admin.username }}</td>
+                    <td>{{ action.get_action_type_display }}</td>
+                    <td>{% if action.target_game %}{{ action.target_game.title }}{% else %}N/A{% endif %}</td>
+                    <td>{{ action.timestamp|date:"M d, Y H:i" }}</td>
+                    <td>{{ action.notes|truncatewords:10 }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">No recent actions</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

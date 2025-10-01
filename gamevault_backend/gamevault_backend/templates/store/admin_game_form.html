@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} Game - GameVault{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>{% if is_edit %}Edit{% else %}Add New{% endif %} Game</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" value="{% if game %}{{ game.title }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="5" required>{% if game %}{{ game.description }}{% endif %}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="category">Category:</label>
+            <input type="text" id="category" name="category" value="{% if game %}{{ game.category }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="price">Price:</label>
+            <input type="number" id="price" name="price" step="0.01" min="0" value="{% if game %}{{ game.price }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="screenshot_url">Screenshot URL (optional):</label>
+            <input type="url" id="screenshot_url" name="screenshot_url" value="{% if game %}{{ game.screenshot_url }}{% endif %}">
+        </div>
+        
+        <div class="form-group">
+            <label for="file_url">Download File URL (optional):</label>
+            <input type="url" id="file_url" name="file_url" value="{% if game %}{{ game.file_url }}{% endif %}">
+        </div>
+        
+        <div class="form-actions">
+            <a href="{% url 'store:admin_game_list' %}" class="button">Cancel</a>
+            <button type="submit" class="button">{% if is_edit %}Update{% else %}Create{% endif %} Game</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

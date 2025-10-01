@@ -1,63 +1,124 @@
-{% extends 'base/base.html' %}
-{% load static %}
+{% extends 'base.html' %}{% extends 'base/base.html' %}
 
-{% block title %}Shopping Cart - GameVault{% endblock %}
+{% load static %}{% load static %}
 
-{% block content %}
-<div class="cart-page">
-    <div class="cart-header">
-        <h1>Shopping Cart</h1>
-        <p id="cart-items-count">0 items in your cart</p>
-    </div>
 
-    <div class="cart-content" id="cartContent">
-        <!-- Cart items will be populated by JavaScript -->
-    </div>
 
-    <div class="cart-summary" id="cartSummary" style="display: none;">
-        <div class="summary-card">
-            <h3>Order Summary</h3>
-            
-            <div class="summary-row">
-                <span id="subtotal-text">Subtotal (0 items):</span>
-                <span id="subtotal-price">$0.00</span>
-            </div>
-            
-            <div class="summary-row">
-                <span>Tax:</span>
-                <span>Calculated at checkout</span>
-            </div>
-            
-            <div class="summary-row total">
-                <span>Total:</span>
-                <span id="total-price">$0.00</span>
-            </div>
+{% block title %}Shopping Cart - GameVault{% endblock %}{% block title %}Shopping Cart - GameVault{% endblock %}
 
-            <div id="checkout-error" class="checkout-error" style="display: none;"></div>
 
-            <div class="checkout-actions">
-                <button
-                    onclick="proceedToCheckout()"
-                    class="btn btn-success btn-lg w-100"
-                    id="checkoutBtn"
-                >
-                    Proceed to Checkout
-                </button>
-                
-                <button
-                    onclick="clearCart()"
-                    class="btn btn-danger mt-2 w-100"
-                    id="clearCartBtn"
-                >
-                    Clear Cart
-                </button>
-            </div>
 
-            <div class="continue-shopping">
-                <a href="{% url 'store:game_library' %}">Continue Shopping</a>
-            </div>
+{% block content %}{% block content %}
+
+<div class="cart-container"><div class="cart-page">
+
+    <h1>Shopping Cart</h1>    <div class="cart-header">
+
+            <h1>Shopping Cart</h1>
+
+    {% if cart_items %}        <p id="cart-items-count">0 items in your cart</p>
+
+        <table class="cart-table">    </div>
+
+            <thead>
+
+                <tr>    <div class="cart-content" id="cartContent">
+
+                    <th>Game</th>        <!-- Cart items will be populated by JavaScript -->
+
+                    <th>Price</th>    </div>
+
+                    <th>Quantity</th>
+
+                    <th>Subtotal</th>    <div class="cart-summary" id="cartSummary" style="display: none;">
+
+                    <th>Actions</th>        <div class="summary-card">
+
+                </tr>            <h3>Order Summary</h3>
+
+            </thead>            
+
+            <tbody>            <div class="summary-row">
+
+                {% for item in cart_items %}                <span id="subtotal-text">Subtotal (0 items):</span>
+
+                    <tr>                <span id="subtotal-price">$0.00</span>
+
+                        <td>{{ item.game.title }}</td>            </div>
+
+                        <td>${{ item.price_at_addition }}</td>            
+
+                        <td>            <div class="summary-row">
+
+                            <form method="post" action="{% url 'store:update_cart_quantity' item.id %}" class="inline-form">                <span>Tax:</span>
+
+                                {% csrf_token %}                <span>Calculated at checkout</span>
+
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="99">            </div>
+
+                                <button type="submit" class="small-button">Update</button>            
+
+                            </form>            <div class="summary-row total">
+
+                        </td>                <span>Total:</span>
+
+                        <td>${{ item.get_subtotal }}</td>                <span id="total-price">$0.00</span>
+
+                        <td>            </div>
+
+                            <form method="post" action="{% url 'store:remove_from_cart' item.id %}" class="inline-form">
+
+                                {% csrf_token %}            <div id="checkout-error" class="checkout-error" style="display: none;"></div>
+
+                                <button type="submit" class="small-button">Remove</button>
+
+                            </form>            <div class="checkout-actions">
+
+                        </td>                <button
+
+                    </tr>                    onclick="proceedToCheckout()"
+
+                {% endfor %}                    class="btn btn-success btn-lg w-100"
+
+            </tbody>                    id="checkoutBtn"
+
+            <tfoot>                >
+
+                <tr>                    Proceed to Checkout
+
+                    <td colspan="3"><strong>Total:</strong></td>                </button>
+
+                    <td><strong>${{ total }}</strong></td>                
+
+                    <td></td>                <button
+
+                </tr>                    onclick="clearCart()"
+
+            </tfoot>                    class="btn btn-danger mt-2 w-100"
+
+        </table>                    id="clearCartBtn"
+
+                        >
+
+        <div class="cart-actions">                    Clear Cart
+
+            <a href="{% url 'store:game_list' %}" class="button">Continue Shopping</a>                </button>
+
+            <a href="{% url 'store:checkout' %}" class="button">Proceed to Checkout</a>            </div>
+
         </div>
-    </div>
+
+    {% else %}            <div class="continue-shopping">
+
+        <p>Your cart is empty.</p>                <a href="{% url 'store:game_library' %}">Continue Shopping</a>
+
+        <a href="{% url 'store:game_list' %}" class="button">Browse Games</a>            </div>
+
+    {% endif %}        </div>
+
+</div>    </div>
+
+{% endblock %}
 
     <div class="empty-cart" id="emptyCart">
         <div class="empty-cart-icon">🛒</div>

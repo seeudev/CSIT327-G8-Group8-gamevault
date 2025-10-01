@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GameVault{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-container">
+                <div class="logo">
+                    <a href="{% url 'store:game_list' %}">GameVault</a>
+                </div>
+                <div class="nav-links">
+                    <a href="{% url 'store:game_list' %}">Games</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'store:cart' %}">Cart</a>
+                        <a href="{% url 'store:transaction_history' %}">My Purchases</a>
+                        {% if user.is_admin %}
+                            <a href="{% url 'store:admin_dashboard' %}">Admin</a>
+                        {% endif %}
+                        <a href="{% url 'users:profile' %}">Profile ({{ user.username }})</a>
+                        <a href="{% url 'users:logout' %}">Logout</a>
+                    {% else %}
+                        <a href="{% url 'users:login' %}">Login</a>
+                        <a href="{% url 'users:register' %}">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 GameVault. All rights reserved.</p>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
