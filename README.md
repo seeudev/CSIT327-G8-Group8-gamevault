@@ -1,426 +1,225 @@
-# GameVault
+# GameVault - Refactored Version
 
-GameVault is a modern web application for purchasing and managing digital game keys. Built with Django (backend + templates), vanilla JavaScript (frontend interactivity), and PostgreSQL database (Supabase).
+A simple, functional game store application built with Django, PostgreSQL (Supabase), and vanilla HTML/CSS/JavaScript.
 
-## 🎯 Project Overview
+## Overview
 
-GameVault is structured in modular phases:
-- **Module 1**: Authentication & Authorization ✅ **COMPLETE**
-- **Module 2**: Admin Core (Game Management) ✅ **COMPLETE**
-- **Module 3**: Storefront Core (Public Catalog) ✅ **COMPLETE**
-- **Module 4**: Foundation & DevOps ⚠️ **PARTIAL** (Docs ✅, Deployment ❌)
+This is a completely refactored version of GameVault, rebuilt from scratch following simple, maintainable patterns suitable for a 3rd-year IT student project. The codebase prioritizes clarity and functionality over complex design patterns.
 
----
+## Technology Stack
 
-## ✨ Implemented Modules
+- **Backend**: Django 5.2.6
+- **Database**: PostgreSQL (Supabase) 
+- **Frontend**: Vanilla HTML, CSS, and JavaScript (no frameworks)
+- **Dependencies**: Minimal - only essential packages
 
-### Module 1: Authentication & Authorization ✅
+## Database Schema
 
-**1.1 User Roles & Database Schema**
-- Custom User model with role-based access control (Admin, Buyer, Moderator)
-- Role model with JSON-based permissions
-- Database seeding: `python manage.py seed_database` (creates admin/admin123)
+The application uses the following simple models:
 
-**1.2 Registration & Login System**
-- Session-based authentication with Django
-- JWT API endpoints for programmatic access
-- Login/registration forms with validation
-- User profile management
+### User
+- user_id (Primary Key)
+- username, email, password_hash
+- registration_date
+- is_admin (Boolean)
 
-### Module 2: Admin Core ✅
+### Game
+- game_id (Primary Key)
+- title, description, category, price
+- screenshot_url, file_url
+- upload_date
 
-**2.1 Basic Admin Panel**
-- Admin dashboard at `/admin/` with statistics
-- Role-based access (admin-only)
-- Navigation to game management, users, orders
+### Cart
+- cart_id (Primary Key)
+- user_id (Foreign Key)
+- created_at, status
 
-**2.2 CRUD Operations for Games**
-- Create, read, update, delete games
-- Game model with: title, description, price, images, developer, publisher, genres, platforms
-- Game key inventory management
-- Bulk operations and statistics
+### CartItem
+- cart_item_id (Primary Key)
+- cart_id, game_id (Foreign Keys)
+- quantity, price_at_addition
 
-### Module 3: Storefront Core ✅
+### Transaction
+- transaction_id (Primary Key)
+- user_id (Foreign Key)
+- transaction_date, total_amount, payment_status
+- download_token
 
-**3.1 Public Game Library & Catalog**
-- Public game listing at `/store/`
-- Game cards with images, pricing, and details
-- Search and filter by genre
-- Sort by featured, price, rating, title
+### TransactionItem
+- transaction_item_id (Primary Key)
+- transaction_id, game_id (Foreign Keys)
+- price_at_purchase
 
-**3.2 Shopping Cart & Checkout**
-- Add to cart functionality
-- Cart management (view, adjust quantities, remove items)
-- Checkout process (clears cart, shows confirmation)
-- Cart persisted in localStorage
+### AdminActionLog
+- log_id (Primary Key)
+- admin_id (Foreign Key)
+- action_type, target_game_id (Foreign Key)
+- timestamp, notes
 
----
+## Setup Instructions
 
-## 🛠️ Tech Stack
+### 1. Install Dependencies
 
-### Backend
-- **Django 5.2.6** - Web framework with template engine
-- **Django REST Framework 3.16.1** - REST API endpoints
-- **Simple JWT 5.5.1** - JWT authentication for API
-- **PostgreSQL** - Database (via Supabase)
-- **Pillow 10.4.0** - Image processing
-- **psycopg2-binary 2.9.10** - PostgreSQL adapter
-
-### Frontend
-- **Django Templates** - Server-side rendering
-- **Vanilla JavaScript** - Client-side interactivity
-- **CSS3** - Styling with custom properties
-- **localStorage** - Client-side cart storage
-
-### Why No React?
-In a previous decision, we simplified the tech stack by removing React to reduce complexity. The application now uses Django's built-in template system with vanilla JavaScript for dynamic features, making it easier to develop and deploy as a single Django application.
-
----
-
-## 📦 Quick Start
-
-### Prerequisites
-- Python 3.12+
-- PostgreSQL database (or Supabase account)
-
-### Setup & Run
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/seeudev/gamevault.git
-   cd gamevault
-   ```
-
-2. **Create and activate virtual environment**
-   ```bash
-   python -m venv env
-   # Windows
-   .\env\Scripts\activate
-   # macOS/Linux
-   source env/bin/activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Configure environment variables**
-   
-   Create a `.env` file in the project root:
-   ```env
-   DATABASE_URL=postgresql://user:password@host:port/database
-   SECRET_KEY=your-secret-key-here
-   DEBUG=True
-   ```
-
-5. **Navigate to backend and run migrations**
-   ```bash
-   cd gamevault_backend
-   python manage.py migrate
-   ```
-
-6. **Seed the database**
-   ```bash
-   python manage.py seed_database
-   ```
-   
-   This creates:
-   - **Default Admin**: username `admin`, password `admin123`
-   - **Default Roles**: Admin, Buyer, Moderator
-
-7. **Run the development server**
-   ```bash
-   python manage.py runserver
-   ```
-
-8. **Access the application**
-   - **Home/Store**: http://localhost:8000/
-   - **Login**: http://localhost:8000/login/
-   - **Register**: http://localhost:8000/register/
-   - **Admin Dashboard**: http://localhost:8000/admin/ (login as admin)
-   - **Django Admin**: http://localhost:8000/django-admin/
-
----
-
-## 🏗️ Project Structure
-
-```
-gamevault/
-├── gamevault_backend/          # Django application
-│   ├── manage.py
-│   ├── gamevault_backend/      # Main project settings
-│   │   ├── settings.py         # Configuration
-│   │   ├── urls.py             # URL routing
-│   │   ├── admin_urls.py       # Admin panel routes
-│   │   ├── admin_views.py      # Admin panel views
-│   │   ├── templates/          # Django templates
-│   │   │   ├── base/           # Base templates
-│   │   │   ├── auth/           # Login/register pages
-│   │   │   ├── users/          # User pages
-│   │   │   ├── store/          # Store pages
-│   │   │   └── admin/          # Admin dashboard
-│   │   └── static/             # Static files
-│   │       ├── css/            # Stylesheets
-│   │       ├── js/             # JavaScript files
-│   │       └── images/         # Images
-│   ├── users/                  # Users app
-│   │   ├── models.py           # User & Role models
-│   │   ├── serializers.py      # DRF serializers
-│   │   ├── views.py            # Views & API endpoints
-│   │   ├── urls.py             # URL routing
-│   │   └── management/         # Management commands
-│   │       └── commands/
-│   │           └── seed_database.py
-│   └── store/                  # Store app
-│       ├── models.py           # Game, GameKey, Category models
-│       ├── serializers.py      # DRF serializers
-│       ├── views.py            # Views & API endpoints
-│       └── urls.py             # URL routing
-├── env/                        # Virtual environment
-├── requirements.txt            # Python dependencies
-├── README.md                   # This file
-└── QUICKSTART.md              # Quick start guide
-```
-
----
-
-## � Key Features
-
-### Authentication & User Management
-- ✅ Role-based access control (Admin, Buyer, Moderator)
-- ✅ Session-based authentication
-- ✅ JWT API for programmatic access
-- ✅ User registration and login
-- ✅ Profile management with avatar uploads
-- ✅ Password change functionality
-
-### Admin Features
-- ✅ Admin dashboard with statistics
-- ✅ Full CRUD for games
-- ✅ Game key inventory management
-- ✅ Bulk operations
-- ✅ User management
-- ✅ Image uploads for game covers
-
-### Storefront Features
-- ✅ Public game catalog
-- ✅ Search and filtering
-- ✅ Shopping cart (localStorage)
-- ✅ Checkout simulation
-- ✅ Responsive design
-
----
-
-## 📊 Database Schema
-
-### Core Tables
-
-**users**
-- Custom user model with role relationship
-- Profile fields: phone, date of birth, bio, avatar
-- Authentication fields: email (unique), password (hashed)
-- Audit fields: created_at, updated_at, last_login_ip
-
-**roles**
-- name, display_name, description
-- permissions (JSON) - flexible permission system
-
-**games**
-- Game information: title, description, price, images
-- Metadata: developer, publisher, release_date, genre
-- Inventory: stock_quantity, total_sold
-- SEO: slug, meta_description, featured
-- Audit: created_by, updated_by, timestamps
-
-**game_keys**
-- Individual product keys for games
-- Status: available, sold, reserved, invalid
-- Tracking: sold_to, sold_at
-
-**game_categories**
-- Structured categorization
-- Icon and color customization
-
----
-
-## 🌐 API Endpoints
-
-### Authentication (`/api/auth/`)
-- `POST /register/` - Register new user
-- `POST /login/` - Login user (returns JWT)
-- `POST /logout/` - Logout user
-- `GET /profile/` - Get current user profile
-- `PATCH /profile/` - Update user profile
-- `POST /change-password/` - Change password
-- `POST /verify-token/` - Verify JWT token
-- `GET /permissions/` - Get user permissions
-- `GET /roles/` - List all roles
-
-### Games - Admin (`/api/games/`)
-- `GET /` - List all games (admin only)
-- `POST /` - Create game (admin only)
-- `GET /<slug>/` - Get game details (admin only)
-- `PUT/PATCH /<slug>/` - Update game (admin only)
-- `DELETE /<slug>/` - Delete game (admin only)
-
-### Games - Public (`/api/public/games/`)
-- `GET /` - List active games (public)
-- `GET /<slug>/` - Get game details (public)
-
-### Game Keys (`/api/games/<slug>/keys/`)
-- `GET /` - List game keys (admin only)
-- `POST /` - Create game key (admin only)
-- `POST /bulk/` - Bulk create keys (admin only)
-
-### Categories (`/api/categories/`)
-- `GET /` - List categories (admin only)
-- `POST /` - Create category (admin only)
-
----
-
-## 🧪 Testing
-
-### Manual Testing
-
-1. **Register a new user**
-   - Go to http://localhost:8000/register/
-   - Fill in the form and submit
-
-2. **Login as admin**
-   - Go to http://localhost:8000/login/
-   - Username: `admin`, Password: `admin123`
-   - Access admin dashboard at http://localhost:8000/admin/
-
-3. **Browse the store**
-   - Go to http://localhost:8000/store/
-   - Search and filter games
-   - Add items to cart
-
-### API Testing with cURL
-
-**Register:**
 ```bash
-curl -X POST http://localhost:8000/api/auth/register/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser",
-    "email": "test@example.com",
-    "password": "SecurePass123",
-    "password_confirm": "SecurePass123"
-  }'
-```
-
-**Login:**
-```bash
-curl -X POST http://localhost:8000/api/auth/login/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "admin",
-    "password": "admin123"
-  }'
-```
-
----
-
-## 🔒 Security Features
-
-- Password hashing with Django's PBKDF2 algorithm
-- JWT tokens with rotation and blacklisting
-- CSRF protection on forms
-- SQL injection protection via Django ORM
-- XSS protection via template escaping
-- Role-based access control
-- Secure session management
-
----
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**"No module named 'xyz'"**
-```bash
-# Activate virtual environment first
-.\env\Scripts\activate  # Windows
-source env/bin/activate  # macOS/Linux
-
-# Then install dependencies
 pip install -r requirements.txt
 ```
 
-**Database connection errors**
-- Check your `.env` file has correct `DATABASE_URL`
-- Ensure PostgreSQL/Supabase is running
-- Verify connection credentials
+### 2. Configure Database
 
-**Migration errors**
+Edit the `.env` file in the root directory:
+
+For SQLite (development):
+```
+# Leave DATABASE_URL commented out to use SQLite
+#DATABASE_URL=postgresql://...
+```
+
+For Supabase PostgreSQL (production):
+```
+DATABASE_URL=postgresql://user:password@host:port/database
+```
+
+### 3. Run Migrations
+
 ```bash
 cd gamevault_backend
 python manage.py migrate
 ```
 
-**Static files not loading**
+### 4. Create Admin User
+
+A script is provided to create an admin user:
+
 ```bash
-python manage.py collectstatic
+python create_admin.py
 ```
 
----
-
-## 🚀 Deployment (To-Do)
-
-The application is currently configured for local development. For production deployment:
-
-1. Set `DEBUG=False` in settings
-2. Configure allowed hosts
-3. Set up a production database
-4. Configure static file serving
-5. Use a production WSGI server (Gunicorn)
-6. Set up HTTPS
-7. Configure environment variables securely
-
-Deployment platforms to consider:
-- **Backend**: Railway, Heroku, PythonAnywhere, DigitalOcean
-- **Database**: Supabase, ElephantSQL, Railway PostgreSQL
-
----
-
-## 📝 Default Accounts
-
-After running `python manage.py seed_database`:
-
-**Admin Account**
+Default credentials:
 - Username: `admin`
-- Email: `admin@gamevault.com`
 - Password: `admin123`
-- Role: Administrator
 
-⚠️ **Important**: Change the admin password after first login!
+### 5. Run Development Server
 
----
+```bash
+python manage.py runserver
+```
 
-## � Development Team
+Visit `http://127.0.0.1:8000/` in your browser.
 
-**Group 8 - CSIT327 (Information Management 2)**
-- Full-stack development
-- Module 1-3 implementation
-- Database design and implementation
+## Features
 
----
+### Public Features
+- Browse games (no login required)
+- Search and filter games by category
+- View game details
 
-## 📄 License
+### User Features (requires login)
+- Register and login
+- Add games to shopping cart
+- Update cart quantities
+- Checkout and complete purchase
+- View transaction history
+- Download purchased games
 
-This project is part of a university assignment for CSIT327.
+### Admin Features (requires is_admin=True)
+- Access admin dashboard
+- Create, edit, and delete games
+- View admin action logs
+- View statistics
 
----
+## Project Structure
 
-## 🙏 Acknowledgments
+```
+gamevault_backend/
+├── manage.py
+├── create_admin.py
+├── gamevault_backend/
+│   ├── settings.py          # Simple Django settings
+│   ├── urls.py              # Main URL configuration
+│   ├── static/
+│   │   └── css/
+│   │       └── style.css    # Minimal CSS styling
+│   └── templates/
+│       ├── base.html        # Base template
+│       ├── users/           # Authentication templates
+│       └── store/           # Store templates
+├── users/
+│   ├── models.py            # User model
+│   ├── views.py             # Simple auth views
+│   ├── urls.py              # Auth URLs
+│   └── admin.py             # Django admin config
+└── store/
+    ├── models.py            # Game, Cart, Transaction models
+    ├── views.py             # All store functionality
+    ├── urls.py              # Store URLs
+    └── admin.py             # Django admin config
+```
 
-- Django Documentation
-- Django REST Framework
-- SimpleJWT Documentation
-- PostgreSQL & Supabase
+## Key Design Decisions
 
----
+1. **Simplicity First**: No complex design patterns, decorators, or abstractions unless absolutely necessary
+2. **Function-Based Views**: All views are simple functions, no class-based views
+3. **Session-Based Auth**: Standard Django sessions, no JWT or token authentication
+4. **Minimal JavaScript**: Only essential client-side interactions
+5. **No Frontend Framework**: Pure HTML, CSS, and JavaScript
+6. **Clear Comments**: Code is commented to explain purpose and logic
 
-**Project Status**: Modules 1-3 Complete ✅ | Ready for Deployment 🚀
+## Development Workflow
+
+1. Models are simple Django ORM classes
+2. Views are straightforward functions that:
+   - Get data from models
+   - Process forms/requests
+   - Render templates
+3. Templates extend from `base.html`
+4. URLs are mapped directly to view functions
+5. Static files are served from `static/` directory
+
+## Testing
+
+To test the application:
+
+1. Register a new user account
+2. Browse games and add to cart
+3. Complete checkout
+4. View transaction history
+5. Login as admin to manage games
+
+## Switching to Supabase PostgreSQL
+
+To use Supabase instead of SQLite:
+
+1. Get your Supabase connection string from the Supabase dashboard
+2. Update `.env` file:
+   ```
+   DATABASE_URL=postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres
+   ```
+3. Run migrations again:
+   ```bash
+   python manage.py migrate
+   python create_admin.py
+   ```
+
+## Security Notes
+
+- Change `SECRET_KEY` in production
+- Set `DEBUG=False` in production
+- Use environment variables for sensitive data
+- Add proper ALLOWED_HOSTS for production
+- Implement proper file upload validation
+- Add payment gateway for real transactions
+
+## Future Enhancements
+
+- Add user profile editing
+- Implement game reviews and ratings
+- Add wishlist functionality
+- Implement actual payment processing
+- Add email notifications
+- Improve admin dashboard with charts
+- Add game categorization and tagging
+- Implement search optimization
+
+## License
+
+This project is for educational purposes.
