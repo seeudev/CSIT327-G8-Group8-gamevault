@@ -1,0 +1,17 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Checkout Success - GameVault{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center">
+        <div style="font-size: 80px; color: var(--success-color); margin-bottom: 20px;">✓</div>
+        <h1>Order Successful!</h1>
+        <p>Thank you for your purchase. Your order has been confirmed.</p>
+        <a href="{% url 'store:game_library' %}" class="btn btn-primary mt-3">
+            Continue Shopping
+        </a>
+    </div>
+</div>
+{% endblock %}

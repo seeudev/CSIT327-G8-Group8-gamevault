@@ -1,0 +1,86 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Home - GameVault{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <div class="home-header">
+        <h1>Welcome to GameVault</h1>
+        <a href="{% url 'users:logout' %}" class="btn btn-outline-light">
+            <i class="fas fa-sign-out-alt me-2"></i>Logout
+        </a>
+    </div>
+
+    <div class="user-info-card">
+        <h2>User Profile</h2>
+        <div class="user-details">
+            <div class="detail-row">
+                <span class="label">Username:</span>
+                <span class="value">{{ user.username }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Email:</span>
+                <span class="value">{{ user.email }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Full Name:</span>
+                <span class="value">{{ user.full_name|default:"Not set" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Role:</span>
+                <span class="badge {% if user.is_admin %}bg-danger{% else %}bg-primary{% endif %}">
+                    {% if user.is_admin %}Admin{% else %}Buyer{% endif %}
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="label">Account Status:</span>
+                <span class="badge {% if user.is_verified %}bg-success{% else %}bg-warning{% endif %}">
+                    {% if user.is_verified %}Verified{% else %}Unverified{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="features-section">
+        <h2>Module 1: Authentication & Authorization ✅</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>✓ User Registration</h3>
+                <p>Complete registration system with validation</p>
+            </div>
+            <div class="feature-card">
+                <h3>✓ User Login</h3>
+                <p>JWT-based authentication with token refresh</p>
+            </div>
+            <div class="feature-card">
+                <h3>✓ Role-Based Access</h3>
+                <p>Admin and Buyer roles with permissions</p>
+            </div>
+            <div class="feature-card">
+                <h3>✓ Protected Routes</h3>
+                <p>Route protection based on authentication</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h3>🎮 What's Next?</h3>
+        <ul>
+            <li>Module 2: Admin Core - Game management system ✅</li>
+            <li>Module 3: Storefront Core - Public game catalog</li>
+            <li>Module 4: Foundation & DevOps - Deployment setup</li>
+        </ul>
+        
+        {% if user.is_admin %}
+            <div class="admin-access">
+                <h4>🔧 Admin Access</h4>
+                <p>You have admin privileges! Access the admin dashboard to manage games and users.</p>
+                <a href="{% url 'admin:dashboard' %}" class="btn btn-primary">
+                    <i class="fas fa-gamepad me-2"></i>Go to Admin Dashboard
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

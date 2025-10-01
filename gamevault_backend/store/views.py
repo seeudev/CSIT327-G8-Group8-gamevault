@@ -5,7 +5,9 @@ from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
+from django.contrib.auth.decorators import login_required
+from django.views import View
 from django.db import models
 
 from .models import Game, GameKey, GameCategory
@@ -403,3 +405,55 @@ def bulk_update_game_status(request):
             'error': 'Failed to update games',
             'details': str(e)
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Template-based views for vanilla HTML frontend
+class GameLibraryView(View):
+    """Game library view for public storefront"""
+    
+    def get(self, request):
+        # Get all active games
+        games = Game.objects.filter(status='active').order_by('-featured', '-created_at')
+        
+        # Get unique genres for filter
+        genres = Game.objects.filter(status='active').values_list('genre', flat=True).distinct()
+        genres = [genre for genre in genres if genre]  # Remove None values
+        
+        context = {
+            'games': games,
+            'genres': sorted(genres)
+        }
+        return render(request, 'store/game_library.html', context)
+
+
+class GameDetailView(View):
+    """Game detail view for public storefront"""
+    
+    def get(self, request, slug):
+        game = get_object_or_404(Game, slug=slug, status='active')
+        
+        # Get related games (same genre, excluding current game)
+        related_games = Game.objects.filter(
+            genre=game.genre,
+            status='active'
+        ).exclude(id=game.id)[:4]
+        
+        context = {
+            'game': game,
+            'related_games': related_games
+        }
+        return render(request, 'store/game_detail.html', context)
+
+
+class CartView(View):
+    """Shopping cart view"""
+    
+    def get(self, request):
+        return render(request, 'store/cart.html')
+
+
+class CheckoutSuccessView(View):
+    """Checkout success view"""
+    
+    def get(self, request):
+        return render(request, 'store/checkout_success.html')

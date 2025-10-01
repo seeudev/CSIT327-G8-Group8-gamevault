@@ -1,0 +1,75 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Shopping Cart - GameVault{% endblock %}
+
+{% block content %}
+<div class="cart-page">
+    <div class="cart-header">
+        <h1>Shopping Cart</h1>
+        <p id="cart-items-count">0 items in your cart</p>
+    </div>
+
+    <div class="cart-content" id="cartContent">
+        <!-- Cart items will be populated by JavaScript -->
+    </div>
+
+    <div class="cart-summary" id="cartSummary" style="display: none;">
+        <div class="summary-card">
+            <h3>Order Summary</h3>
+            
+            <div class="summary-row">
+                <span id="subtotal-text">Subtotal (0 items):</span>
+                <span id="subtotal-price">$0.00</span>
+            </div>
+            
+            <div class="summary-row">
+                <span>Tax:</span>
+                <span>Calculated at checkout</span>
+            </div>
+            
+            <div class="summary-row total">
+                <span>Total:</span>
+                <span id="total-price">$0.00</span>
+            </div>
+
+            <div id="checkout-error" class="checkout-error" style="display: none;"></div>
+
+            <div class="checkout-actions">
+                <button
+                    onclick="proceedToCheckout()"
+                    class="btn btn-success btn-lg w-100"
+                    id="checkoutBtn"
+                >
+                    Proceed to Checkout
+                </button>
+                
+                <button
+                    onclick="clearCart()"
+                    class="btn btn-danger mt-2 w-100"
+                    id="clearCartBtn"
+                >
+                    Clear Cart
+                </button>
+            </div>
+
+            <div class="continue-shopping">
+                <a href="{% url 'store:game_library' %}">Continue Shopping</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="empty-cart" id="emptyCart">
+        <div class="empty-cart-icon">🛒</div>
+        <h2>Your cart is empty</h2>
+        <p>Add some games to get started!</p>
+        <a href="{% url 'store:game_library' %}" class="btn btn-primary">
+            Continue Shopping
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/cart.js' %}"></script>
+{% endblock %}

@@ -20,9 +20,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('django-admin/', admin.site.urls),  # Renamed to avoid conflict
     path('api/auth/', include('users.urls')),
     path('api/', include('store.urls')),
+    path('', include('users.urls')),
+    path('store/', include('store.urls')),
+    path('admin/', include('gamevault_backend.admin_urls')),
 ]
 
 # Serve media files in development
