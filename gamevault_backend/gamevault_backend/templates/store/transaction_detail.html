@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Details - GameVault{% endblock %}
+
+{% block content %}
+<div class="transaction-detail-container">
+    <h1>Order #{{ transaction.id }}</h1>
+    
+    <div class="transaction-info">
+        <p><strong>Date:</strong> {{ transaction.transaction_date|date:"F d, Y H:i" }}</p>
+        <p><strong>Total:</strong> ${{ transaction.total_amount }}</p>
+        <p><strong>Status:</strong> {{ transaction.get_payment_status_display }}</p>
+        <p><strong>Download Token:</strong> {{ transaction.download_token }}</p>
+    </div>
+    
+    <h2>Purchased Games</h2>
+    <div class="transaction-items">
+        {% for item in transaction_items %}
+            <div class="transaction-item">
+                <h3>{{ item.game.title }}</h3>
+                <p><strong>Price:</strong> ${{ item.price_at_purchase }}</p>
+                {% if item.game.file_url %}
+                    <a href="{% url 'store:download_game' transaction.id item.game.id %}" class="button">Download</a>
+                {% else %}
+                    <p class="no-download">Download not available</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="transaction-actions">
+        <a href="{% url 'store:transaction_history' %}" class="button">Back to History</a>
+    </div>
+</div>
+{% endblock %}

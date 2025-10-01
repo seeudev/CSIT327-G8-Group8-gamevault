@@ -1,33 +1,33 @@
+"""
+Simple URL patterns for the game store.
+"""
+
 from django.urls import path
 from . import views
 
 app_name = 'store'
 
 urlpatterns = [
-    # API Game management endpoints (admin only)
-    path('api/games/', views.GameListView.as_view(), name='game-list'),
-    path('api/games/<slug:slug>/', views.GameDetailView.as_view(), name='game-detail'),
+    # Public game browsing
+    path('', views.game_list, name='game_list'),
+    path('game/<int:game_id>/', views.game_detail, name='game_detail'),
     
-    # API Public game endpoints (for storefront)
-    path('api/public/games/', views.GamePublicListView.as_view(), name='game-public-list'),
-    path('api/public/games/<slug:slug>/', views.GamePublicDetailView.as_view(), name='game-public-detail'),
+    # Shopping cart
+    path('cart/', views.cart_view, name='cart'),
+    path('cart/add/<int:game_id>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/remove/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
+    path('cart/update/<int:item_id>/', views.update_cart_quantity, name='update_cart_quantity'),
     
-    # API Game key management endpoints (admin only)
-    path('api/games/<slug:game_slug>/keys/', views.GameKeyListView.as_view(), name='game-key-list'),
-    path('api/games/<slug:game_slug>/keys/bulk/', views.GameKeyBulkCreateView.as_view(), name='game-key-bulk-create'),
-    path('api/keys/<int:pk>/', views.GameKeyDetailView.as_view(), name='game-key-detail'),
+    # Checkout and transactions
+    path('checkout/', views.checkout, name='checkout'),
+    path('transactions/', views.transaction_history, name='transaction_history'),
+    path('transactions/<int:transaction_id>/', views.transaction_detail, name='transaction_detail'),
+    path('download/<int:transaction_id>/<int:game_id>/', views.download_game, name='download_game'),
     
-    # API Game category management endpoints (admin only)
-    path('api/categories/', views.GameCategoryListView.as_view(), name='game-category-list'),
-    path('api/categories/<slug:slug>/', views.GameCategoryDetailView.as_view(), name='game-category-detail'),
-    
-    # API Admin dashboard endpoints
-    path('api/stats/', views.game_stats, name='game-stats'),
-    path('api/games/bulk-update-status/', views.bulk_update_game_status, name='bulk-update-game-status'),
-    
-    # Template-based views for vanilla HTML frontend
-    path('', views.GameLibraryView.as_view(), name='game_library'),
-    path('game/<slug:slug>/', views.GameDetailView.as_view(), name='game_detail'),
-    path('cart/', views.CartView.as_view(), name='cart'),
-    path('checkout/success/', views.CheckoutSuccessView.as_view(), name='checkout_success'),
+    # Admin views
+    path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin/games/', views.admin_game_list, name='admin_game_list'),
+    path('admin/games/create/', views.admin_game_create, name='admin_game_create'),
+    path('admin/games/edit/<int:game_id>/', views.admin_game_edit, name='admin_game_edit'),
+    path('admin/games/delete/<int:game_id>/', views.admin_game_delete, name='admin_game_delete'),
 ]

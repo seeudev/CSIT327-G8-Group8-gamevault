@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - GameVault{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+    <h1>Checkout</h1>
+    
+    <h2>Order Summary</h2>
+    <table class="cart-table">
+        <thead>
+            <tr>
+                <th>Game</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+                <tr>
+                    <td>{{ item.game.title }}</td>
+                    <td>${{ item.price_at_addition }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.get_subtotal }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3"><strong>Total:</strong></td>
+                <td><strong>${{ total }}</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+    
+    <div class="checkout-actions">
+        <a href="{% url 'store:cart' %}" class="button">Back to Cart</a>
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="button">Complete Purchase</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

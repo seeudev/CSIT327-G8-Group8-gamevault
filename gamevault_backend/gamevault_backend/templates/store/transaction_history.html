@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Purchase History - GameVault{% endblock %}
+
+{% block content %}
+<div class="transaction-history-container">
+    <h1>Purchase History</h1>
+    
+    {% if transactions %}
+        <div class="transaction-list">
+            {% for transaction in transactions %}
+                <div class="transaction-card">
+                    <h3>Order #{{ transaction.id }}</h3>
+                    <p><strong>Date:</strong> {{ transaction.transaction_date|date:"F d, Y H:i" }}</p>
+                    <p><strong>Total:</strong> ${{ transaction.total_amount }}</p>
+                    <p><strong>Status:</strong> {{ transaction.get_payment_status_display }}</p>
+                    <p><strong>Items:</strong> {{ transaction.items.count }}</p>
+                    <a href="{% url 'store:transaction_detail' transaction.id %}" class="button">View Details</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>You haven't made any purchases yet.</p>
+        <a href="{% url 'store:game_list' %}" class="button">Browse Games</a>
+    {% endif %}
+</div>
+{% endblock %}

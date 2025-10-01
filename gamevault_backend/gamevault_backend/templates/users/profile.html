@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile - GameVault{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <h1>User Profile</h1>
+    <div class="profile-info">
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Admin:</strong> {% if user.is_admin %}Yes{% else %}No{% endif %}</p>
+        <p><strong>Member Since:</strong> {{ user.registration_date|date:"F d, Y" }}</p>
+    </div>
+    <div class="profile-actions">
+        <a href="{% url 'store:transaction_history' %}" class="button">View Purchase History</a>
+    </div>
+</div>
+{% endblock %}

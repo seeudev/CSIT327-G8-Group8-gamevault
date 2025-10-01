@@ -1,375 +1,121 @@
-from rest_framework import status, generics, permissions
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
-from django.contrib.auth import login, authenticate
+"""
+Simple authentication views for GameVault.
+Uses Django's built-in session-based authentication.
+"""
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import render, redirect
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from django.db import transaction
-from django.http import JsonResponse
-from django.views import View
-
-from .models import User, Role
-from .serializers import (
-    UserRegistrationSerializer,
-    UserLoginSerializer,
-    UserProfileSerializer,
-    UserListSerializer,
-    ChangePasswordSerializer,
-    RoleSerializer
-)
+from .models import User
 
 
-class UserRegistrationView(APIView):
+@require_http_methods(["GET", "POST"])
+def register_view(request):
     """
-    User registration endpoint.
-    Creates a new user account with role assignment.
+    User registration view.
+    GET: Display registration form
+    POST: Process registration
     """
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        """
-        Register a new user.
+    if request.user.is_authenticated:
+        return redirect('store:game_list')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        password_confirm = request.POST.get('password_confirm')
         
-        Expected payload:
-        {
-            "username": "string",
-            "email": "string",
-            "password": "string",
-            "password_confirm": "string",
-            "first_name": "string (optional)",
-            "last_name": "string (optional)",
-            "role_name": "string (optional, defaults to 'buyer')",
-            "phone_number": "string (optional)",
-            "date_of_birth": "YYYY-MM-DD (optional)",
-            "bio": "string (optional)"
-        }
-        """
-        serializer = UserRegistrationSerializer(data=request.data)
+        # Simple validation
+        if not all([username, email, password, password_confirm]):
+            messages.error(request, 'All fields are required.')
+            return render(request, 'users/register.html')
         
-        if serializer.is_valid():
-            try:
-                with transaction.atomic():
-                    user = serializer.save()
-                    
-                    # Generate JWT tokens
-                    refresh = RefreshToken.for_user(user)
-                    access_token = refresh.access_token
-                    
-                    # Return user data with tokens
-                    user_data = UserProfileSerializer(user).data
-                    
-                    return Response({
-                        'message': 'User registered successfully',
-                        'user': user_data,
-                        'tokens': {
-                            'access': str(access_token),
-                            'refresh': str(refresh)
-                        }
-                    }, status=status.HTTP_201_CREATED)
-                    
-            except Exception as e:
-                return Response({
-                    'error': 'Registration failed',
-                    'details': str(e)
-                }, status=status.HTTP_400_BAD_REQUEST)
+        if password != password_confirm:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'users/register.html')
         
-        return Response({
-            'error': 'Invalid data',
-            'details': serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserLoginView(APIView):
-    """
-    User login endpoint.
-    Authenticates user and returns JWT tokens.
-    """
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        """
-        Login user with username/email and password.
+        # Check if username or email already exists
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already exists.')
+            return render(request, 'users/register.html')
         
-        Expected payload:
-        {
-            "username": "string (username or email)",
-            "password": "string"
-        }
-        """
-        serializer = UserLoginSerializer(data=request.data)
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Email already exists.')
+            return render(request, 'users/register.html')
         
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            
-            # Generate JWT tokens
-            refresh = RefreshToken.for_user(user)
-            access_token = refresh.access_token
-            
-            # Update last login IP
-            user.last_login_ip = self.get_client_ip(request)
-            user.save(update_fields=['last_login_ip'])
-            
-            # Return user data with tokens
-            user_data = UserProfileSerializer(user).data
-            
-            return Response({
-                'message': 'Login successful',
-                'user': user_data,
-                'tokens': {
-                    'access': str(access_token),
-                    'refresh': str(refresh)
-                }
-            }, status=status.HTTP_200_OK)
-        
-        return Response({
-            'error': 'Invalid credentials',
-            'details': serializer.errors
-        }, status=status.HTTP_401_UNAUTHORIZED)
-
-    def get_client_ip(self, request):
-        """Get client IP address from request"""
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
-        return ip
-
-
-class UserProfileView(generics.RetrieveUpdateAPIView):
-    """
-    User profile endpoint.
-    Allows authenticated users to view and update their profile.
-    """
-    serializer_class = UserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        """Return the current user's profile"""
-        return self.request.user
-
-
-class UserListView(generics.ListAPIView):
-    """
-    User list endpoint (admin only).
-    Lists all users in the system.
-    """
-    serializer_class = UserListSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    queryset = User.objects.all().select_related('role')
-
-    def get_queryset(self):
-        """Filter users based on permissions"""
-        user = self.request.user
-        
-        # Only admins can view all users
-        if not user.is_admin:
-            return User.objects.none()
-        
-        return super().get_queryset()
-
-
-class ChangePasswordView(APIView):
-    """
-    Change password endpoint.
-    Allows authenticated users to change their password.
-    """
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request):
-        """
-        Change user password.
-        
-        Expected payload:
-        {
-            "old_password": "string",
-            "new_password": "string",
-            "new_password_confirm": "string"
-        }
-        """
-        serializer = ChangePasswordSerializer(
-            data=request.data,
-            context={'request': request}
-        )
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                'message': 'Password changed successfully'
-            }, status=status.HTTP_200_OK)
-        
-        return Response({
-            'error': 'Invalid data',
-            'details': serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-
-class LogoutView(APIView):
-    """
-    User logout endpoint.
-    Blacklists the refresh token.
-    """
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request):
-        """
-        Logout user by blacklisting refresh token.
-        
-        Expected payload:
-        {
-            "refresh": "string (refresh token)"
-        }
-        """
+        # Create user
         try:
-            refresh_token = request.data.get('refresh')
-            if refresh_token:
-                token = RefreshToken(refresh_token)
-                token.blacklist()
-                
-                return Response({
-                    'message': 'Logout successful'
-                }, status=status.HTTP_200_OK)
-            else:
-                return Response({
-                    'error': 'Refresh token is required'
-                }, status=status.HTTP_400_BAD_REQUEST)
-                
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
+            user.save()
+            
+            # Log the user in
+            login(request, user)
+            messages.success(request, 'Registration successful!')
+            return redirect('store:game_list')
         except Exception as e:
-            return Response({
-                'error': 'Invalid token',
-                'details': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-
-class RoleListView(generics.ListAPIView):
-    """
-    Role list endpoint.
-    Lists all available roles in the system.
-    """
-    serializer_class = RoleSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    queryset = Role.objects.all()
-
-
-@api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
-def user_permissions(request):
-    """
-    Get current user's permissions.
-    Returns the user's role and associated permissions.
-    """
-    user = request.user
+            messages.error(request, f'Error creating account: {str(e)}')
+            return render(request, 'users/register.html')
     
-    if not user.role:
-        return Response({
-            'role': None,
-            'permissions': {},
-            'is_admin': False,
-            'is_buyer': False
-        })
-    
-    return Response({
-        'role': RoleSerializer(user.role).data,
-        'permissions': user.role.permissions,
-        'is_admin': user.is_admin,
-        'is_buyer': user.is_buyer
-    })
+    return render(request, 'users/register.html')
 
 
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-def verify_token(request):
+@require_http_methods(["GET", "POST"])
+def login_view(request):
     """
-    Verify if the current JWT token is valid.
-    Returns user information if token is valid.
+    User login view.
+    GET: Display login form
+    POST: Process login
     """
-    user = request.user
-    user_data = UserProfileSerializer(user).data
+    if request.user.is_authenticated:
+        return redirect('store:game_list')
     
-    return Response({
-        'valid': True,
-        'user': user_data
-    })
-
-
-# Template-based views for vanilla HTML frontend
-class LoginView(View):
-    """Login view for template rendering"""
-    
-    def get(self, request):
-        if request.user.is_authenticated:
-            return redirect('users:home')
-        return render(request, 'auth/login.html')
-    
-    def post(self, request):
+    if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         
         if not username or not password:
-            messages.error(request, 'Please fill in all fields')
-            return render(request, 'auth/login.html')
+            messages.error(request, 'Username and password are required.')
+            return render(request, 'users/login.html')
         
+        # Authenticate user
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
             login(request, user)
-            messages.success(request, f'Welcome back, {user.username}!')
-            return redirect('users:home')
+            messages.success(request, 'Login successful!')
+            # Redirect to next page if specified, otherwise to game list
+            next_url = request.GET.get('next', 'store:game_list')
+            return redirect(next_url)
         else:
-            messages.error(request, 'Invalid username or password')
-            return render(request, 'auth/login.html')
-
-
-class RegisterView(View):
-    """Registration view for template rendering"""
+            messages.error(request, 'Invalid username or password.')
+            return render(request, 'users/login.html')
     
-    def get(self, request):
-        if request.user.is_authenticated:
-            return redirect('users:home')
-        return render(request, 'auth/register.html')
-    
-    def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.POST)
-        
-        if serializer.is_valid():
-            try:
-                with transaction.atomic():
-                    user = serializer.save()
-                    login(request, user)
-                    messages.success(request, f'Welcome to GameVault, {user.username}!')
-                    return redirect('users:home')
-            except Exception as e:
-                messages.error(request, f'Registration failed: {str(e)}')
-        else:
-            for field, errors in serializer.errors.items():
-                for error in errors:
-                    messages.error(request, f'{field}: {error}')
-        
-        return render(request, 'auth/register.html', {'form': serializer})
-
-
-@login_required
-def home_view(request):
-    """Home view for authenticated users"""
-    return render(request, 'users/home.html')
-
-
-@login_required
-def profile_view(request):
-    """Profile view for authenticated users"""
-    return render(request, 'users/profile.html')
+    return render(request, 'users/login.html')
 
 
 @login_required
 def logout_view(request):
-    """Logout view"""
-    from django.contrib.auth import logout
+    """
+    User logout view.
+    Logs out the user and redirects to login page.
+    """
     logout(request)
-    messages.success(request, 'You have been logged out successfully')
+    messages.success(request, 'You have been logged out.')
     return redirect('users:login')
+
+
+@login_required
+def profile_view(request):
+    """
+    User profile view.
+    Display user information and transaction history.
+    """
+    return render(request, 'users/profile.html', {
+        'user': request.user
+    })

@@ -1,459 +1,406 @@
-from rest_framework import status, generics, permissions, filters
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser, FormParser
-from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Q
-from django.shortcuts import get_object_or_404, render
+"""
+Simple store views for GameVault.
+Handles game listing, cart management, checkout, and transactions.
+"""
+
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.views import View
-from django.db import models
+from django.contrib import messages
+from django.views.decorators.http import require_http_methods
+from django.db.models import Q
+from decimal import Decimal
 
-from .models import Game, GameKey, GameCategory
-from .serializers import (
-    GameListSerializer,
-    GameDetailSerializer,
-    GameCreateSerializer,
-    GameUpdateSerializer,
-    GamePublicSerializer,
-    GameKeySerializer,
-    GameKeyCreateSerializer,
-    GameKeyBulkCreateSerializer,
-    GameCategorySerializer
-)
+from .models import Game, Cart, CartItem, Transaction, TransactionItem, AdminActionLog
+from users.models import User
 
 
-class GameListView(generics.ListCreateAPIView):
+def game_list(request):
     """
-    List all games or create a new game.
-    GET: List games (admin only)
-    POST: Create new game (admin only)
+    Display list of all games with optional filtering.
+    Public view - no login required.
     """
-    permission_classes = [permissions.IsAuthenticated]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['status', 'genre', 'featured', 'developer', 'publisher']
-    search_fields = ['title', 'description', 'developer', 'publisher', 'tags']
-    ordering_fields = ['title', 'price', 'release_date', 'created_at', 'average_rating']
-    ordering = ['-created_at']
-    parser_classes = [MultiPartParser, FormParser]
-
-    def get_queryset(self):
-        """Filter games based on user permissions"""
-        user = self.request.user
-        
-        # Only admins can view all games
-        if not user.is_admin:
-            return Game.objects.none()
-        
-        return Game.objects.all().select_related('created_by', 'updated_by')
-
-    def get_serializer_class(self):
-        """Return appropriate serializer based on request method"""
-        if self.request.method == 'POST':
-            return GameCreateSerializer
-        return GameListSerializer
-
-    def perform_create(self, serializer):
-        """Create game with audit fields"""
-        serializer.save(
-            created_by=self.request.user,
-            updated_by=self.request.user
-        )
-
-
-class GameDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Retrieve, update or delete a game.
-    GET: Get game details (admin only)
-    PUT/PATCH: Update game (admin only)
-    DELETE: Delete game (admin only)
-    """
-    permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'slug'
-    parser_classes = [MultiPartParser, FormParser]
-
-    def get_queryset(self):
-        """Filter games based on user permissions"""
-        user = self.request.user
-        
-        # Only admins can view/edit games
-        if not user.is_admin:
-            return Game.objects.none()
-        
-        return Game.objects.all().select_related('created_by', 'updated_by').prefetch_related('keys')
-
-    def get_serializer_class(self):
-        """Return appropriate serializer based on request method"""
-        if self.request.method in ['PUT', 'PATCH']:
-            return GameUpdateSerializer
-        return GameDetailSerializer
-
-    def perform_update(self, serializer):
-        """Update game with audit fields"""
-        serializer.save(updated_by=self.request.user)
-
-    def destroy(self, request, *args, **kwargs):
-        """Soft delete game by setting status to discontinued"""
-        instance = self.get_object()
-        instance.status = 'discontinued'
-        instance.updated_by = request.user
-        instance.save()
-        
-        return Response({
-            'message': 'Game has been discontinued successfully'
-        }, status=status.HTTP_200_OK)
-
-
-class GamePublicListView(generics.ListAPIView):
-    """
-    List all active games for public storefront.
-    GET: List active games (public access)
-    """
-    permission_classes = [permissions.AllowAny]
-    serializer_class = GamePublicSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['genre', 'featured', 'developer', 'publisher']
-    search_fields = ['title', 'description', 'developer', 'publisher', 'tags']
-    ordering_fields = ['title', 'price', 'release_date', 'average_rating']
-    ordering = ['-featured', '-created_at']
-
-    def get_queryset(self):
-        """Return only active games for public view"""
-        return Game.objects.filter(
-            status='active'
-        ).exclude(
-            stock_quantity=0
-        )
-
-
-class GamePublicDetailView(generics.RetrieveAPIView):
-    """
-    Retrieve a single active game for public storefront.
-    GET: Get game details (public access)
-    """
-    permission_classes = [permissions.AllowAny]
-    serializer_class = GamePublicSerializer
-    lookup_field = 'slug'
-
-    def get_queryset(self):
-        """Return only active games for public view"""
-        return Game.objects.filter(status='active')
-
-
-class GameKeyListView(generics.ListCreateAPIView):
-    """
-    List all keys for a specific game or create new keys.
-    GET: List game keys (admin only)
-    POST: Create new game key (admin only)
-    """
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = GameKeySerializer
-
-    def get_queryset(self):
-        """Filter keys based on user permissions and game"""
-        user = self.request.user
-        
-        # Only admins can view game keys
-        if not user.is_admin:
-            return GameKey.objects.none()
-        
-        game_slug = self.kwargs.get('game_slug')
-        return GameKey.objects.filter(
-            game__slug=game_slug
-        ).select_related('game', 'sold_to')
-
-    def get_serializer_class(self):
-        """Return appropriate serializer based on request method"""
-        if self.request.method == 'POST':
-            return GameKeyCreateSerializer
-        return GameKeySerializer
-
-    def perform_create(self, serializer):
-        """Create game key with associated game"""
-        game_slug = self.kwargs.get('game_slug')
-        game = get_object_or_404(Game, slug=game_slug)
-        serializer.save(game=game)
-
-
-class GameKeyBulkCreateView(APIView):
-    """
-    Bulk create game keys for a specific game.
-    POST: Create multiple game keys (admin only)
-    """
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, game_slug):
-        """Create multiple game keys"""
-        user = request.user
-        
-        # Only admins can create game keys
-        if not user.is_admin:
-            return Response({
-                'error': 'Permission denied'
-            }, status=status.HTTP_403_FORBIDDEN)
-
-        game = get_object_or_404(Game, slug=game_slug)
-        
-        serializer = GameKeyBulkCreateSerializer(
-            data=request.data,
-            context={'game': game}
-        )
-        
-        if serializer.is_valid():
-            try:
-                game_keys = serializer.save()
-                
-                # Update game stock quantity
-                game.stock_quantity += len(game_keys)
-                game.updated_by = user
-                game.save()
-                
-                return Response({
-                    'message': f'Successfully created {len(game_keys)} game keys',
-                    'keys_created': len(game_keys),
-                    'new_stock_quantity': game.stock_quantity
-                }, status=status.HTTP_201_CREATED)
-                
-            except Exception as e:
-                return Response({
-                    'error': 'Failed to create game keys',
-                    'details': str(e)
-                }, status=status.HTTP_400_BAD_REQUEST)
-        
-        return Response({
-            'error': 'Invalid data',
-            'details': serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-
-class GameKeyDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Retrieve, update or delete a specific game key.
-    GET: Get key details (admin only)
-    PUT/PATCH: Update key (admin only)
-    DELETE: Delete key (admin only)
-    """
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = GameKeySerializer
-
-    def get_queryset(self):
-        """Filter keys based on user permissions"""
-        user = self.request.user
-        
-        # Only admins can view/edit game keys
-        if not user.is_admin:
-            return GameKey.objects.none()
-        
-        return GameKey.objects.all().select_related('game', 'sold_to')
-
-
-class GameCategoryListView(generics.ListCreateAPIView):
-    """
-    List all game categories or create a new category.
-    GET: List categories (admin only)
-    POST: Create new category (admin only)
-    """
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = GameCategorySerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name', 'description']
-    ordering_fields = ['name', 'created_at']
-    ordering = ['name']
-
-    def get_queryset(self):
-        """Filter categories based on user permissions"""
-        user = self.request.user
-        
-        # Only admins can manage categories
-        if not user.is_admin:
-            return GameCategory.objects.none()
-        
-        return GameCategory.objects.all()
-
-
-class GameCategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Retrieve, update or delete a game category.
-    GET: Get category details (admin only)
-    PUT/PATCH: Update category (admin only)
-    DELETE: Delete category (admin only)
-    """
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = GameCategorySerializer
-    lookup_field = 'slug'
-
-    def get_queryset(self):
-        """Filter categories based on user permissions"""
-        user = self.request.user
-        
-        # Only admins can view/edit categories
-        if not user.is_admin:
-            return GameCategory.objects.none()
-        
-        return GameCategory.objects.all()
-
-
-@api_view(['GET'])
-@permission_classes([permissions.IsAuthenticated])
-def game_stats(request):
-    """
-    Get game statistics for admin dashboard.
-    Returns counts and metrics for games, keys, and sales.
-    """
-    user = request.user
+    games = Game.objects.all()
     
-    # Only admins can view game statistics
-    if not user.is_admin:
-        return Response({
-            'error': 'Permission denied'
-        }, status=status.HTTP_403_FORBIDDEN)
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    if search_query:
+        games = games.filter(
+            Q(title__icontains=search_query) | 
+            Q(description__icontains=search_query)
+        )
+    
+    # Filter by category
+    category = request.GET.get('category', '')
+    if category:
+        games = games.filter(category__iexact=category)
+    
+    # Get all unique categories for filter
+    categories = Game.objects.values_list('category', flat=True).distinct()
+    
+    return render(request, 'store/game_list.html', {
+        'games': games,
+        'categories': categories,
+        'search_query': search_query,
+        'selected_category': category,
+    })
 
+
+def game_detail(request, game_id):
+    """
+    Display details of a single game.
+    """
+    game = get_object_or_404(Game, id=game_id)
+    return render(request, 'store/game_detail.html', {
+        'game': game
+    })
+
+
+@login_required
+def cart_view(request):
+    """
+    Display user's shopping cart.
+    """
+    # Get or create active cart for user
+    cart, created = Cart.objects.get_or_create(
+        user=request.user,
+        status='active'
+    )
+    
+    cart_items = cart.items.all()
+    total = cart.get_total()
+    
+    return render(request, 'store/cart.html', {
+        'cart': cart,
+        'cart_items': cart_items,
+        'total': total,
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def add_to_cart(request, game_id):
+    """
+    Add a game to the user's cart.
+    """
+    game = get_object_or_404(Game, id=game_id)
+    
+    # Get or create active cart
+    cart, created = Cart.objects.get_or_create(
+        user=request.user,
+        status='active'
+    )
+    
+    # Check if game is already in cart
+    cart_item, created = CartItem.objects.get_or_create(
+        cart=cart,
+        game=game,
+        defaults={'price_at_addition': game.price, 'quantity': 1}
+    )
+    
+    if not created:
+        # Item already exists, increase quantity
+        cart_item.quantity += 1
+        cart_item.save()
+        messages.success(request, f'Increased {game.title} quantity in cart.')
+    else:
+        messages.success(request, f'Added {game.title} to cart.')
+    
+    return redirect('store:cart')
+
+
+@login_required
+@require_http_methods(["POST"])
+def remove_from_cart(request, item_id):
+    """
+    Remove an item from the cart.
+    """
+    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    game_title = cart_item.game.title
+    cart_item.delete()
+    messages.success(request, f'Removed {game_title} from cart.')
+    return redirect('store:cart')
+
+
+@login_required
+@require_http_methods(["POST"])
+def update_cart_quantity(request, item_id):
+    """
+    Update quantity of an item in the cart.
+    """
+    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    quantity = int(request.POST.get('quantity', 1))
+    
+    if quantity > 0:
+        cart_item.quantity = quantity
+        cart_item.save()
+        messages.success(request, 'Cart updated.')
+    else:
+        cart_item.delete()
+        messages.success(request, 'Item removed from cart.')
+    
+    return redirect('store:cart')
+
+
+@login_required
+def checkout(request):
+    """
+    Process checkout - convert cart to transaction.
+    """
+    # Get user's active cart
     try:
-        # Game statistics
-        total_games = Game.objects.count()
-        active_games = Game.objects.filter(status='active').count()
-        featured_games = Game.objects.filter(featured=True).count()
-        out_of_stock = Game.objects.filter(stock_quantity=0).count()
-
-        # Key statistics
-        total_keys = GameKey.objects.count()
-        available_keys = GameKey.objects.filter(status='available').count()
-        sold_keys = GameKey.objects.filter(status='sold').count()
-
-        # Sales statistics
-        total_sales = GameKey.objects.filter(status='sold').count()
-        total_revenue = sum(
-            key.game.price for key in GameKey.objects.filter(status='sold')
+        cart = Cart.objects.get(user=request.user, status='active')
+    except Cart.DoesNotExist:
+        messages.error(request, 'Your cart is empty.')
+        return redirect('store:cart')
+    
+    cart_items = cart.items.all()
+    if not cart_items.exists():
+        messages.error(request, 'Your cart is empty.')
+        return redirect('store:cart')
+    
+    if request.method == 'POST':
+        # Calculate total
+        total = cart.get_total()
+        
+        # Create transaction
+        transaction = Transaction.objects.create(
+            user=request.user,
+            total_amount=total,
+            payment_status='completed'  # In a real app, this would be 'pending' until payment
         )
-
-        # Genre distribution
-        genre_stats = Game.objects.values('genre').annotate(
-            count=models.Count('id')
-        ).order_by('-count')[:10]
-
-        return Response({
-            'games': {
-                'total': total_games,
-                'active': active_games,
-                'featured': featured_games,
-                'out_of_stock': out_of_stock
-            },
-            'keys': {
-                'total': total_keys,
-                'available': available_keys,
-                'sold': sold_keys
-            },
-            'sales': {
-                'total_sales': total_sales,
-                'total_revenue': float(total_revenue)
-            },
-            'genres': list(genre_stats)
-        }, status=status.HTTP_200_OK)
-
-    except Exception as e:
-        return Response({
-            'error': 'Failed to fetch statistics',
-            'details': str(e)
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # Create transaction items from cart items
+        for cart_item in cart_items:
+            TransactionItem.objects.create(
+                transaction=transaction,
+                game=cart_item.game,
+                price_at_purchase=cart_item.price_at_addition
+            )
+        
+        # Mark cart as checked out
+        cart.status = 'checked_out'
+        cart.save()
+        
+        messages.success(request, 'Purchase completed successfully!')
+        return redirect('store:transaction_detail', transaction_id=transaction.id)
+    
+    # GET request - show checkout confirmation
+    total = cart.get_total()
+    return render(request, 'store/checkout.html', {
+        'cart': cart,
+        'cart_items': cart_items,
+        'total': total,
+    })
 
 
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-def bulk_update_game_status(request):
+@login_required
+def transaction_history(request):
     """
-    Bulk update game status for multiple games.
-    POST: Update status for multiple games (admin only)
+    Display user's transaction history.
     """
-    user = request.user
+    transactions = Transaction.objects.filter(user=request.user).order_by('-transaction_date')
     
-    # Only admins can bulk update games
-    if not user.is_admin:
-        return Response({
-            'error': 'Permission denied'
-        }, status=status.HTTP_403_FORBIDDEN)
-
-    game_ids = request.data.get('game_ids', [])
-    new_status = request.data.get('status')
-
-    if not game_ids or not new_status:
-        return Response({
-            'error': 'game_ids and status are required'
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-    if new_status not in ['active', 'inactive', 'coming_soon', 'discontinued']:
-        return Response({
-            'error': 'Invalid status value'
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        updated_count = Game.objects.filter(
-            id__in=game_ids
-        ).update(
-            status=new_status,
-            updated_by=user
-        )
-
-        return Response({
-            'message': f'Successfully updated {updated_count} games',
-            'updated_count': updated_count,
-            'new_status': new_status
-        }, status=status.HTTP_200_OK)
-
-    except Exception as e:
-        return Response({
-            'error': 'Failed to update games',
-            'details': str(e)
-        }, status=status.HTTP_400_BAD_REQUEST)
+    return render(request, 'store/transaction_history.html', {
+        'transactions': transactions
+    })
 
 
-# Template-based views for vanilla HTML frontend
-class GameLibraryView(View):
-    """Game library view for public storefront"""
+@login_required
+def transaction_detail(request, transaction_id):
+    """
+    Display details of a specific transaction.
+    """
+    transaction = get_object_or_404(Transaction, id=transaction_id, user=request.user)
+    transaction_items = transaction.items.all()
     
-    def get(self, request):
-        # Get all active games
-        games = Game.objects.filter(status='active').order_by('-featured', '-created_at')
+    return render(request, 'store/transaction_detail.html', {
+        'transaction': transaction,
+        'transaction_items': transaction_items,
+    })
+
+
+@login_required
+def download_game(request, transaction_id, game_id):
+    """
+    Allow user to download a game from their purchase.
+    Verify they own the game before allowing download.
+    """
+    transaction = get_object_or_404(Transaction, id=transaction_id, user=request.user)
+    game = get_object_or_404(Game, id=game_id)
+    
+    # Verify the game is in this transaction
+    if not transaction.items.filter(game=game).exists():
+        messages.error(request, 'You do not own this game.')
+        return redirect('store:transaction_history')
+    
+    # In a real app, this would redirect to a secure download URL or serve the file
+    # For now, just redirect to the file_url if it exists
+    if game.file_url:
+        messages.success(request, f'Starting download for {game.title}')
+        return redirect(game.file_url)
+    else:
+        messages.error(request, 'Download not available for this game.')
+        return redirect('store:transaction_detail', transaction_id=transaction.id)
+
+
+# Admin views
+@login_required
+def admin_dashboard(request):
+    """
+    Admin dashboard view.
+    Only accessible to admin users.
+    """
+    if not request.user.is_admin:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('store:game_list')
+    
+    # Get stats
+    total_games = Game.objects.count()
+    total_users = User.objects.count()
+    total_transactions = Transaction.objects.count()
+    recent_actions = AdminActionLog.objects.all()[:10]
+    
+    return render(request, 'store/admin_dashboard.html', {
+        'total_games': total_games,
+        'total_users': total_users,
+        'total_transactions': total_transactions,
+        'recent_actions': recent_actions,
+    })
+
+
+@login_required
+def admin_game_list(request):
+    """
+    Admin view to list all games for management.
+    """
+    if not request.user.is_admin:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('store:game_list')
+    
+    games = Game.objects.all().order_by('-upload_date')
+    return render(request, 'store/admin_game_list.html', {
+        'games': games
+    })
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def admin_game_create(request):
+    """
+    Admin view to create a new game.
+    """
+    if not request.user.is_admin:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('store:game_list')
+    
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        category = request.POST.get('category')
+        price = request.POST.get('price')
+        screenshot_url = request.POST.get('screenshot_url')
+        file_url = request.POST.get('file_url')
         
-        # Get unique genres for filter
-        genres = Game.objects.filter(status='active').values_list('genre', flat=True).distinct()
-        genres = [genre for genre in genres if genre]  # Remove None values
+        # Simple validation
+        if not all([title, description, category, price]):
+            messages.error(request, 'All required fields must be filled.')
+            return render(request, 'store/admin_game_form.html')
         
-        context = {
-            'games': games,
-            'genres': sorted(genres)
-        }
-        return render(request, 'store/game_library.html', context)
-
-
-class GameDetailView(View):
-    """Game detail view for public storefront"""
+        try:
+            game = Game.objects.create(
+                title=title,
+                description=description,
+                category=category,
+                price=Decimal(price),
+                screenshot_url=screenshot_url if screenshot_url else None,
+                file_url=file_url if file_url else None,
+            )
+            
+            # Log the action
+            AdminActionLog.objects.create(
+                admin=request.user,
+                action_type='create',
+                target_game=game,
+                notes=f'Created game: {title}'
+            )
+            
+            messages.success(request, f'Game "{title}" created successfully.')
+            return redirect('store:admin_game_list')
+        except Exception as e:
+            messages.error(request, f'Error creating game: {str(e)}')
+            return render(request, 'store/admin_game_form.html')
     
-    def get(self, request, slug):
-        game = get_object_or_404(Game, slug=slug, status='active')
+    return render(request, 'store/admin_game_form.html')
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def admin_game_edit(request, game_id):
+    """
+    Admin view to edit an existing game.
+    """
+    if not request.user.is_admin:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('store:game_list')
+    
+    game = get_object_or_404(Game, id=game_id)
+    
+    if request.method == 'POST':
+        game.title = request.POST.get('title')
+        game.description = request.POST.get('description')
+        game.category = request.POST.get('category')
+        game.price = Decimal(request.POST.get('price'))
+        screenshot_url = request.POST.get('screenshot_url')
+        file_url = request.POST.get('file_url')
         
-        # Get related games (same genre, excluding current game)
-        related_games = Game.objects.filter(
-            genre=game.genre,
-            status='active'
-        ).exclude(id=game.id)[:4]
+        if screenshot_url:
+            game.screenshot_url = screenshot_url
+        if file_url:
+            game.file_url = file_url
         
-        context = {
-            'game': game,
-            'related_games': related_games
-        }
-        return render(request, 'store/game_detail.html', context)
-
-
-class CartView(View):
-    """Shopping cart view"""
+        try:
+            game.save()
+            
+            # Log the action
+            AdminActionLog.objects.create(
+                admin=request.user,
+                action_type='update',
+                target_game=game,
+                notes=f'Updated game: {game.title}'
+            )
+            
+            messages.success(request, f'Game "{game.title}" updated successfully.')
+            return redirect('store:admin_game_list')
+        except Exception as e:
+            messages.error(request, f'Error updating game: {str(e)}')
     
-    def get(self, request):
-        return render(request, 'store/cart.html')
+    return render(request, 'store/admin_game_form.html', {
+        'game': game,
+        'is_edit': True
+    })
 
 
-class CheckoutSuccessView(View):
-    """Checkout success view"""
+@login_required
+@require_http_methods(["POST"])
+def admin_game_delete(request, game_id):
+    """
+    Admin view to delete a game.
+    """
+    if not request.user.is_admin:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('store:game_list')
     
-    def get(self, request):
-        return render(request, 'store/checkout_success.html')
+    game = get_object_or_404(Game, id=game_id)
+    game_title = game.title
+    
+    # Log the action before deletion
+    AdminActionLog.objects.create(
+        admin=request.user,
+        action_type='delete',
+        target_game=None,  # Game will be deleted
+        notes=f'Deleted game: {game_title} (ID: {game_id})'
+    )
+    
+    game.delete()
+    messages.success(request, f'Game "{game_title}" deleted successfully.')
+    return redirect('store:admin_game_list')

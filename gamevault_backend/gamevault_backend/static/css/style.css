@@ -1,0 +1,337 @@
+/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* Header and navigation */
+header {
+    background: #333;
+    color: white;
+    padding: 1rem;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+}
+
+.nav-links a:hover {
+    background: #555;
+}
+
+/* Main content */
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    min-height: 70vh;
+}
+
+/* Messages */
+.messages {
+    margin-bottom: 1rem;
+}
+
+.message {
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid;
+}
+
+.message.success {
+    background: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.message.error {
+    background: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* Forms */
+.form-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+}
+
+/* Buttons */
+button, .button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #333;
+    color: white;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover, .button:hover {
+    background: #555;
+}
+
+.small-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    background: #333;
+    color: white;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+}
+
+/* Game grid */
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.game-card {
+    border: 1px solid #ccc;
+    padding: 1rem;
+}
+
+.game-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.no-image {
+    width: 100%;
+    height: 150px;
+    background: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-card h3 {
+    margin: 0.5rem 0;
+}
+
+.game-category {
+    color: #666;
+    font-size: 0.875rem;
+}
+
+.game-description {
+    margin: 0.5rem 0;
+}
+
+.game-price {
+    font-weight: bold;
+    font-size: 1.25rem;
+    margin: 0.5rem 0;
+}
+
+.game-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+/* Filter section */
+.filter-section {
+    margin: 2rem 0;
+}
+
+.filter-form {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.filter-form input,
+.filter-form select {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+}
+
+.filter-form input {
+    flex: 1;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+}
+
+th, td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background: #f4f4f4;
+    font-weight: bold;
+}
+
+/* Cart */
+.cart-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.inline-form {
+    display: inline-block;
+}
+
+.inline-form input[type="number"] {
+    width: 60px;
+    padding: 0.25rem;
+}
+
+/* Transaction cards */
+.transaction-card {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Admin stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.stat-card {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-top: 0.5rem;
+}
+
+/* Admin actions */
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+/* Footer */
+footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+}
+
+/* Game detail */
+.game-detail-image {
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+}
+
+.game-detail-info {
+    margin: 1rem 0;
+}
+
+.game-detail-description {
+    margin: 2rem 0;
+}
+
+.game-detail-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Profile */
+.profile-info {
+    margin: 2rem 0;
+}
+
+.profile-info p {
+    margin: 0.5rem 0;
+}
+
+.profile-actions {
+    margin: 2rem 0;
+}
+
+/* Transaction items */
+.transaction-items {
+    margin: 2rem 0;
+}
+
+.transaction-item {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.no-download {
+    color: #999;
+    font-style: italic;
+}
+
+/* Form actions */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
