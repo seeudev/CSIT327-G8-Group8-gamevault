@@ -1,10 +1,7 @@
 # GameVault - Refactored Version
 
-A simple, functional game store application built with Django, PostgreSQL (Supabase), and vanilla HTML/CSS/JavaScript.
+A simple, functional game store selling digital keys web application built with Django, PostgreSQL (Supabase), and vanilla HTML/CSS/JavaScript.
 
-## Overview
-
-This is a completely refactored version of GameVault, rebuilt from scratch following simple, maintainable patterns suitable for a 3rd-year IT student project. The codebase prioritizes clarity and functionality over complex design patterns.
 
 ## Technology Stack
 
