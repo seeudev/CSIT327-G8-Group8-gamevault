@@ -1,0 +1,90 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - GameVault{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <p>Welcome back, {{ user.username }}!</p>
+    </div>
+
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-gamepad"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="total-games">{{ stats.total_games|default:0 }}</h3>
+                <p>Total Games</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="total-users">{{ stats.total_users|default:0 }}</h3>
+                <p>Total Users</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="total-orders">{{ stats.total_orders|default:0 }}</h3>
+                <p>Total Orders</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-content">
+                <h3 id="total-revenue">${{ stats.total_revenue|default:0 }}</h3>
+                <p>Total Revenue</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-content">
+        <div class="dashboard-section">
+            <h2>Recent Activity</h2>
+            <div class="activity-list" id="recentActivity">
+                <!-- Recent activity will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <h2>Quick Actions</h2>
+            <div class="quick-actions">
+                <a href="{% url 'admin:game_list' %}" class="action-card">
+                    <i class="fas fa-list"></i>
+                    <span>Manage Games</span>
+                </a>
+                <a href="{% url 'admin:game_create' %}" class="action-card">
+                    <i class="fas fa-plus"></i>
+                    <span>Add New Game</span>
+                </a>
+                <a href="{% url 'admin:user_list' %}" class="action-card">
+                    <i class="fas fa-users"></i>
+                    <span>Manage Users</span>
+                </a>
+                <a href="{% url 'admin:order_list' %}" class="action-card">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>View Orders</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/admin.js' %}"></script>
+{% endblock %}

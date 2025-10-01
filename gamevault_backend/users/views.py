@@ -4,10 +4,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from django.contrib.auth import login
-from django.utils.decorators import method_decorator
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from django.db import transaction
+from django.http import JsonResponse
+from django.views import View
 
 from .models import User, Role
 from .serializers import (
@@ -291,3 +296,80 @@ def verify_token(request):
         'valid': True,
         'user': user_data
     })
+
+
+# Template-based views for vanilla HTML frontend
+class LoginView(View):
+    """Login view for template rendering"""
+    
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('users:home')
+        return render(request, 'auth/login.html')
+    
+    def post(self, request):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        if not username or not password:
+            messages.error(request, 'Please fill in all fields')
+            return render(request, 'auth/login.html')
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            messages.success(request, f'Welcome back, {user.username}!')
+            return redirect('users:home')
+        else:
+            messages.error(request, 'Invalid username or password')
+            return render(request, 'auth/login.html')
+
+
+class RegisterView(View):
+    """Registration view for template rendering"""
+    
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('users:home')
+        return render(request, 'auth/register.html')
+    
+    def post(self, request):
+        serializer = UserRegistrationSerializer(data=request.POST)
+        
+        if serializer.is_valid():
+            try:
+                with transaction.atomic():
+                    user = serializer.save()
+                    login(request, user)
+                    messages.success(request, f'Welcome to GameVault, {user.username}!')
+                    return redirect('users:home')
+            except Exception as e:
+                messages.error(request, f'Registration failed: {str(e)}')
+        else:
+            for field, errors in serializer.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+        
+        return render(request, 'auth/register.html', {'form': serializer})
+
+
+@login_required
+def home_view(request):
+    """Home view for authenticated users"""
+    return render(request, 'users/home.html')
+
+
+@login_required
+def profile_view(request):
+    """Profile view for authenticated users"""
+    return render(request, 'users/profile.html')
+
+
+@login_required
+def logout_view(request):
+    """Logout view"""
+    from django.contrib.auth import logout
+    logout(request)
+    messages.success(request, 'You have been logged out successfully')
+    return redirect('users:login')
