@@ -148,4 +148,30 @@ export const authAPI = {
   getRoles: () => api.get('/auth/roles/'),
 };
 
+/**
+ * Store API endpoints
+ */
+export const storeAPI = {
+  /**
+   * Get all public games
+   * @param {string} params - Query parameters
+   * @returns {Promise} API response
+   */
+  getGames: (params = '') => api.get(`/store/public/games/${params ? '?' + params : ''}`),
+
+  /**
+   * Get a single public game by slug
+   * @param {string} slug - Game slug
+   * @returns {Promise} API response
+   */
+  getGame: (slug) => api.get(`/store/public/games/${slug}/`),
+
+  /**
+   * Create a new transaction/order
+   * @param {Object} orderData - Order data
+   * @returns {Promise} API response
+   */
+  createOrder: (orderData) => api.post('/store/orders/', orderData),
+};
+
 export default api;

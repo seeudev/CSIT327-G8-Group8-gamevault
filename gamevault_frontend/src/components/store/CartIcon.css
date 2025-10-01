@@ -1,0 +1,83 @@
+/* CartIcon Component Styles */
+.cart-icon {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.cart-icon-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.cart-icon:hover .cart-icon-container {
+  background: #e9ecef;
+  transform: scale(1.05);
+}
+
+.cart-svg {
+  color: #495057;
+  transition: color 0.3s ease;
+}
+
+.cart-icon:hover .cart-svg {
+  color: #3498db;
+}
+
+.cart-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 2px solid #fff;
+  animation: cartCountPop 0.3s ease-out;
+}
+
+@keyframes cartCountPop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .cart-icon-container {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .cart-svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .cart-count {
+    min-width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+  }
+}

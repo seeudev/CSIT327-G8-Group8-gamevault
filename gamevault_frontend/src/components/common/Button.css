@@ -1,0 +1,247 @@
+/* Button Component Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+}
+
+/* Button Variants */
+.btn-primary {
+  background: #3498db;
+  color: white;
+}
+
+.btn-primary:hover:not(.btn-disabled):not(.btn-loading) {
+  background: #2980b9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.btn-secondary {
+  background: #2c3e50;
+  color: white;
+}
+
+.btn-secondary:hover:not(.btn-disabled):not(.btn-loading) {
+  background: #34495e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
+}
+
+.btn-success {
+  background: #27ae60;
+  color: white;
+}
+
+.btn-success:hover:not(.btn-disabled):not(.btn-loading) {
+  background: #229954;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.btn-danger {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-danger:hover:not(.btn-disabled):not(.btn-loading) {
+  background: #c0392b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.btn-warning {
+  background: #f39c12;
+  color: white;
+}
+
+.btn-warning:hover:not(.btn-disabled):not(.btn-loading) {
+  background: #e67e22;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: #3498db;
+  border: 2px solid #3498db;
+}
+
+.btn-outline:hover:not(.btn-disabled):not(.btn-loading) {
+  background: #3498db;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #7f8c8d;
+}
+
+.btn-ghost:hover:not(.btn-disabled):not(.btn-loading) {
+  background: #f8f9fa;
+  color: #2c3e50;
+}
+
+.btn-link {
+  background: transparent;
+  color: #3498db;
+  text-decoration: underline;
+  padding: 0;
+  border-radius: 0;
+}
+
+.btn-link:hover:not(.btn-disabled):not(.btn-loading) {
+  color: #2980b9;
+  text-decoration: none;
+}
+
+/* Button Sizes */
+.btn-small {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  min-height: 32px;
+}
+
+.btn-medium {
+  padding: 10px 16px;
+  font-size: 1rem;
+  min-height: 40px;
+}
+
+.btn-large {
+  padding: 14px 24px;
+  font-size: 1.125rem;
+  min-height: 48px;
+}
+
+.btn-extra-large {
+  padding: 18px 32px;
+  font-size: 1.25rem;
+  min-height: 56px;
+}
+
+/* Button States */
+.btn-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn-loading {
+  cursor: wait;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn-full-width {
+  width: 100%;
+}
+
+/* Button Content */
+.btn-text {
+  display: inline-block;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon-text {
+  font-size: 1.2em;
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Button Group */
+.btn-group {
+  display: inline-flex;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.btn-group .btn {
+  border-radius: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-right: none;
+}
+
+.btn-group .btn:only-child {
+  border-radius: 8px;
+  border-right: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .btn-large {
+    padding: 12px 20px;
+    font-size: 1rem;
+    min-height: 44px;
+  }
+  
+  .btn-extra-large {
+    padding: 16px 28px;
+    font-size: 1.125rem;
+    min-height: 52px;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn {
+    gap: 6px;
+  }
+  
+  .btn-medium {
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    min-height: 36px;
+  }
+  
+  .btn-large {
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    min-height: 40px;
+  }
+}
