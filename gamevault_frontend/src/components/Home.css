@@ -184,6 +184,40 @@
   border-radius: 4px;
 }
 
+.admin-access {
+  margin-top: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+}
+
+.admin-access h4 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+}
+
+.admin-access p {
+  margin: 0 0 15px 0;
+  opacity: 0.9;
+}
+
+.btn-admin {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-admin:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
 @media (max-width: 768px) {
   .home-header {
     flex-direction: column;

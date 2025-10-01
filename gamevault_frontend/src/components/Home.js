@@ -80,10 +80,23 @@ const Home = () => {
       <div className="info-section">
         <h3>🎮 What's Next?</h3>
         <ul>
-          <li>Module 2: Admin Core - Game management system</li>
+          <li>Module 2: Admin Core - Game management system ✅</li>
           <li>Module 3: Storefront Core - Public game catalog</li>
           <li>Module 4: Foundation & DevOps - Deployment setup</li>
         </ul>
+        
+        {isAdmin && (
+          <div className="admin-access">
+            <h4>🔧 Admin Access</h4>
+            <p>You have admin privileges! Access the admin dashboard to manage games and users.</p>
+            <button 
+              onClick={() => navigate('/admin')}
+              className="btn-admin"
+            >
+              🎮 Go to Admin Dashboard
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
