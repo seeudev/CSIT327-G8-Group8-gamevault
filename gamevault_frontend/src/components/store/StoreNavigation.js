@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { getBrandName } from '../../config/brand';
 import CartIcon from './CartIcon';
 import './StoreNavigation.css';
 
@@ -25,7 +26,7 @@ const StoreNavigation = () => {
       <div className="nav-container">
         <div className="nav-brand">
           <Link to="/store" className="brand-link">
-            <h1>GameVault</h1>
+            <h1>{getBrandName()}</h1>
           </Link>
         </div>
 

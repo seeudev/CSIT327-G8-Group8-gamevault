@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
+import { formatDate } from '../../utils/helpers';
+import Button from '../common/Button';
 import StoreNavigation from './StoreNavigation';
 import './CheckoutSuccess.css';
 
@@ -9,7 +11,6 @@ import './CheckoutSuccess.css';
  * Displays purchase confirmation page
  */
 const CheckoutSuccess = () => {
-  const { formatPrice } = useCart();
 
   return (
     <div className="checkout-success">
@@ -43,7 +44,7 @@ const CheckoutSuccess = () => {
             <div className="detail-item">
               <span className="detail-label">Order Date:</span>
               <span className="detail-value">
-                {new Date().toLocaleDateString('en-US', {
+                {formatDate(new Date(), {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
@@ -65,13 +66,23 @@ const CheckoutSuccess = () => {
           </div>
 
           <div className="success-actions">
-            <Link to="/store" className="continue-shopping-btn">
+            <Button
+              as={Link}
+              to="/store"
+              variant="primary"
+              size="large"
+            >
               Continue Shopping
-            </Link>
+            </Button>
             
-            <Link to="/library" className="view-library-btn">
+            <Button
+              as={Link}
+              to="/library"
+              variant="success"
+              size="large"
+            >
               View My Library
-            </Link>
+            </Button>
           </div>
 
           <div className="support-info">

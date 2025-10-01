@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
+import { formatCurrency } from '../../utils/helpers';
+import Button from '../common/Button';
+import Card from '../common/Card';
 import './GameCard.css';
 
 /**
@@ -16,12 +19,6 @@ const GameCard = ({ game }) => {
     addToCart(game);
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(price);
-  };
 
   const renderRating = (rating, totalReviews) => {
     if (!rating || totalReviews === 0) {
@@ -71,7 +68,7 @@ const GameCard = ({ game }) => {
   };
 
   return (
-    <div className="game-card">
+    <Card className="game-card" hover clickable>
       <Link to={`/store/game/${game.slug}`} className="game-link">
         <div className="game-image-container">
           {game.cover_image_url ? (
@@ -142,15 +139,15 @@ const GameCard = ({ game }) => {
               {game.is_on_sale && game.original_price ? (
                 <>
                   <span className="current-price">
-                    {formatPrice(game.price)}
+                    {formatCurrency(game.price)}
                   </span>
                   <span className="original-price">
-                    {formatPrice(game.original_price)}
+                    {formatCurrency(game.original_price)}
                   </span>
                 </>
               ) : (
                 <span className="current-price">
-                  {formatPrice(game.price)}
+                  {formatCurrency(game.price)}
                 </span>
               )}
             </div>
@@ -160,20 +157,27 @@ const GameCard = ({ game }) => {
 
       <div className="game-actions">
         {game.is_in_stock ? (
-          <button
+          <Button
             onClick={handleAddToCart}
-            className={`add-to-cart-btn ${isInCart(game.id) ? 'in-cart' : ''}`}
+            variant={isInCart(game.id) ? 'success' : 'primary'}
+            size="medium"
+            fullWidth
             disabled={isInCart(game.id)}
           >
             {isInCart(game.id) ? 'In Cart' : 'Add to Cart'}
-          </button>
+          </Button>
         ) : (
-          <button className="add-to-cart-btn disabled" disabled>
+          <Button
+            variant="secondary"
+            size="medium"
+            fullWidth
+            disabled
+          >
             Out of Stock
-          </button>
+          </Button>
         )}
       </div>
-    </div>
+    </Card>
   );
 };
 

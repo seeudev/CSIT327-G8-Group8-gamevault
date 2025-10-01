@@ -3,6 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { storeAPI } from '../../services/api';
+import { formatCurrency, formatDate } from '../../utils/helpers';
+import Button from '../common/Button';
+import Card from '../common/Card';
+import Input from '../common/Input';
 import StoreNavigation from './StoreNavigation';
 import './CartPage.css';
 
@@ -11,7 +15,7 @@ import './CartPage.css';
  * Displays cart items and handles checkout
  */
 const CartPage = () => {
-  const { items, totalItems, totalPrice, updateQuantity, removeFromCart, clearCart, formatPrice, loading, error } = useCart();
+  const { items, totalItems, totalPrice, updateQuantity, removeFromCart, clearCart, loading, error } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -136,7 +140,7 @@ const CartPage = () => {
                 </h3>
                 <p className="item-developer">{item.developer}</p>
                 <p className="item-genre">{item.genre}</p>
-                <p className="item-price">{formatPrice(item.price)}</p>
+                <p className="item-price">{formatCurrency(item.price)}</p>
               </div>
 
               <div className="item-quantity">
@@ -168,7 +172,7 @@ const CartPage = () => {
 
               <div className="item-total">
                 <p className="item-total-price">
-                  {formatPrice(item.price * item.quantity)}
+                  {formatCurrency(item.price * item.quantity)}
                 </p>
                 <button
                   onClick={() => handleRemoveItem(item.id)}
@@ -188,7 +192,7 @@ const CartPage = () => {
             
             <div className="summary-row">
               <span>Subtotal ({totalItems} items):</span>
-              <span>{formatPrice(totalPrice)}</span>
+              <span>{formatCurrency(totalPrice)}</span>
             </div>
             
             <div className="summary-row">
@@ -198,7 +202,7 @@ const CartPage = () => {
             
             <div className="summary-row total">
               <span>Total:</span>
-              <span>{formatPrice(totalPrice)}</span>
+              <span>{formatCurrency(totalPrice)}</span>
             </div>
 
             {checkoutError && (
@@ -208,21 +212,26 @@ const CartPage = () => {
             )}
 
             <div className="checkout-actions">
-              <button
+              <Button
                 onClick={handleCheckout}
-                className="checkout-btn"
+                variant="success"
+                size="large"
+                fullWidth
+                loading={checkoutLoading}
                 disabled={checkoutLoading || loading}
               >
                 {checkoutLoading ? 'Processing...' : 'Proceed to Checkout'}
-              </button>
+              </Button>
               
-              <button
+              <Button
                 onClick={handleClearCart}
-                className="clear-cart-btn"
+                variant="danger"
+                size="medium"
+                fullWidth
                 disabled={checkoutLoading || loading}
               >
                 Clear Cart
-              </button>
+              </Button>
             </div>
 
             <div className="continue-shopping">
