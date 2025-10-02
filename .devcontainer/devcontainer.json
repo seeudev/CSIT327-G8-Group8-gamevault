@@ -1,0 +1,29 @@
+{
+  "name": "GameVault Dev Environment",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "remoteEnv": {
+    "DATABASE_URL": "${{ secrets.DATABASE_URL }}"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/poetry:1": {},
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  "postCreateCommand": "pip install -r requirements.txt",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "batisteo.vscode-django",
+        "github.copilot",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens",
+        "pkief.material-icon-theme",
+        "formulahendry.auto-close-tag",
+        "formulahendry.auto-rename-tag"
+      ]
+    }
+  }
+}
