@@ -64,3 +64,4 @@ coverage.xml
 /staticfiles/
 # macOS
 .DS_Store
+.env
