@@ -183,7 +183,6 @@ gamevault_backend/
 3. **Session-Based Auth**: Standard Django sessions, no JWT or token authentication
 4. **Minimal JavaScript**: Only essential client-side interactions
 5. **No Frontend Framework**: Pure HTML, CSS, and JavaScript
-6. **Clear Comments**: Code is commented to explain purpose and logic
 
 ## Development Workflow
 
@@ -229,17 +228,6 @@ To use Supabase instead of SQLite:
 - Add proper ALLOWED_HOSTS for production
 - Implement proper file upload validation
 - Add payment gateway for real transactions
-
-## Future Enhancements
-
-- Add user profile editing
-- Implement game reviews and ratings
-- Add wishlist functionality
-- Implement actual payment processing
-- Add email notifications
-- Improve admin dashboard with charts
-- Add game categorization and tagging
-- Implement search optimization
 
 ## License
 
