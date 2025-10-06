@@ -38,6 +38,7 @@ For SQLite (development):
 
 For Supabase PostgreSQL (production):
 ```
+Session Pooler
 DATABASE_URL=postgresql://user:password@host:port/database
 ```
 
@@ -48,7 +49,7 @@ cd gamevault_backend
 python manage.py migrate
 ```
 
-### 5. Create Admin User
+### 5. Create Admin User (If SQLite)
 
 ```bash
 python create_admin.py
@@ -140,7 +141,6 @@ The application uses the following simple models:
 - Update cart quantities
 - Checkout and complete purchase
 - View transaction history
-- Download purchased games
 
 ### Admin Features (requires is_admin=True)
 - Access admin dashboard
@@ -176,11 +176,11 @@ gamevault_backend/
     └── admin.py             # Django admin config
 ```
 
-## Key Design Decisions
+## Key Design Decisions in System Design
 
-1. **Simplicity First**: No complex design patterns, decorators, or abstractions unless absolutely necessary
+1. **Simplicity First**: 
 2. **Function-Based Views**: All views are simple functions, no class-based views
-3. **Session-Based Auth**: Standard Django sessions, no JWT or token authentication
+3. **Session-Based Auth**: Standard Django sessions
 4. **Minimal JavaScript**: Only essential client-side interactions
 5. **No Frontend Framework**: Pure HTML, CSS, and JavaScript
 
@@ -212,7 +212,7 @@ To use Supabase instead of SQLite:
 1. Get your Supabase connection string from the Supabase dashboard
 2. Update `.env` file:
    ```
-   DATABASE_URL=postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres
+   DATABASE_URL=postgresql://postgres.kdosumxcrhtvjrunnawe:[YOUR-PASSWORD]@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres
    ```
 3. Run migrations again:
    ```bash
