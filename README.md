@@ -1,7 +1,6 @@
-# GameVault - Refactored Version
+# GameVault
 
 A simple, functional game store selling digital keys web application built with Django, PostgreSQL (Supabase), and vanilla HTML/CSS/JavaScript.
-
 
 ## Technology Stack
 
@@ -9,6 +8,79 @@ A simple, functional game store selling digital keys web application built with 
 - **Database**: PostgreSQL (Supabase) 
 - **Frontend**: Vanilla HTML, CSS, and JavaScript (no frameworks)
 - **Dependencies**: Minimal - only essential packages
+
+## Setup & Run Instructions
+
+### 1. Set up Virtual Environment
+
+```bash
+python -m venv env
+source env/bin/activate  # On Linux/Mac
+# or
+env/Scripts/activate     # On Windows
+```
+
+### 2. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configure Database
+
+Edit the `.env` file in the root directory:
+
+For SQLite (development):
+```
+# Leave DATABASE_URL commented out to use SQLite
+#DATABASE_URL=postgresql://...
+```
+
+For Supabase PostgreSQL (production):
+```
+DATABASE_URL=postgresql://user:password@host:port/database
+```
+
+### 4. Run Migrations
+
+```bash
+cd gamevault_backend
+python manage.py migrate
+```
+
+### 5. Create Admin User
+
+```bash
+python create_admin.py
+```
+
+Default credentials:
+- Username: `admin`
+- Password: `admin123`
+
+### 6. Run Development Server
+
+```bash
+python manage.py runserver
+```
+
+Visit `http://127.0.0.1:8000/` in your browser.
+
+## Team Members
+
+| Name | Role | Email |
+|------|------|-------|
+| Christian Harry R. Pancito | Developer | christianharry.pancito@cit.edu |
+| Kelvin Chad L. Obejero | Developer | kelvinchad.obejero@cit.edu |
+| Khryzia A. Ortega | Developer | khryzia.ortega@cit.edu |
+
+## Deployed Link
+
+TBA
+
+---
+
+## Additional Project Details
 
 ## Database Schema
 
@@ -53,55 +125,7 @@ The application uses the following simple models:
 - action_type, target_game_id (Foreign Key)
 - timestamp, notes
 
-## Setup Instructions
 
-### 1. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Configure Database
-
-Edit the `.env` file in the root directory:
-
-For SQLite (development):
-```
-# Leave DATABASE_URL commented out to use SQLite
-#DATABASE_URL=postgresql://...
-```
-
-For Supabase PostgreSQL (production):
-```
-DATABASE_URL=postgresql://user:password@host:port/database
-```
-
-### 3. Run Migrations
-
-```bash
-cd gamevault_backend
-python manage.py migrate
-```
-
-### 4. Create Admin User
-
-A script is provided to create an admin user:
-
-```bash
-python create_admin.py
-```
-
-Default credentials:
-- Username: `admin`
-- Password: `admin123`
-
-### 5. Run Development Server
-
-```bash
-python manage.py runserver
-```
-
-Visit `http://127.0.0.1:8000/` in your browser.
 
 ## Features
 
