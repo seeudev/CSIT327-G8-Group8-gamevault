@@ -4,10 +4,15 @@ Uses Django's built-in session-based authentication.
 """
 
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+import json
 from .models import User
 
 
@@ -119,3 +124,132 @@ def profile_view(request):
     return render(request, 'users/profile.html', {
         'user': request.user
     })
+
+
+@login_required
+@require_http_methods(["PUT"])
+def update_profile_api(request, user_id):
+    """
+    API endpoint to update user profile.
+    PUT /api/users/:id
+    Requires authentication and authorization (users can only update their own profile).
+    """
+    # Authorization check - users can only update their own profile
+    if request.user.id != user_id:
+        return JsonResponse({
+            'success': False,
+            'error': 'Unauthorized: You can only update your own profile'
+        }, status=403)
+    
+    try:
+        # Parse JSON data from request body
+        data = json.loads(request.body)
+        
+        username = data.get('username', '').strip()
+        email = data.get('email', '').strip()
+        current_password = data.get('current_password', '')
+        new_password = data.get('new_password', '')
+        
+        user = request.user
+        
+        # Validation
+        errors = {}
+        
+        # Validate username
+        if username:
+            if username != user.username:
+                if User.objects.filter(username=username).exists():
+                    errors['username'] = 'Username already exists'
+                else:
+                    user.username = username
+        
+        # Validate email
+        if email:
+            if email != user.email:
+                if User.objects.filter(email=email).exists():
+                    errors['email'] = 'Email already exists'
+                else:
+                    user.email = email
+        
+        # Validate password change
+        if new_password:
+            if not current_password:
+                errors['current_password'] = 'Current password is required to set a new password'
+            elif not user.check_password(current_password):
+                errors['current_password'] = 'Current password is incorrect'
+            else:
+                # Validate new password strength
+                try:
+                    validate_password(new_password, user)
+                    user.set_password(new_password)
+                    # Update session to prevent logout after password change
+                    update_session_auth_hash(request, user)
+                except ValidationError as e:
+                    errors['new_password'] = list(e.messages)
+        
+        # If there are validation errors, return them
+        if errors:
+            return JsonResponse({
+                'success': False,
+                'errors': errors
+            }, status=400)
+        
+        # Save user changes
+        user.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Profile updated successfully',
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_account_api(request, user_id):
+    """
+    API endpoint to delete user account.
+    DELETE /api/users/:id
+    Requires authentication and authorization (users can only delete their own account).
+    """
+    # Authorization check - users can only delete their own account
+    if request.user.id != user_id:
+        return JsonResponse({
+            'success': False,
+            'error': 'Unauthorized: You can only delete your own account'
+        }, status=403)
+    
+    try:
+        user = request.user
+        
+        # Log the user out before deleting
+        logout(request)
+        
+        # Delete the user account
+        user.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Account deleted successfully'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
