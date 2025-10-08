@@ -141,12 +141,84 @@ The application uses the following simple models:
 - Update cart quantities
 - Checkout and complete purchase
 - View transaction history
+- **Edit profile** (username, email, password)
+- **Delete account** with confirmation
 
 ### Admin Features (requires is_admin=True)
 - Access admin dashboard
 - Create, edit, and delete games
 - View admin action logs
 - View statistics
+
+## API Endpoints
+
+### User Profile Management (Module 4)
+
+#### Update User Profile
+**PUT** `/auth/api/users/:id/`
+- **Authentication**: Required (session-based)
+- **Authorization**: Users can only update their own profile
+- **Request Body**:
+  ```json
+  {
+    "username": "newusername",
+    "email": "newemail@example.com",
+    "current_password": "currentpass123",  // Required only if changing password
+    "new_password": "newpass123"           // Optional
+  }
+  ```
+- **Response (Success)**:
+  ```json
+  {
+    "success": true,
+    "message": "Profile updated successfully",
+    "user": {
+      "id": 1,
+      "username": "newusername",
+      "email": "newemail@example.com"
+    }
+  }
+  ```
+- **Response (Error)**:
+  ```json
+  {
+    "success": false,
+    "errors": {
+      "username": "Username already exists",
+      "email": "Email already exists",
+      "current_password": "Current password is incorrect",
+      "new_password": ["Password must be at least 8 characters long"]
+    }
+  }
+  ```
+- **Validation**:
+  - Username uniqueness check
+  - Email uniqueness check
+  - Password strength validation (Django's built-in validators)
+  - Current password verification for password changes
+
+#### Delete User Account
+**DELETE** `/auth/api/users/:id/delete/`
+- **Authentication**: Required (session-based)
+- **Authorization**: Users can only delete their own account
+- **Response (Success)**:
+  ```json
+  {
+    "success": true,
+    "message": "Account deleted successfully"
+  }
+  ```
+- **Response (Error)**:
+  ```json
+  {
+    "success": false,
+    "error": "Unauthorized: You can only delete your own account"
+  }
+  ```
+- **Side Effects**:
+  - User is logged out immediately
+  - All user data is permanently deleted
+
 
 ## Project Structure
 

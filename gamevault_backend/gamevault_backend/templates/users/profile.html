@@ -3,17 +3,552 @@
 
 {% block title %}Profile - GameVault{% endblock %}
 
+{% block extra_css %}
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .profile-tabs {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 2px solid #ccc;
+    }
+    
+    .profile-tab {
+        padding: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        color: #666;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+    }
+    
+    .profile-tab.active {
+        color: #333;
+        font-weight: bold;
+        border-bottom-color: #333;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    .profile-info {
+        background: #f9f9f9;
+        padding: 1.5rem;
+        border-radius: 4px;
+        margin-bottom: 2rem;
+    }
+    
+    .profile-info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .profile-info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .profile-info-label {
+        font-weight: bold;
+        color: #555;
+    }
+    
+    .profile-info-value {
+        color: #333;
+    }
+    
+    .edit-section {
+        margin-top: 2rem;
+    }
+    
+    .password-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e0e0e0;
+    }
+    
+    .danger-zone {
+        margin-top: 3rem;
+        padding: 2rem;
+        border: 2px solid #dc3545;
+        border-radius: 4px;
+        background: #fff5f5;
+    }
+    
+    .danger-zone h3 {
+        color: #dc3545;
+        margin-bottom: 1rem;
+    }
+    
+    .danger-zone p {
+        color: #666;
+        margin-bottom: 1rem;
+    }
+    
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        border-radius: 4px;
+    }
+    
+    .btn-danger:hover {
+        background: #c82333;
+    }
+    
+    .btn-primary {
+        background: #007bff;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        border-radius: 4px;
+    }
+    
+    .btn-primary:hover {
+        background: #0056b3;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        border-radius: 4px;
+    }
+    
+    .btn-secondary:hover {
+        background: #545b62;
+    }
+    
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+    
+    .modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal-content {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 4px;
+        max-width: 500px;
+        width: 90%;
+    }
+    
+    .modal-header {
+        margin-bottom: 1rem;
+    }
+    
+    .modal-header h2 {
+        color: #dc3545;
+    }
+    
+    .modal-body {
+        margin-bottom: 1.5rem;
+    }
+    
+    .modal-footer {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+    }
+    
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .success-message {
+        color: #28a745;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .password-requirements {
+        font-size: 0.875rem;
+        color: #666;
+        margin-top: 0.5rem;
+        padding-left: 1.5rem;
+    }
+    
+    .password-requirements li {
+        margin: 0.25rem 0;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="profile-container">
-    <h1>User Profile</h1>
-    <div class="profile-info">
-        <p><strong>Username:</strong> {{ user.username }}</p>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Admin:</strong> {% if user.is_admin %}Yes{% else %}No{% endif %}</p>
-        <p><strong>Member Since:</strong> {{ user.registration_date|date:"F d, Y" }}</p>
+    <h1>My Profile</h1>
+    
+    <div class="profile-tabs">
+        <button class="profile-tab active" data-tab="view">View Profile</button>
+        <button class="profile-tab" data-tab="edit">Edit Profile</button>
     </div>
-    <div class="profile-actions">
-        <a href="{% url 'store:transaction_history' %}" class="button">View Purchase History</a>
+    
+    <!-- View Profile Tab -->
+    <div id="view-tab" class="tab-content active">
+        <div class="profile-info">
+            <div class="profile-info-item">
+                <span class="profile-info-label">Username:</span>
+                <span class="profile-info-value">{{ user.username }}</span>
+            </div>
+            <div class="profile-info-item">
+                <span class="profile-info-label">Email:</span>
+                <span class="profile-info-value">{{ user.email }}</span>
+            </div>
+            <div class="profile-info-item">
+                <span class="profile-info-label">Account Type:</span>
+                <span class="profile-info-value">{% if user.is_admin %}Administrator{% else %}Regular User{% endif %}</span>
+            </div>
+            <div class="profile-info-item">
+                <span class="profile-info-label">Member Since:</span>
+                <span class="profile-info-value">{{ user.registration_date|date:"F d, Y" }}</span>
+            </div>
+        </div>
+        
+        <div class="profile-actions">
+            <a href="{% url 'store:transaction_history' %}" class="button">View Purchase History</a>
+        </div>
+    </div>
+    
+    <!-- Edit Profile Tab -->
+    <div id="edit-tab" class="tab-content">
+        <div class="edit-section">
+            <h2>Edit Profile Information</h2>
+            
+            <form id="edit-profile-form">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" value="{{ user.username }}" required>
+                    <div id="username-error" class="error-message"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" value="{{ user.email }}" required>
+                    <div id="email-error" class="error-message"></div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </div>
+                <div id="profile-update-message"></div>
+            </form>
+        </div>
+        
+        <div class="password-section">
+            <h2>Change Password</h2>
+            
+            <form id="change-password-form">
+                <div class="form-group">
+                    <label for="current_password">Current Password:</label>
+                    <input type="password" id="current_password" name="current_password" required>
+                    <div id="current-password-error" class="error-message"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="new_password">New Password:</label>
+                    <input type="password" id="new_password" name="new_password" required>
+                    <ul class="password-requirements">
+                        <li>At least 8 characters long</li>
+                        <li>Cannot be too similar to your username or email</li>
+                        <li>Cannot be a commonly used password</li>
+                        <li>Cannot be entirely numeric</li>
+                    </ul>
+                    <div id="new-password-error" class="error-message"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password">Confirm New Password:</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                    <div id="confirm-password-error" class="error-message"></div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Change Password</button>
+                </div>
+                <div id="password-update-message"></div>
+            </form>
+        </div>
+        
+        <div class="danger-zone">
+            <h3>⚠️ Danger Zone</h3>
+            <p>Once you delete your account, there is no going back. This action cannot be undone.</p>
+            <button type="button" class="btn-danger" id="delete-account-btn">Delete My Account</button>
+        </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>⚠️ Confirm Account Deletion</h2>
+        </div>
+        <div class="modal-body">
+            <p><strong>Are you absolutely sure?</strong></p>
+            <p>This action cannot be undone. This will permanently delete your account and remove all your data from our servers.</p>
+            <p>Type <strong>DELETE</strong> to confirm:</p>
+            <input type="text" id="delete-confirm-input" class="form-control" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+            <div id="delete-error" class="error-message"></div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="cancel-delete-btn">Cancel</button>
+            <button type="button" class="btn-danger" id="confirm-delete-btn">Delete Account</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const userId = {{ user.id }};
+    
+    // Tab switching
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs and content
+            document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Show corresponding content
+            const tabName = this.getAttribute('data-tab');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        });
+    });
+    
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    const csrftoken = getCookie('csrftoken');
+    
+    // Edit profile form submission
+    document.getElementById('edit-profile-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Clear previous errors
+        document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+        document.getElementById('profile-update-message').innerHTML = '';
+        
+        const formData = {
+            username: document.getElementById('username').value,
+            email: document.getElementById('email').value
+        };
+        
+        try {
+            const response = await fetch(`/auth/api/users/${userId}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('profile-update-message').innerHTML = 
+                    '<div class="success-message" style="margin-top: 1rem; padding: 1rem; background: #d4edda; border: 1px solid #c3e6cb; color: #155724;">Profile updated successfully!</div>';
+                
+                // Update the view tab
+                document.querySelector('#view-tab .profile-info-value:nth-of-type(1)').textContent = data.user.username;
+                document.querySelector('#view-tab .profile-info-value:nth-of-type(2)').textContent = data.user.email;
+                
+                // Update navigation
+                const profileLink = document.querySelector('.nav-links a[href*="profile"]');
+                if (profileLink) {
+                    profileLink.textContent = `Profile (${data.user.username})`;
+                }
+            } else {
+                if (data.errors) {
+                    for (const [field, message] of Object.entries(data.errors)) {
+                        const errorElement = document.getElementById(`${field}-error`);
+                        if (errorElement) {
+                            errorElement.textContent = Array.isArray(message) ? message.join(', ') : message;
+                        }
+                    }
+                } else {
+                    document.getElementById('profile-update-message').innerHTML = 
+                        `<div class="error-message" style="margin-top: 1rem; padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24;">${data.error || 'An error occurred'}</div>`;
+                }
+            }
+        } catch (error) {
+            document.getElementById('profile-update-message').innerHTML = 
+                '<div class="error-message" style="margin-top: 1rem; padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24;">An error occurred. Please try again.</div>';
+        }
+    });
+    
+    // Change password form submission
+    document.getElementById('change-password-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Clear previous errors
+        document.getElementById('current-password-error').textContent = '';
+        document.getElementById('new-password-error').textContent = '';
+        document.getElementById('confirm-password-error').textContent = '';
+        document.getElementById('password-update-message').innerHTML = '';
+        
+        const currentPassword = document.getElementById('current_password').value;
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        // Client-side validation
+        if (newPassword !== confirmPassword) {
+            document.getElementById('confirm-password-error').textContent = 'Passwords do not match';
+            return;
+        }
+        
+        if (newPassword.length < 8) {
+            document.getElementById('new-password-error').textContent = 'Password must be at least 8 characters long';
+            return;
+        }
+        
+        const formData = {
+            current_password: currentPassword,
+            new_password: newPassword
+        };
+        
+        try {
+            const response = await fetch(`/auth/api/users/${userId}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('password-update-message').innerHTML = 
+                    '<div class="success-message" style="margin-top: 1rem; padding: 1rem; background: #d4edda; border: 1px solid #c3e6cb; color: #155724;">Password changed successfully!</div>';
+                
+                // Clear form
+                document.getElementById('change-password-form').reset();
+            } else {
+                if (data.errors) {
+                    for (const [field, message] of Object.entries(data.errors)) {
+                        let errorElement;
+                        if (field === 'current_password') {
+                            errorElement = document.getElementById('current-password-error');
+                        } else if (field === 'new_password') {
+                            errorElement = document.getElementById('new-password-error');
+                        }
+                        if (errorElement) {
+                            errorElement.textContent = Array.isArray(message) ? message.join(', ') : message;
+                        }
+                    }
+                } else {
+                    document.getElementById('password-update-message').innerHTML = 
+                        `<div class="error-message" style="margin-top: 1rem; padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24;">${data.error || 'An error occurred'}</div>`;
+                }
+            }
+        } catch (error) {
+            document.getElementById('password-update-message').innerHTML = 
+                '<div class="error-message" style="margin-top: 1rem; padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24;">An error occurred. Please try again.</div>';
+        }
+    });
+    
+    // Delete account modal
+    const deleteModal = document.getElementById('delete-modal');
+    const deleteBtn = document.getElementById('delete-account-btn');
+    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    const deleteConfirmInput = document.getElementById('delete-confirm-input');
+    
+    deleteBtn.addEventListener('click', function() {
+        deleteModal.classList.add('active');
+        deleteConfirmInput.value = '';
+        document.getElementById('delete-error').textContent = '';
+    });
+    
+    cancelDeleteBtn.addEventListener('click', function() {
+        deleteModal.classList.remove('active');
+    });
+    
+    // Close modal when clicking outside
+    deleteModal.addEventListener('click', function(e) {
+        if (e.target === deleteModal) {
+            deleteModal.classList.remove('active');
+        }
+    });
+    
+    confirmDeleteBtn.addEventListener('click', async function() {
+        const confirmText = deleteConfirmInput.value.trim();
+        
+        if (confirmText !== 'DELETE') {
+            document.getElementById('delete-error').textContent = 'Please type DELETE to confirm';
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/auth/api/users/${userId}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show success message and redirect
+                alert('Your account has been deleted successfully.');
+                window.location.href = '/auth/login/';
+            } else {
+                document.getElementById('delete-error').textContent = data.error || 'An error occurred';
+            }
+        } catch (error) {
+            document.getElementById('delete-error').textContent = 'An error occurred. Please try again.';
+        }
+    });
+</script>
 {% endblock %}
