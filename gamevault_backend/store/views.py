@@ -2,7 +2,7 @@
 Simple store views for GameVault.
 Handles game listing, cart management, checkout, and transactions.
 """
-
+from django.contrib.auth.models import update_last_login
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -33,7 +33,37 @@ def game_list(request):
     category = request.GET.get('category', '')
     if category:
         games = games.filter(category__iexact=category)
-    
+
+    # Filter by price range
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        games = games.filter(price__gte=min_price)
+    if max_price:
+        games = games.filter(price__lte=max_price)
+
+    # Filter release date range
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    if start_date:
+        games = games.filter(upload_date__date__gte=start_date)
+    if end_date:
+        games = games.filter(upload_date__date__lte=end_date)
+
+    # Sorting
+    sort_by = request.GET.get('sort', '')
+    if sort_by == 'price_low':
+        games = games.order_by('price')
+    elif sort_by == 'price_high':
+        games = games.order_by('-price')
+    elif sort_by == 'newest':
+        games = games.order_by('-upload_date')
+    elif sort_by == 'oldest':
+        games = games.order_by('upload_date')
+    # Popularity
+    elif sort_by == 'popular' and hasattr(Game, 'popularity'):
+        games = games.order_by('-popularity')
+
     # Get all unique categories for filter
     categories = Game.objects.values_list('category', flat=True).distinct()
     
@@ -42,6 +72,11 @@ def game_list(request):
         'categories': categories,
         'search_query': search_query,
         'selected_category': category,
+        'selected_sort': sort_by,
+        'min_price': min_price,
+        'max_price': max_price,
+        'start_date': start_date,
+        'end_date': end_date,
     })
 
 
