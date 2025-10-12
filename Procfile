@@ -1,1 +1,1 @@
-web: gunicorn gamevault_backend.gamevault_backend.wsgi
+web: gunicorn gamevault_backend.wsgi
