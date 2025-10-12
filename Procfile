@@ -1,1 +1,1 @@
-web: cd gamevault_backend && gunicorn gamevault_backend.wsgi:application
+web: gunicorn gamevault_backend.wsgi:application --chdir gamevault_backend
