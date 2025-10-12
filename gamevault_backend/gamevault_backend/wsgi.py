@@ -30,7 +30,8 @@ print(f"WSGI DEBUG: sys.path[0] = {sys.path[0]}")
 current_settings = os.environ.get('DJANGO_SETTINGS_MODULE')
 print(f"WSGI DEBUG: Current DJANGO_SETTINGS_MODULE = {current_settings}")
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gamevault_backend.settings')
+# Force the correct settings module (don't use setdefault since it's already set incorrectly)
+os.environ['DJANGO_SETTINGS_MODULE'] = 'gamevault_backend.settings'
 
 # Verify what it's set to now
 final_settings = os.environ.get('DJANGO_SETTINGS_MODULE')
