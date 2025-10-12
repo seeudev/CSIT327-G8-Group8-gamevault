@@ -1,1 +1,0 @@
-web: gunicorn gamevault_backend.wsgi:application --chdir gamevault_backend
