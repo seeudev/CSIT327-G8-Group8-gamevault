@@ -14,10 +14,7 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'gamevault_backend.settings')
-
 BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(BASE_DIR))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-zf4(x91kp(kqul1zos2smnu%y)s@bh9w5jk&s%2u*smvjy%zvy')
