@@ -1,1 +1,1 @@
-web: gunicorn CSIT327-G8-Group8-gamevault.wsgi
+web: gunicorn gamevault_backend.wsgi
