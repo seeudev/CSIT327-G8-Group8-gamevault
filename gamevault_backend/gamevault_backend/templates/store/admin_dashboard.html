@@ -5,54 +5,183 @@
 
 {% block content %}
 <div class="admin-dashboard-container">
-    <h1>Admin Dashboard</h1>
+    <div class="admin-header">
+        <h1>Admin Dashboard</h1>
+        <p class="welcome-text">Welcome back, {{ request.user.username }}!</p>
+    </div>
     
-    <div class="stats-grid">
-        <div class="stat-card">
-            <h3>Total Games</h3>
-            <p class="stat-number">{{ total_games }}</p>
+    <!-- Metrics Cards -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon">
+                <span>👥</span>
+            </div>
+            <div class="metric-content">
+                <h3 class="metric-label">Total Users</h3>
+                <p class="metric-value">{{ total_users }}</p>
+            </div>
         </div>
-        <div class="stat-card">
-            <h3>Total Users</h3>
-            <p class="stat-number">{{ total_users }}</p>
+        
+        <div class="metric-card">
+            <div class="metric-icon">
+                <span>💰</span>
+            </div>
+            <div class="metric-content">
+                <h3 class="metric-label">Total Sales</h3>
+                <p class="metric-value">${{ total_sales|floatformat:2 }}</p>
+            </div>
         </div>
-        <div class="stat-card">
-            <h3>Total Transactions</h3>
-            <p class="stat-number">{{ total_transactions }}</p>
+        
+        <div class="metric-card">
+            <div class="metric-icon">
+                <span>🎮</span>
+            </div>
+            <div class="metric-content">
+                <h3 class="metric-label">Total Games</h3>
+                <p class="metric-value">{{ total_games }}</p>
+            </div>
+        </div>
+        
+        <div class="metric-card">
+            <div class="metric-icon">
+                <span>📊</span>
+            </div>
+            <div class="metric-content">
+                <h3 class="metric-label">Transactions</h3>
+                <p class="metric-value">{{ total_transactions }}</p>
+            </div>
         </div>
     </div>
     
-    <div class="admin-actions">
-        <a href="{% url 'store:admin_game_list' %}" class="button">Manage Games</a>
-        <a href="{% url 'store:admin_game_create' %}" class="button">Add New Game</a>
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+        <h2>Quick Actions</h2>
+        <div class="quick-actions-grid">
+            <a href="{% url 'store:admin_game_create' %}" class="action-button primary">
+                <span class="action-icon">➕</span>
+                <span class="action-text">Add New Game</span>
+            </a>
+            <a href="{% url 'store:admin_game_list' %}" class="action-button secondary">
+                <span class="action-icon">🎮</span>
+                <span class="action-text">Manage Games</span>
+            </a>
+            <a href="{% url 'store:admin_users' %}" class="action-button secondary">
+                <span class="action-icon">👥</span>
+                <span class="action-text">View Users</span>
+            </a>
+            <a href="{% url 'store:admin_transactions' %}" class="action-button secondary">
+                <span class="action-icon">💳</span>
+                <span class="action-text">View Transactions</span>
+            </a>
+        </div>
     </div>
     
-    <h2>Recent Admin Actions</h2>
-    <table class="action-log-table">
-        <thead>
-            <tr>
-                <th>Admin</th>
-                <th>Action</th>
-                <th>Game</th>
-                <th>Time</th>
-                <th>Notes</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for action in recent_actions %}
-                <tr>
-                    <td>{{ action.admin.username }}</td>
-                    <td>{{ action.get_action_type_display }}</td>
-                    <td>{% if action.target_game %}{{ action.target_game.title }}{% else %}N/A{% endif %}</td>
-                    <td>{{ action.timestamp|date:"M d, Y H:i" }}</td>
-                    <td>{{ action.notes|truncatewords:10 }}</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="5">No recent actions</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Most Downloaded Games -->
+    <div class="most-downloaded-section">
+        <h2>Most Downloaded Games</h2>
+        <div class="downloads-table-wrapper">
+            <table class="downloads-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Game Title</th>
+                        <th>Downloads</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for game in most_downloaded %}
+                        <tr>
+                            <td class="rank">{{ forloop.counter }}</td>
+                            <td class="game-title">{{ game.game__title }}</td>
+                            <td class="download-count">{{ game.download_count }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3" class="empty-state">No download data available</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Recent Admin Actions -->
+    <div class="recent-actions-section">
+        <h2>Recent Admin Actions</h2>
+        <div class="actions-table-wrapper">
+            <table class="action-log-table">
+                <thead>
+                    <tr>
+                        <th>Admin</th>
+                        <th>Action</th>
+                        <th>Game</th>
+                        <th>Time</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for action in recent_actions %}
+                        <tr>
+                            <td>{{ action.admin.username }}</td>
+                            <td>
+                                <span class="action-badge action-{{ action.action_type }}">
+                                    {{ action.get_action_type_display }}
+                                </span>
+                            </td>
+                            <td>{% if action.target_game %}{{ action.target_game.title }}{% else %}N/A{% endif %}</td>
+                            <td>{{ action.timestamp|date:"M d, Y H:i" }}</td>
+                            <td>{{ action.notes|truncatewords:10 }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="empty-state">No recent actions</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
+<!-- Sidebar Navigation -->
+<nav class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-header">
+        <h3>Admin Panel</h3>
+    </div>
+    <ul class="sidebar-menu">
+        <li class="menu-item active">
+            <a href="{% url 'store:admin_dashboard' %}">
+                <span class="menu-icon">📊</span>
+                <span class="menu-text">Dashboard</span>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="{% url 'store:admin_game_list' %}">
+                <span class="menu-icon">🎮</span>
+                <span class="menu-text">Games</span>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="{% url 'store:admin_users' %}">
+                <span class="menu-icon">👥</span>
+                <span class="menu-text">Users</span>
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="{% url 'store:admin_transactions' %}">
+                <span class="menu-icon">💳</span>
+                <span class="menu-text">Transactions</span>
+            </a>
+        </li>
+        <li class="menu-divider"></li>
+        <li class="menu-item">
+            <a href="{% url 'store:game_list' %}">
+                <span class="menu-icon">🏠</span>
+                <span class="menu-text">Back to Store</span>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<script src="{% static 'js/admin.js' %}"></script>
 {% endblock %}

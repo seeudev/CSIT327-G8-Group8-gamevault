@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Transactions - Admin - GameVault{% endblock %}
+
+{% block content %}
+<div class="admin-page-container">
+    <!-- Sidebar Navigation -->
+    <nav class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <h3>Admin Panel</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="{% url 'store:admin_dashboard' %}">
+                    <span class="menu-icon">📊</span>
+                    <span class="menu-text">Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'store:admin_game_list' %}">
+                    <span class="menu-icon">🎮</span>
+                    <span class="menu-text">Games</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'store:admin_users' %}">
+                    <span class="menu-icon">👥</span>
+                    <span class="menu-text">Users</span>
+                </a>
+            </li>
+            <li class="menu-item active">
+                <a href="{% url 'store:admin_transactions' %}">
+                    <span class="menu-icon">💳</span>
+                    <span class="menu-text">Transactions</span>
+                </a>
+            </li>
+            <li class="menu-divider"></li>
+            <li class="menu-item">
+                <a href="{% url 'store:game_list' %}">
+                    <span class="menu-icon">🏠</span>
+                    <span class="menu-text">Back to Store</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="admin-main-content">
+        <div class="admin-header">
+            <h1>Manage Transactions</h1>
+            <p class="page-description">View and monitor all transactions</p>
+        </div>
+        
+        <!-- Filters and Search -->
+        <div class="table-controls">
+            <div class="filter-group">
+                <label for="statusFilter">Status:</label>
+                <select id="statusFilter" class="filter-select" onchange="filterTransactions()">
+                    <option value="">All Status</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                    <option value="failed">Failed</option>
+                    <option value="refunded">Refunded</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="startDate">From:</label>
+                <input type="date" id="startDate" class="date-input" onchange="filterTransactions()">
+            </div>
+            
+            <div class="filter-group">
+                <label for="endDate">To:</label>
+                <input type="date" id="endDate" class="date-input" onchange="filterTransactions()">
+            </div>
+            
+            <button class="btn-reset" onclick="resetFilters()">Reset Filters</button>
+        </div>
+        
+        <!-- Transactions Table -->
+        <div class="data-table-wrapper">
+            <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading transactions...</p>
+            </div>
+            
+            <table class="data-table" id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('id')">Transaction ID <span class="sort-indicator">⇅</span></th>
+                        <th onclick="sortTable('username')">Customer <span class="sort-indicator">⇅</span></th>
+                        <th onclick="sortTable('user_email')">Email <span class="sort-indicator">⇅</span></th>
+                        <th onclick="sortTable('transaction_date')">Date <span class="sort-indicator">⇅</span></th>
+                        <th onclick="sortTable('total_amount')">Amount <span class="sort-indicator">⇅</span></th>
+                        <th onclick="sortTable('items_count')">Items <span class="sort-indicator">⇅</span></th>
+                        <th onclick="sortTable('payment_status')">Status <span class="sort-indicator">⇅</span></th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsTableBody">
+                    <!-- Data loaded via JavaScript -->
+                </tbody>
+            </table>
+            
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <p>No transactions found</p>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination-controls" id="paginationControls">
+            <div class="results-info">
+                <span id="resultsCount">Showing 0 transactions</span>
+                <span id="totalRevenue" class="total-revenue"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction Detail Modal -->
+<div id="transactionModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Transaction Details</h2>
+        <div id="modalBody">
+            <!-- Transaction details loaded here -->
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/admin.js' %}"></script>
+<script>
+    // Load transactions when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadTransactions();
+    });
+    
+    function loadTransactions() {
+        showLoading();
+        
+        const statusFilter = document.getElementById('statusFilter').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        let url = '/store/api/transactions/?';
+        if (statusFilter) url += `status=${statusFilter}&`;
+        if (startDate) url += `start_date=${startDate}&`;
+        if (endDate) url += `end_date=${endDate}&`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    displayTransactions(data.transactions);
+                    updateResultsCount(data.total, data.transactions);
+                } else {
+                    showError(data.error);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('Error loading transactions: ' + error.message);
+            });
+    }
+    
+    function displayTransactions(transactions) {
+        const tbody = document.getElementById('transactionsTableBody');
+        const emptyState = document.getElementById('emptyState');
+        const table = document.getElementById('transactionsTable');
+        
+        if (transactions.length === 0) {
+            table.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+        
+        table.style.display = 'table';
+        emptyState.style.display = 'none';
+        
+        tbody.innerHTML = transactions.map(transaction => `
+            <tr>
+                <td>#${transaction.id}</td>
+                <td>${escapeHtml(transaction.username)}</td>
+                <td>${escapeHtml(transaction.user_email)}</td>
+                <td>${formatDate(transaction.transaction_date)}</td>
+                <td class="amount">$${transaction.total_amount.toFixed(2)}</td>
+                <td>${transaction.items_count}</td>
+                <td>
+                    <span class="status-badge status-${transaction.payment_status}">
+                        ${capitalizeFirst(transaction.payment_status)}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn-view" onclick="viewTransactionDetails(${transaction.id}, ${escapeHtml(JSON.stringify(transaction))})">
+                        View Details
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+    
+    function viewTransactionDetails(id, transaction) {
+        const modal = document.getElementById('transactionModal');
+        const modalBody = document.getElementById('modalBody');
+        
+        const items = transaction.items.map((item, index) => `
+            <div class="item-row">
+                <span>${index + 1}. ${escapeHtml(item.game_title)}</span>
+                <span class="item-price">$${item.price.toFixed(2)}</span>
+            </div>
+        `).join('');
+        
+        modalBody.innerHTML = `
+            <div class="transaction-detail">
+                <div class="detail-row">
+                    <strong>Transaction ID:</strong> #${transaction.id}
+                </div>
+                <div class="detail-row">
+                    <strong>Customer:</strong> ${escapeHtml(transaction.username)} (${escapeHtml(transaction.user_email)})
+                </div>
+                <div class="detail-row">
+                    <strong>Date:</strong> ${formatDate(transaction.transaction_date)}
+                </div>
+                <div class="detail-row">
+                    <strong>Status:</strong> <span class="status-badge status-${transaction.payment_status}">${capitalizeFirst(transaction.payment_status)}</span>
+                </div>
+                <div class="detail-section">
+                    <strong>Items Purchased:</strong>
+                    <div class="items-list">
+                        ${items}
+                    </div>
+                </div>
+                <div class="detail-row total-row">
+                    <strong>Total Amount:</strong> <span class="total-amount">$${transaction.total_amount.toFixed(2)}</span>
+                </div>
+            </div>
+        `;
+        
+        modal.style.display = 'block';
+    }
+    
+    function closeModal() {
+        document.getElementById('transactionModal').style.display = 'none';
+    }
+    
+    function filterTransactions() {
+        loadTransactions();
+    }
+    
+    function resetFilters() {
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        loadTransactions();
+    }
+    
+    function sortTable(column) {
+        // Placeholder for sorting functionality
+        console.log('Sort by:', column);
+    }
+    
+    function updateResultsCount(count, transactions) {
+        document.getElementById('resultsCount').textContent = `Showing ${count} transaction${count !== 1 ? 's' : ''}`;
+        
+        // Calculate total revenue
+        const totalRevenue = transactions.reduce((sum, t) => sum + t.total_amount, 0);
+        document.getElementById('totalRevenue').textContent = `Total Revenue: $${totalRevenue.toFixed(2)}`;
+    }
+    
+    function showLoading() {
+        document.getElementById('loadingSpinner').style.display = 'block';
+        document.getElementById('transactionsTable').style.display = 'none';
+    }
+    
+    function hideLoading() {
+        document.getElementById('loadingSpinner').style.display = 'none';
+    }
+    
+    function showError(message) {
+        alert(message);
+    }
+    
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
+    function escapeHtml(text) {
+        if (typeof text !== 'string') return text;
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function capitalizeFirst(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('transactionModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+</script>
+{% endblock %}
