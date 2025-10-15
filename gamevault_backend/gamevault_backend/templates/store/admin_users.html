@@ -4,109 +4,54 @@
 {% block title %}Manage Users - Admin - GameVault{% endblock %}
 
 {% block content %}
-<div class="admin-page-container">
-    <!-- Sidebar Navigation -->
-    <nav class="admin-sidebar" id="adminSidebar">
-        <div class="sidebar-header">
-            <h3>Admin Panel</h3>
-        </div>
-        <ul class="sidebar-menu">
-            <li class="menu-item">
-                <a href="{% url 'store:admin_dashboard' %}">
-                    <span class="menu-icon">📊</span>
-                    <span class="menu-text">Dashboard</span>
-                </a>
-            </li>
-            <li class="menu-item">
-                <a href="{% url 'store:admin_game_list' %}">
-                    <span class="menu-icon">🎮</span>
-                    <span class="menu-text">Games</span>
-                </a>
-            </li>
-            <li class="menu-item active">
-                <a href="{% url 'store:admin_users' %}">
-                    <span class="menu-icon">👥</span>
-                    <span class="menu-text">Users</span>
-                </a>
-            </li>
-            <li class="menu-item">
-                <a href="{% url 'store:admin_transactions' %}">
-                    <span class="menu-icon">💳</span>
-                    <span class="menu-text">Transactions</span>
-                </a>
-            </li>
-            <li class="menu-divider"></li>
-            <li class="menu-item">
-                <a href="{% url 'store:game_list' %}">
-                    <span class="menu-icon">🏠</span>
-                    <span class="menu-text">Back to Store</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
+<div class="admin-page">
+    <h1>Manage Users</h1>
+    <p><a href="{% url 'store:admin_dashboard' %}" class="button">← Back to Dashboard</a></p>
     
-    <!-- Main Content -->
-    <div class="admin-main-content">
-        <div class="admin-header">
-            <h1>Manage Users</h1>
-            <p class="page-description">View and manage all registered users</p>
+    <!-- Filters and Search -->
+    <div class="filter-section">
+        <div class="filter-form">
+            <input type="text" id="userSearch" placeholder="Search by username or email..." class="filter-input">
+            <select id="roleFilter" class="filter-select" onchange="filterUsers()">
+                <option value="">All Users</option>
+                <option value="admin">Admins</option>
+                <option value="user">Regular Users</option>
+            </select>
+            <button class="button" onclick="searchUsers()">Search</button>
         </div>
-        
-        <!-- Filters and Search -->
-        <div class="table-controls">
-            <div class="search-box">
-                <input type="text" id="userSearch" placeholder="Search by username or email..." class="search-input">
-                <button class="search-btn" onclick="searchUsers()">🔍 Search</button>
-            </div>
-            <div class="filter-controls">
-                <label for="roleFilter">Filter by Role:</label>
-                <select id="roleFilter" class="filter-select" onchange="filterUsers()">
-                    <option value="">All Users</option>
-                    <option value="admin">Admins</option>
-                    <option value="user">Regular Users</option>
-                </select>
-            </div>
-        </div>
-        
-        <!-- Users Table -->
-        <div class="data-table-wrapper">
-            <div id="loadingSpinner" class="loading-spinner" style="display: none;">
-                <div class="spinner"></div>
-                <p>Loading users...</p>
-            </div>
-            
-            <table class="data-table" id="usersTable">
-                <thead>
-                    <tr>
-                        <th onclick="sortTable('id')">ID <span class="sort-indicator">⇅</span></th>
-                        <th onclick="sortTable('username')">Username <span class="sort-indicator">⇅</span></th>
-                        <th onclick="sortTable('email')">Email <span class="sort-indicator">⇅</span></th>
-                        <th onclick="sortTable('is_admin')">Role <span class="sort-indicator">⇅</span></th>
-                        <th onclick="sortTable('registration_date')">Registration Date <span class="sort-indicator">⇅</span></th>
-                        <th onclick="sortTable('last_login')">Last Login <span class="sort-indicator">⇅</span></th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="usersTableBody">
-                    <!-- Data loaded via JavaScript -->
-                </tbody>
-            </table>
-            
-            <div id="emptyState" class="empty-state" style="display: none;">
-                <p>No users found</p>
-            </div>
-        </div>
-        
-        <!-- Pagination -->
-        <div class="pagination-controls" id="paginationControls">
-            <div class="results-info">
-                <span id="resultsCount">Showing 0 users</span>
-            </div>
-        </div>
+    </div>
+    
+    <!-- Users Table -->
+    <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+        <p>Loading users...</p>
+    </div>
+    
+    <table id="usersTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Registration Date</th>
+                <th>Last Login</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="usersTableBody">
+            <!-- Data loaded via JavaScript -->
+        </tbody>
+    </table>
+    
+    <div id="emptyState" style="display: none;">
+        <p>No users found</p>
+    </div>
+    
+    <div id="resultsInfo">
+        <p id="resultsCount">Showing 0 users</p>
     </div>
 </div>
 
-<script src="{% static 'js/admin.js' %}"></script>
 <script>
     // Load users when page loads
     document.addEventListener('DOMContentLoaded', function() {
@@ -114,7 +59,8 @@
     });
     
     function loadUsers() {
-        showLoading();
+        document.getElementById('loadingSpinner').style.display = 'block';
+        document.getElementById('usersTable').style.display = 'none';
         
         const searchQuery = document.getElementById('userSearch').value;
         const roleFilter = document.getElementById('roleFilter').value;
@@ -126,17 +72,17 @@
         fetch(url)
             .then(response => response.json())
             .then(data => {
-                hideLoading();
+                document.getElementById('loadingSpinner').style.display = 'none';
                 if (data.success) {
                     displayUsers(data.users);
-                    updateResultsCount(data.total);
+                    document.getElementById('resultsCount').textContent = `Showing ${data.total} user${data.total !== 1 ? 's' : ''}`;
                 } else {
-                    showError(data.error);
+                    alert('Error: ' + data.error);
                 }
             })
             .catch(error => {
-                hideLoading();
-                showError('Error loading users: ' + error.message);
+                document.getElementById('loadingSpinner').style.display = 'none';
+                alert('Error loading users: ' + error.message);
             });
     }
     
@@ -159,18 +105,10 @@
                 <td>${user.id}</td>
                 <td>${escapeHtml(user.username)}</td>
                 <td>${escapeHtml(user.email)}</td>
-                <td>
-                    <span class="role-badge ${user.is_admin ? 'role-admin' : 'role-user'}">
-                        ${user.is_admin ? 'Admin' : 'User'}
-                    </span>
-                </td>
+                <td>${user.is_admin ? 'Admin' : 'User'}</td>
                 <td>${formatDate(user.registration_date)}</td>
                 <td>${user.last_login ? formatDate(user.last_login) : 'Never'}</td>
-                <td>
-                    <span class="status-badge ${user.is_active ? 'status-active' : 'status-inactive'}">
-                        ${user.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                </td>
+                <td>${user.is_active ? 'Active' : 'Inactive'}</td>
             </tr>
         `).join('');
     }
@@ -181,28 +119,6 @@
     
     function filterUsers() {
         loadUsers();
-    }
-    
-    function sortTable(column) {
-        // Placeholder for sorting functionality
-        console.log('Sort by:', column);
-    }
-    
-    function updateResultsCount(count) {
-        document.getElementById('resultsCount').textContent = `Showing ${count} user${count !== 1 ? 's' : ''}`;
-    }
-    
-    function showLoading() {
-        document.getElementById('loadingSpinner').style.display = 'block';
-        document.getElementById('usersTable').style.display = 'none';
-    }
-    
-    function hideLoading() {
-        document.getElementById('loadingSpinner').style.display = 'none';
-    }
-    
-    function showError(message) {
-        alert(message);
     }
     
     function formatDate(dateString) {

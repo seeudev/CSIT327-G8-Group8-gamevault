@@ -4,9 +4,250 @@
 {% block title %}Manage Transactions - Admin - GameVault{% endblock %}
 
 {% block content %}
-<div class="admin-page-container">
-    <!-- Sidebar Navigation -->
-    <nav class="admin-sidebar" id="adminSidebar">
+<div class="admin-page">
+    <h1>Manage Transactions</h1>
+    <p><a href="{% url 'store:admin_dashboard' %}" class="button">← Back to Dashboard</a></p>
+    
+    <!-- Filters -->
+    <div class="filter-section">
+        <div class="filter-form">
+            <select id="statusFilter" class="filter-select" onchange="filterTransactions()">
+                <option value="">All Status</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+                <option value="failed">Failed</option>
+                <option value="refunded">Refunded</option>
+            </select>
+            
+            <input type="date" id="startDate" class="filter-input" onchange="filterTransactions()">
+            <input type="date" id="endDate" class="filter-input" onchange="filterTransactions()">
+            
+            <button class="button" onclick="resetFilters()">Reset Filters</button>
+        </div>
+    </div>
+    
+    <!-- Transactions Table -->
+    <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+        <p>Loading transactions...</p>
+    </div>
+    
+    <table id="transactionsTable">
+        <thead>
+            <tr>
+                <th>Transaction ID</th>
+                <th>Customer</th>
+                <th>Email</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Items</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="transactionsTableBody">
+            <!-- Data loaded via JavaScript -->
+        </tbody>
+    </table>
+    
+    <div id="emptyState" style="display: none;">
+        <p>No transactions found</p>
+    </div>
+    
+    <div id="resultsInfo">
+        <p id="resultsCount">Showing 0 transactions</p>
+        <p id="totalRevenue"></p>
+    </div>
+</div>
+
+<!-- Transaction Detail Modal -->
+<div id="transactionModal" class="modal" style="display: none;" onclick="if(event.target==this) closeModal()">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Transaction Details</h2>
+        <div id="modalBody">
+            <!-- Transaction details loaded here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // Load transactions when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadTransactions();
+    });
+    
+    function loadTransactions() {
+        document.getElementById('loadingSpinner').style.display = 'block';
+        document.getElementById('transactionsTable').style.display = 'none';
+        
+        const statusFilter = document.getElementById('statusFilter').value;
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        let url = '/store/api/transactions/?';
+        if (statusFilter) url += `status=${statusFilter}&`;
+        if (startDate) url += `start_date=${startDate}&`;
+        if (endDate) url += `end_date=${endDate}&`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                if (data.success) {
+                    displayTransactions(data.transactions);
+                    updateResultsCount(data.total, data.transactions);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                alert('Error loading transactions: ' + error.message);
+            });
+    }
+    
+    function displayTransactions(transactions) {
+        const tbody = document.getElementById('transactionsTableBody');
+        const emptyState = document.getElementById('emptyState');
+        const table = document.getElementById('transactionsTable');
+        
+        if (transactions.length === 0) {
+            table.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+        
+        table.style.display = 'table';
+        emptyState.style.display = 'none';
+        
+        tbody.innerHTML = transactions.map(transaction => `
+            <tr>
+                <td>#${transaction.id}</td>
+                <td>${escapeHtml(transaction.username)}</td>
+                <td>${escapeHtml(transaction.user_email)}</td>
+                <td>${formatDate(transaction.transaction_date)}</td>
+                <td>$${transaction.total_amount.toFixed(2)}</td>
+                <td>${transaction.items_count}</td>
+                <td>${capitalizeFirst(transaction.payment_status)}</td>
+                <td>
+                    <button class="small-button" onclick='viewTransactionDetails(${JSON.stringify(transaction).replace(/'/g, "&#39;")})'>
+                        View Details
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+    
+    function viewTransactionDetails(transaction) {
+        const modal = document.getElementById('transactionModal');
+        const modalBody = document.getElementById('modalBody');
+        
+        const items = transaction.items.map((item, index) => `
+            <p>${index + 1}. ${escapeHtml(item.game_title)} - $${item.price.toFixed(2)}</p>
+        `).join('');
+        
+        modalBody.innerHTML = `
+            <p><strong>Transaction ID:</strong> #${transaction.id}</p>
+            <p><strong>Customer:</strong> ${escapeHtml(transaction.username)} (${escapeHtml(transaction.user_email)})</p>
+            <p><strong>Date:</strong> ${formatDate(transaction.transaction_date)}</p>
+            <p><strong>Status:</strong> ${capitalizeFirst(transaction.payment_status)}</p>
+            <h3>Items Purchased:</h3>
+            ${items}
+            <p><strong>Total Amount:</strong> $${transaction.total_amount.toFixed(2)}</p>
+        `;
+        
+        modal.style.display = 'flex';
+    }
+    
+    function closeModal() {
+        document.getElementById('transactionModal').style.display = 'none';
+    }
+    
+    function filterTransactions() {
+        loadTransactions();
+    }
+    
+    function resetFilters() {
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        loadTransactions();
+    }
+    
+    function updateResultsCount(count, transactions) {
+        document.getElementById('resultsCount').textContent = `Showing ${count} transaction${count !== 1 ? 's' : ''}`;
+        
+        const totalRevenue = transactions.reduce((sum, t) => sum + t.total_amount, 0);
+        document.getElementById('totalRevenue').textContent = `Total Revenue: $${totalRevenue.toFixed(2)}`;
+    }
+    
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
+    function escapeHtml(text) {
+        if (typeof text !== 'string') return text;
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function capitalizeFirst(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+</script>
+
+<style>
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 2rem;
+    border: 1px solid #ccc;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 1rem;
+    top: 0.5rem;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #333;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 2rem;
+}
+</style>
+{% endblock %}
         <div class="sidebar-header">
             <h3>Admin Panel</h3>
         </div>
