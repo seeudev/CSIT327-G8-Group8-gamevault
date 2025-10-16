@@ -77,7 +77,7 @@ Visit `http://127.0.0.1:8000/` in your browser.
 
 ## Deployed Link
 
-demo/sprint1 Branch is deployed on Railway
+demo/sprint1 Branch is deployed on Railway (LINK DOWN SPRINT 2 IN PROGRESS)
 
 (https://csit327-g8-group8-gamevault-production.up.railway.app/store/)
 
