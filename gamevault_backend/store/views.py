@@ -7,8 +7,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
-from django.db.models import Q
+from django.db.models import Q, Sum, Count
+from django.http import JsonResponse
 from decimal import Decimal
+import json
 
 from .models import Game, Cart, CartItem, Transaction, TransactionItem, AdminActionLog
 from users.models import User
@@ -67,6 +69,9 @@ def game_list(request):
     # Get all unique categories for filter
     categories = Game.objects.values_list('category', flat=True).distinct()
     
+    # Get featured games with screenshots for hero slideshow (limit to 8)
+    featured_games = Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:8]
+    
     return render(request, 'store/game_list.html', {
         'games': games,
         'categories': categories,
@@ -77,6 +82,7 @@ def game_list(request):
         'max_price': max_price,
         'start_date': start_date,
         'end_date': end_date,
+        'featured_games': featured_games,
     })
 
 
@@ -292,15 +298,52 @@ def admin_dashboard(request):
     # Get stats
     total_games = Game.objects.count()
     total_users = User.objects.count()
-    total_transactions = Transaction.objects.count()
+    total_transactions = Transaction.objects.filter(payment_status='completed').count()
+    total_sales = Transaction.objects.filter(payment_status='completed').aggregate(
+        total=Sum('total_amount')
+    )['total'] or Decimal('0.00')
+    
+    # Get most downloaded games
+    most_downloaded = TransactionItem.objects.values('game__title', 'game__id').annotate(
+        download_count=Count('id')
+    ).order_by('-download_count')[:5]
+    
     recent_actions = AdminActionLog.objects.all()[:10]
     
     return render(request, 'store/admin_dashboard.html', {
         'total_games': total_games,
         'total_users': total_users,
         'total_transactions': total_transactions,
+        'total_sales': total_sales,
+        'most_downloaded': most_downloaded,
         'recent_actions': recent_actions,
     })
+
+
+@login_required
+def admin_users_page(request):
+    """
+    Admin view to manage users.
+    Only accessible to admin users.
+    """
+    if not request.user.is_admin:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('store:game_list')
+    
+    return render(request, 'store/admin_users.html')
+
+
+@login_required
+def admin_transactions_page(request):
+    """
+    Admin view to view all transactions.
+    Only accessible to admin users.
+    """
+    if not request.user.is_admin:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('store:game_list')
+    
+    return render(request, 'store/admin_transactions.html')
 
 
 @login_required
@@ -439,3 +482,188 @@ def admin_game_delete(request, game_id):
     game.delete()
     messages.success(request, f'Game "{game_title}" deleted successfully.')
     return redirect('store:admin_game_list')
+
+
+# Admin API Endpoints for Module 7
+@login_required
+def api_admin_dashboard_stats(request):
+    """
+    API endpoint to get dashboard statistics.
+    Returns: total users, total sales (revenue), total transactions, most downloaded games
+    """
+    if not request.user.is_admin:
+        return JsonResponse({
+            'success': False,
+            'error': 'Unauthorized: Admin access required'
+        }, status=403)
+    
+    try:
+        # Calculate statistics
+        total_users = User.objects.count()
+        total_transactions = Transaction.objects.filter(payment_status='completed').count()
+        total_sales = Transaction.objects.filter(payment_status='completed').aggregate(
+            total=Sum('total_amount')
+        )['total'] or Decimal('0.00')
+        
+        # Get most downloaded/purchased games
+        most_downloaded = TransactionItem.objects.values('game__title', 'game__id').annotate(
+            download_count=Count('id')
+        ).order_by('-download_count')[:5]
+        
+        most_downloaded_games = [
+            {
+                'id': item['game__id'],
+                'title': item['game__title'],
+                'downloads': item['download_count']
+            }
+            for item in most_downloaded
+        ]
+        
+        return JsonResponse({
+            'success': True,
+            'stats': {
+                'total_users': total_users,
+                'total_transactions': total_transactions,
+                'total_sales': float(total_sales),
+                'most_downloaded_games': most_downloaded_games
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+def api_admin_users(request):
+    """
+    API endpoint to get list of all users (admin only).
+    GET /api/users
+    Returns: list of users with id, username, email, is_admin, registration_date
+    """
+    if not request.user.is_admin:
+        return JsonResponse({
+            'success': False,
+            'error': 'Unauthorized: Admin access required'
+        }, status=403)
+    
+    try:
+        # Get query parameters for filtering/search
+        search = request.GET.get('search', '')
+        role = request.GET.get('role', '')
+        
+        # Build query
+        users = User.objects.all()
+        
+        if search:
+            users = users.filter(
+                Q(username__icontains=search) |
+                Q(email__icontains=search)
+            )
+        
+        if role == 'admin':
+            users = users.filter(is_admin=True)
+        elif role == 'user':
+            users = users.filter(is_admin=False)
+        
+        # Order by registration date (newest first)
+        users = users.order_by('-registration_date')
+        
+        # Serialize user data
+        users_data = [
+            {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'is_admin': user.is_admin,
+                'registration_date': user.registration_date.strftime('%Y-%m-%d %H:%M:%S'),
+                'last_login': user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else None,
+                'is_active': user.is_active
+            }
+            for user in users
+        ]
+        
+        return JsonResponse({
+            'success': True,
+            'users': users_data,
+            'total': len(users_data)
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+def api_admin_transactions(request):
+    """
+    API endpoint to get list of all transactions (admin only).
+    GET /api/transactions
+    Returns: list of transactions with details, user info, items, amounts
+    """
+    if not request.user.is_admin:
+        return JsonResponse({
+            'success': False,
+            'error': 'Unauthorized: Admin access required'
+        }, status=403)
+    
+    try:
+        # Get query parameters for filtering
+        status = request.GET.get('status', '')
+        user_id = request.GET.get('user_id', '')
+        start_date = request.GET.get('start_date', '')
+        end_date = request.GET.get('end_date', '')
+        
+        # Build query
+        transactions = Transaction.objects.all()
+        
+        if status:
+            transactions = transactions.filter(payment_status=status)
+        
+        if user_id:
+            transactions = transactions.filter(user_id=user_id)
+        
+        if start_date:
+            transactions = transactions.filter(transaction_date__date__gte=start_date)
+        
+        if end_date:
+            transactions = transactions.filter(transaction_date__date__lte=end_date)
+        
+        # Order by transaction date (newest first)
+        transactions = transactions.order_by('-transaction_date')
+        
+        # Serialize transaction data
+        transactions_data = []
+        for transaction in transactions:
+            items = []
+            for item in transaction.items.all():
+                items.append({
+                    'game_id': item.game.id,
+                    'game_title': item.game.title,
+                    'price': float(item.price_at_purchase)
+                })
+            
+            transactions_data.append({
+                'id': transaction.id,
+                'user_id': transaction.user.id,
+                'username': transaction.user.username,
+                'user_email': transaction.user.email,
+                'transaction_date': transaction.transaction_date.strftime('%Y-%m-%d %H:%M:%S'),
+                'total_amount': float(transaction.total_amount),
+                'payment_status': transaction.payment_status,
+                'items': items,
+                'items_count': len(items)
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'transactions': transactions_data,
+            'total': len(transactions_data)
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)

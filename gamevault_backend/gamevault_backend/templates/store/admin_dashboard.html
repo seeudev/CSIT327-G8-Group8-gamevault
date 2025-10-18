@@ -4,29 +4,63 @@
 {% block title %}Admin Dashboard - GameVault{% endblock %}
 
 {% block content %}
-<div class="admin-dashboard-container">
+<div class="admin-dashboard">
     <h1>Admin Dashboard</h1>
     
+    <!-- Stats Grid -->
     <div class="stats-grid">
-        <div class="stat-card">
-            <h3>Total Games</h3>
-            <p class="stat-number">{{ total_games }}</p>
-        </div>
         <div class="stat-card">
             <h3>Total Users</h3>
             <p class="stat-number">{{ total_users }}</p>
         </div>
         <div class="stat-card">
-            <h3>Total Transactions</h3>
+            <h3>Total Sales</h3>
+            <p class="stat-number">${{ total_sales|floatformat:2 }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Games</h3>
+            <p class="stat-number">{{ total_games }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Transactions</h3>
             <p class="stat-number">{{ total_transactions }}</p>
         </div>
     </div>
     
+    <!-- Admin Actions -->
     <div class="admin-actions">
-        <a href="{% url 'store:admin_game_list' %}" class="button">Manage Games</a>
         <a href="{% url 'store:admin_game_create' %}" class="button">Add New Game</a>
+        <a href="{% url 'store:admin_game_list' %}" class="button">Manage Games</a>
+        <a href="{% url 'store:admin_users' %}" class="button">View Users</a>
+        <a href="{% url 'store:admin_transactions' %}" class="button">View Transactions</a>
     </div>
     
+    <!-- Most Downloaded Games -->
+    <h2>Most Downloaded Games</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Game Title</th>
+                <th>Downloads</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for game in most_downloaded %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ game.game__title }}</td>
+                    <td>{{ game.download_count }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="3">No download data available</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <!-- Recent Admin Actions -->
     <h2>Recent Admin Actions</h2>
     <table class="action-log-table">
         <thead>

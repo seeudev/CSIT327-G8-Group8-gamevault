@@ -30,4 +30,11 @@ urlpatterns = [
     path('admin/games/create/', views.admin_game_create, name='admin_game_create'),
     path('admin/games/edit/<int:game_id>/', views.admin_game_edit, name='admin_game_edit'),
     path('admin/games/delete/<int:game_id>/', views.admin_game_delete, name='admin_game_delete'),
+    path('admin/users/', views.admin_users_page, name='admin_users'),
+    path('admin/transactions/', views.admin_transactions_page, name='admin_transactions'),
+    
+    # Admin API endpoints (Module 7)
+    path('api/admin/stats/', views.api_admin_dashboard_stats, name='api_admin_stats'),
+    path('api/users/', views.api_admin_users, name='api_admin_users'),
+    path('api/transactions/', views.api_admin_transactions, name='api_admin_transactions'),
 ]
