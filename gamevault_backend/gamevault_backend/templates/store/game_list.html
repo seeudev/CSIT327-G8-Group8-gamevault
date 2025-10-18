@@ -7,9 +7,21 @@
 <div class="marketplace-container">
     <!-- Hero Section -->
     <div class="hero-section">
+        <!-- Background Slideshow -->
+        <div class="hero-slideshow">
+            {% if featured_games %}
+                {% for game in featured_games %}
+                    <div class="hero-slide {% if forloop.first %}active{% endif %}" style="background-image: url('{{ game.screenshot_url }}');"></div>
+                {% endfor %}
+            {% else %}
+                <!-- Fallback gradient if no games with screenshots -->
+                <div class="hero-slide active" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+            {% endif %}
+        </div>
+        <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1 class="hero-title">Buy Game Keys at the Best Prices</h1>
-            <p class="hero-subtitle">Instant delivery • Secure payment • Over 1000+ games available</p>
+            <h1 class="hero-title">Game Vault: Digital Keys Shop</h1>
+            <p class="hero-subtitle">Instant delivery • Secure payment • Lowest Price</p>
         </div>
     </div>
 
@@ -134,4 +146,31 @@
         {% endfor %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Hero Slideshow Auto-rotation
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.hero-slide');
+    
+    if (slides.length > 1) {
+        let currentSlide = 0;
+        
+        function nextSlide() {
+            // Remove active class from current slide
+            slides[currentSlide].classList.remove('active');
+            
+            // Move to next slide (loop back to 0 if at end)
+            currentSlide = (currentSlide + 1) % slides.length;
+            
+            // Add active class to new slide
+            slides[currentSlide].classList.add('active');
+        }
+        
+        // Change slide every 5 seconds
+        setInterval(nextSlide, 5000);
+    }
+});
+</script>
 {% endblock %}

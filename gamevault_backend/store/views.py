@@ -69,6 +69,9 @@ def game_list(request):
     # Get all unique categories for filter
     categories = Game.objects.values_list('category', flat=True).distinct()
     
+    # Get featured games with screenshots for hero slideshow (limit to 8)
+    featured_games = Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:8]
+    
     return render(request, 'store/game_list.html', {
         'games': games,
         'categories': categories,
@@ -79,6 +82,7 @@ def game_list(request):
         'max_price': max_price,
         'start_date': start_date,
         'end_date': end_date,
+        'featured_games': featured_games,
     })
 
 
