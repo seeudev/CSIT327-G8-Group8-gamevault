@@ -4,81 +4,133 @@
 {% block title %}Games - GameVault{% endblock %}
 
 {% block content %}
-<div class="game-list-container">
-    <h1>Game Store</h1>
-    
-    <!-- Search and filter form -->
-    <div class="filter-section">
-        <form method="get" class="filter-form">
+<div class="marketplace-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Buy Game Keys at the Best Prices</h1>
+            <p class="hero-subtitle">Instant delivery • Secure payment • Over 1000+ games available</p>
+        </div>
+    </div>
 
-            <!-- Row 1: Search , Category , Price Range -->
-            <!-- Keyword search -->
-            <div class="filter-row">
-                <input type="text" name="search" placeholder="Search games..." value="{{ search_query }}" class="filter-input">
+    <!-- Search Bar Section -->
+    <div class="search-section">
+        <form method="get" class="search-form">
+            <div class="search-wrapper">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input type="text" name="search" placeholder="Search for games..." value="{{ search_query }}" class="search-input">
+                <button type="submit" class="search-btn">Search</button>
+            </div>
+        </form>
+    </div>
 
-                <!-- Category dropdown -->
-                <select name="category" class="filter-select">
+    <!-- Filter and Sort Bar -->
+    <div class="filter-bar">
+        <form method="get" class="filter-form-inline">
+            <input type="hidden" name="search" value="{{ search_query }}">
+            
+            <div class="filter-group">
+                <label class="filter-label">Category</label>
+                <select name="category" class="filter-select-compact" onchange="this.form.submit()">
                     <option value="">All Categories</option>
                     {% for cat in categories %}
                         <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
                     {% endfor %}
                 </select>
-
-                <!-- Price range -->
-                <input type="number" name="min_price" placeholder="Min Price" step="0.01" value="{{ min_price }}" class="filter-small">
-                <input type="number" name="max_price" placeholder="Max Price" step="0.01" value="{{ max_price }}" class="filter-small">
-
             </div>
 
-            <!-- Row 2: Date Range , Sort , Buttons -->
-            <!-- Release date range -->
-            <div class="filter-row">
-                <input type="date" name="start_date" value="{{ start_date }}" class="filter-small">
-                <input type="date" name="end_date" value="{{ end_date }}" class="filter-small">
+            <div class="filter-group">
+                <label class="filter-label">Price Range</label>
+                <div class="price-inputs">
+                    <input type="number" name="min_price" placeholder="Min" step="0.01" value="{{ min_price }}" class="price-input">
+                    <span class="price-separator">-</span>
+                    <input type="number" name="max_price" placeholder="Max" step="0.01" value="{{ max_price }}" class="price-input">
+                </div>
+            </div>
 
-                <!-- Sort options -->
-                <select name="sort" class="filter-select">
-                    <option value="">Sort By</option>
-                    <option value="price_low" {% if selected_sort == 'price_low' %}selected{% endif %}>Price: Low → High</option>
-                    <option value="price_high" {% if selected_sort == 'price_high' %}selected{% endif %}>Price: High → Low</option>
-                    <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest</option>
-                    <option value="oldest" {% if selected_sort == 'oldest' %}selected{% endif %}>Oldest</option>
+            <div class="filter-group">
+                <label class="filter-label">Sort By</label>
+                <select name="sort" class="filter-select-compact" onchange="this.form.submit()">
+                    <option value="">Relevance</option>
+                    <option value="price_low" {% if selected_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price_high" {% if selected_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                    <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest First</option>
+                    <option value="oldest" {% if selected_sort == 'oldest' %}selected{% endif %}>Oldest First</option>
                 </select>
-
-                <!-- Buttons -->
-                <button type="submit" class="filter-btn">Apply</button>
-                <a href="{% url 'store:game_list' %}" class="filter-btn clear-btn">Clear</a>
             </div>
+
+            <button type="submit" class="filter-apply-btn">Apply Filters</button>
+            <a href="{% url 'store:game_list' %}" class="filter-clear-btn">Clear All</a>
         </form>
     </div>
 
-    <!-- Game grid -->
-    <div class="game-grid">
-        {% for game in games %}
-            <div class="game-card">
-                {% if game.screenshot_url %}
-                    <img src="{{ game.screenshot_url }}" alt="{{ game.title }}">
-                {% else %}
-                    <div class="no-image">No Image</div>
-                {% endif %}
-                <h3>{{ game.title }}</h3>
-                <p class="game-category">{{ game.category }}</p>
-                <p class="game-description">{{ game.description|truncatewords:20 }}</p>
-                <p class="game-price">${{ game.price }}</p>
-                <p class="game_upload">Uploaded: {{ game.upload_date|date:"Y-m-d" }}</p>
+    <!-- Results Count -->
+    <div class="results-info">
+        <p class="results-count">Showing {{ games|length }} game{{ games|length|pluralize }}</p>
+    </div>
 
-                <div class="game-actions">
-                    <a href="{% url 'store:game_detail' game.id %}" class="button">View Details</a>
-                    {% if user.is_authenticated %}
-                        <form method="post" action="{% url 'store:add_to_cart' game.id %}" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="button">Add to Cart</button>
-                        </form>
-                    {% endif %}
-                </div>
+    <!-- Game Cards Grid -->
+    <div class="games-grid">
+        {% for game in games %}
+            <div class="game-card-modern">
+                <a href="{% url 'store:game_detail' game.id %}" class="game-card-link">
+                    <div class="game-card-image">
+                        {% if game.screenshot_url %}
+                            <img src="{{ game.screenshot_url }}" alt="{{ game.title }}" loading="lazy">
+                        {% else %}
+                            <div class="game-image-placeholder">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+                                    <polyline points="17 2 12 7 7 2"></polyline>
+                                </svg>
+                            </div>
+                        {% endif %}
+                        <div class="game-badge">{{ game.category }}</div>
+                    </div>
+                    
+                    <div class="game-card-body">
+                        <h3 class="game-card-title">{{ game.title }}</h3>
+                        <p class="game-card-description">{{ game.description|truncatewords:15 }}</p>
+                        
+                        <div class="game-card-footer">
+                            <div class="game-price-section">
+                                <span class="game-price-label">From</span>
+                                <span class="game-price-value">${{ game.price }}</span>
+                            </div>
+                            <div class="game-card-actions">
+                                {% if user.is_authenticated %}
+                                    <form method="post" action="{% url 'store:add_to_cart' game.id %}" class="add-cart-form" onclick="event.stopPropagation();">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-add-cart">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="9" cy="21" r="1"></circle>
+                                                <circle cx="20" cy="21" r="1"></circle>
+                                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                                            </svg>
+                                            Add to Cart
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <a href="{% url 'users:login' %}" class="btn-view-details" onclick="event.stopPropagation();">View Details</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </a>
             </div>
         {% empty %}
-            <p>No games found.</p>
+            <div class="no-results">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <h3>No games found</h3>
+                <p>Try adjusting your search or filters to find what you're looking for.</p>
+                <a href="{% url 'store:game_list' %}" class="btn-reset">Clear Filters</a>
+            </div>
         {% endfor %}
     </div>
 </div>
