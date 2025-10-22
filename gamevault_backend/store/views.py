@@ -13,6 +13,8 @@ from decimal import Decimal
 import json
 
 from .models import Game, Cart, CartItem, Transaction, TransactionItem, AdminActionLog
+from .middleware import PurchaseValidationMiddleware
+from .email_service import send_game_key_email
 from users.models import User
 
 
@@ -186,6 +188,7 @@ def update_cart_quantity(request, item_id):
 def checkout(request):
     """
     Process checkout - convert cart to transaction.
+    Auto-generates game keys for each purchased item.
     """
     # Get user's active cart
     try:
@@ -210,19 +213,21 @@ def checkout(request):
             payment_status='completed'  # In a real app, this would be 'pending' until payment
         )
         
-        # Create transaction items from cart items
+        # Create transaction items from cart items and generate game keys
         for cart_item in cart_items:
-            TransactionItem.objects.create(
+            transaction_item = TransactionItem.objects.create(
                 transaction=transaction,
                 game=cart_item.game,
                 price_at_purchase=cart_item.price_at_addition
             )
+            # Auto-generate game key for each purchased item
+            transaction_item.generate_game_key()
         
         # Mark cart as checked out
         cart.status = 'checked_out'
         cart.save()
         
-        messages.success(request, 'Purchase completed successfully!')
+        messages.success(request, 'Purchase completed successfully! Check your transaction details for game keys.')
         return redirect('store:transaction_detail', transaction_id=transaction.id)
     
     # GET request - show checkout confirmation
@@ -264,15 +269,18 @@ def transaction_detail(request, transaction_id):
 def download_game(request, transaction_id, game_id):
     """
     Allow user to download a game from their purchase.
-    Verify they own the game before allowing download.
+    Verify they own the game before allowing download using middleware.
     """
-    transaction = get_object_or_404(Transaction, id=transaction_id, user=request.user)
-    game = get_object_or_404(Game, id=game_id)
+    # Use middleware for purchase validation
+    has_access, transaction = PurchaseValidationMiddleware.verify_game_ownership(
+        request.user, game_id
+    )
     
-    # Verify the game is in this transaction
-    if not transaction.items.filter(game=game).exists():
+    if not has_access:
         messages.error(request, 'You do not own this game.')
         return redirect('store:transaction_history')
+    
+    game = get_object_or_404(Game, id=game_id)
     
     # In a real app, this would redirect to a secure download URL or serve the file
     # For now, just redirect to the file_url if it exists
@@ -281,7 +289,38 @@ def download_game(request, transaction_id, game_id):
         return redirect(game.file_url)
     else:
         messages.error(request, 'Download not available for this game.')
-        return redirect('store:transaction_detail', transaction_id=transaction.id)
+        return redirect('store:transaction_detail', transaction_id=transaction_id)
+
+
+@login_required
+@require_http_methods(["POST"])
+def send_game_key(request, transaction_id, item_id):
+    """
+    API endpoint to send game key email to user.
+    POST /store/transactions/:transaction_id/items/:item_id/send-key/
+    
+    Module 5: Secure Game Delivery
+    """
+    # Verify ownership - user must own this transaction
+    transaction = get_object_or_404(Transaction, id=transaction_id, user=request.user)
+    transaction_item = get_object_or_404(TransactionItem, id=item_id, transaction=transaction)
+    
+    # Send email using email service
+    success, message = send_game_key_email(transaction_item)
+    
+    if success:
+        messages.success(request, message)
+        return JsonResponse({
+            'success': True,
+            'message': message,
+            'game_key': transaction_item.game_key,
+            'sent_at': transaction_item.key_sent_at.strftime('%Y-%m-%d %H:%M:%S')
+        })
+    else:
+        return JsonResponse({
+            'success': False,
+            'error': message
+        }, status=500)
 
 
 # Admin views

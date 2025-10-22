@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 import uuid
+import secrets
 
 User = get_user_model()
 
@@ -114,12 +115,28 @@ class TransactionItem(models.Model):
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name='items')
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
     price_at_purchase = models.DecimalField(max_digits=10, decimal_places=2)
+    game_key = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    key_sent_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'transaction_items'
 
     def __str__(self):
         return f"{self.game.title} in Transaction {self.transaction.id}"
+    
+    def generate_game_key(self):
+        """Generate a unique game key for this purchase."""
+        if not self.game_key:
+            # Generate format: GAME-XXXX-XXXX-XXXX
+            key_parts = [
+                'GAME',
+                secrets.token_hex(2).upper(),
+                secrets.token_hex(2).upper(),
+                secrets.token_hex(2).upper()
+            ]
+            self.game_key = '-'.join(key_parts)
+            self.save()
+        return self.game_key
 
 
 class AdminActionLog(models.Model):
@@ -147,3 +164,27 @@ class AdminActionLog(models.Model):
         admin_name = self.admin.username if self.admin else 'Unknown'
         game_title = self.target_game.title if self.target_game else 'N/A'
         return f"{admin_name} - {self.action_type} - {game_title}"
+
+
+class EmailLog(models.Model):
+    """
+    Log model for tracking sent game key emails.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_logs')
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    game_key = models.CharField(max_length=50)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    email_to = models.EmailField()
+    
+    STATUS_CHOICES = [
+        ('sent', 'Sent'),
+        ('failed', 'Failed'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    
+    class Meta:
+        db_table = 'email_logs'
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f"Email to {self.user.username} for {self.game.title} - {self.status}"

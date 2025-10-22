@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Game Key - GameVault</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        .header p {
+            margin: 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+            background: #f9f9f9;
+        }
+        .content h2 {
+            color: #667eea;
+            margin-top: 0;
+            font-size: 22px;
+        }
+        .game-info {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        .game-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .game-key-container {
+            background: #fff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .game-key-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .game-key {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            border-radius: 5px;
+            display: inline-block;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+        }
+        .button-container {
+            text-align: center;
+            margin: 25px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 14px 35px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #5568d3;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .warning strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #333;
+            color: #ccc;
+            font-size: 13px;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 GameVault</h1>
+            <p>Your Game Key is Ready!</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hi {{ user.username }},</h2>
+            <p>Thank you for your purchase! Your game is ready to download and play.</p>
+            
+            <div class="game-info">
+                <h3>{{ game.title }}</h3>
+                <p><strong>Order ID:</strong> #{{ transaction_id }}</p>
+            </div>
+            
+            <div class="game-key-container">
+                <div class="game-key-label">Your Game Activation Key:</div>
+                <div class="game-key">{{ game_key }}</div>
+            </div>
+            
+            <div class="button-container">
+                <a href="{{ site_url }}/store/transactions/{{ transaction_id }}/" class="button">
+                    📥 Download Your Game
+                </a>
+            </div>
+            
+            <div class="warning">
+                <strong>⚠️ Important:</strong>
+                <p>Keep this key safe! You'll need it to activate your game. This key is unique to your purchase and cannot be recovered if lost.</p>
+            </div>
+            
+            <p style="margin-top: 30px;">If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+            
+            <p>Happy gaming!<br>
+            <strong>The GameVault Team</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated email from GameVault. Please do not reply to this email.</p>
+            <p>&copy; 2025 GameVault. All rights reserved.</p>
+            <p><a href="{{ site_url }}">Visit GameVault</a></p>
+        </div>
+    </div>
+</body>
+</html>

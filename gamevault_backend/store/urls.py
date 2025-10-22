@@ -22,6 +22,7 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('transactions/', views.transaction_history, name='transaction_history'),
     path('transactions/<int:transaction_id>/', views.transaction_detail, name='transaction_detail'),
+    path('transactions/<int:transaction_id>/items/<int:item_id>/send-key/', views.send_game_key, name='send_game_key'),
     path('download/<int:transaction_id>/<int:game_id>/', views.download_game, name='download_game'),
     
     # Admin views
