@@ -20,11 +20,50 @@
             <div class="transaction-item">
                 <h3>{{ item.game.title }}</h3>
                 <p><strong>Price:</strong> ${{ item.price_at_purchase }}</p>
-                {% if item.game.file_url %}
-                    <a href="{% url 'store:download_game' transaction.id item.game.id %}" class="button">Download</a>
-                {% else %}
-                    <p class="no-download">Download not available</p>
+                
+                <!-- Game Key Display -->
+                {% if item.game_key %}
+                    <div class="game-key-section">
+                        <p class="game-key-label"><strong>Game Activation Key:</strong></p>
+                        <div class="game-key-display">
+                            <code class="game-key">{{ item.game_key }}</code>
+                            <button class="copy-btn" onclick="copyGameKey('{{ item.game_key }}', this)" title="Copy to clipboard">
+                                📋 Copy
+                            </button>
+                        </div>
+                        {% if item.key_sent_at %}
+                            <p class="key-sent-info">✅ Key sent to {{ user.email }} on {{ item.key_sent_at|date:"M d, Y H:i" }}</p>
+                        {% endif %}
+                    </div>
                 {% endif %}
+                
+                <!-- Action Buttons -->
+                <div class="item-actions">
+                    {% if item.game.file_url %}
+                        <a href="{% url 'store:download_game' transaction.id item.game.id %}" class="button btn-download">
+                            📥 Download Game
+                        </a>
+                    {% else %}
+                        <p class="no-download">Download not available</p>
+                    {% endif %}
+                    
+                    <!-- Send Game Key Button -->
+                    <button 
+                        class="button btn-send-key" 
+                        data-item-id="{{ item.id }}"
+                        data-transaction-id="{{ transaction.id }}"
+                        onclick="sendGameKey(this)"
+                        {% if item.key_sent_at %}disabled{% endif %}>
+                        {% if item.key_sent_at %}
+                            ✓ Key Sent
+                        {% else %}
+                            📧 Send Game Key to Email
+                        {% endif %}
+                    </button>
+                </div>
+                
+                <!-- Success/Error Messages -->
+                <div class="key-message" id="key-message-{{ item.id }}"></div>
             </div>
         {% endfor %}
     </div>
@@ -33,4 +72,300 @@
         <a href="{% url 'store:transaction_history' %}" class="button">Back to History</a>
     </div>
 </div>
+
+<style>
+    .transaction-detail-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .transaction-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    
+    .transaction-info p {
+        margin: 10px 0;
+        font-size: 16px;
+    }
+    
+    .transaction-items {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .transaction-item {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .transaction-item h3 {
+        margin: 0 0 15px 0;
+        color: #667eea;
+        font-size: 22px;
+    }
+    
+    .game-key-section {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+    }
+    
+    .game-key-label {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+        color: #555;
+    }
+    
+    .game-key-display {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+    }
+    
+    .game-key {
+        background: white;
+        padding: 12px 20px;
+        border: 2px solid #667eea;
+        font-size: 18px;
+        letter-spacing: 2px;
+        font-weight: bold;
+        display: inline-block;
+        border-radius: 5px;
+        font-family: 'Courier New', monospace;
+        color: #333;
+        flex: 1;
+    }
+    
+    .copy-btn {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.3s;
+    }
+    
+    .copy-btn:hover {
+        background: #5568d3;
+    }
+    
+    .copy-btn.copied {
+        background: #28a745;
+    }
+    
+    .key-sent-info {
+        color: #28a745;
+        font-size: 14px;
+        margin-top: 10px;
+        padding: 10px;
+        background: rgba(40, 167, 69, 0.1);
+        border-radius: 5px;
+    }
+    
+    .item-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .button {
+        padding: 12px 24px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s;
+        font-size: 14px;
+    }
+    
+    .btn-download {
+        background: #667eea;
+        color: white;
+    }
+    
+    .btn-download:hover {
+        background: #5568d3;
+    }
+    
+    .btn-send-key {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-send-key:hover:not(:disabled) {
+        background: #218838;
+    }
+    
+    .btn-send-key:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    
+    .key-message {
+        margin-top: 15px;
+        padding: 12px 15px;
+        border-radius: 5px;
+        display: none;
+        font-size: 14px;
+    }
+    
+    .key-message.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        display: block;
+    }
+    
+    .key-message.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        display: block;
+    }
+    
+    .no-download {
+        color: #666;
+        font-style: italic;
+    }
+    
+    .transaction-actions {
+        margin-top: 30px;
+        text-align: center;
+    }
+    
+    @media (max-width: 600px) {
+        .item-actions {
+            flex-direction: column;
+        }
+        
+        .button {
+            width: 100%;
+            text-align: center;
+        }
+        
+        .game-key-display {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .copy-btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<script>
+    // Get CSRF token for POST requests
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+    
+    // Copy game key to clipboard
+    function copyGameKey(gameKey, buttonElement) {
+        navigator.clipboard.writeText(gameKey).then(function() {
+            const originalText = buttonElement.textContent;
+            buttonElement.textContent = '✓ Copied!';
+            buttonElement.classList.add('copied');
+            
+            setTimeout(function() {
+                buttonElement.textContent = originalText;
+                buttonElement.classList.remove('copied');
+            }, 2000);
+        }).catch(function(err) {
+            console.error('Failed to copy: ', err);
+            alert('Failed to copy game key. Please copy it manually.');
+        });
+    }
+    
+    // Handle "Send Game Key" button clicks
+    async function sendGameKey(buttonElement) {
+        const itemId = buttonElement.dataset.itemId;
+        const transactionId = buttonElement.dataset.transactionId;
+        const messageDiv = document.getElementById(`key-message-${itemId}`);
+        
+        // Disable button and show loading state
+        buttonElement.disabled = true;
+        const originalText = buttonElement.textContent;
+        buttonElement.textContent = '⏳ Sending...';
+        
+        // Hide previous messages
+        messageDiv.className = 'key-message';
+        messageDiv.style.display = 'none';
+        
+        try {
+            const response = await fetch(
+                `/store/transactions/${transactionId}/items/${itemId}/send-key/`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    }
+                }
+            );
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show success message
+                messageDiv.className = 'key-message success';
+                messageDiv.textContent = `✅ ${data.message} Check your email at {{ user.email }}`;
+                messageDiv.style.display = 'block';
+                
+                // Update button to show sent state
+                buttonElement.textContent = '✓ Key Sent';
+                
+                // Reload page after 3 seconds to show updated state
+                setTimeout(function() {
+                    window.location.reload();
+                }, 3000);
+            } else {
+                // Show error message
+                messageDiv.className = 'key-message error';
+                messageDiv.textContent = `❌ ${data.error}`;
+                messageDiv.style.display = 'block';
+                
+                // Re-enable button
+                buttonElement.disabled = false;
+                buttonElement.textContent = originalText;
+            }
+        } catch (error) {
+            // Show network error message
+            messageDiv.className = 'key-message error';
+            messageDiv.textContent = '❌ Network error. Please try again.';
+            messageDiv.style.display = 'block';
+            
+            // Re-enable button
+            buttonElement.disabled = false;
+            buttonElement.textContent = originalText;
+        }
+    }
+</script>
 {% endblock %}
