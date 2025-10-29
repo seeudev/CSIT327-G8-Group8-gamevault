@@ -22,6 +22,13 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else ['*']
 
+# CSRF Trusted Origins
+CSRF_TRUSTED_ORIGINS = [
+    'https://csit327-g8-group8-gamevault-production.up.railway.app',
+    'https://*.railway.app',  # Allow any Railway subdomain
+]
+
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
