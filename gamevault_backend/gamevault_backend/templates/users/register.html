@@ -4,28 +4,44 @@
 {% block title %}Register - GameVault{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h1>Register</h1>
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-title">Create Account</h1>
+            <p class="auth-subtitle">Join GameVault and start your gaming journey</p>
         </div>
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
+        
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-input" id="username" name="username" required autofocus>
+            </div>
+            
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" class="form-input" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-input" id="password" name="password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password_confirm" class="form-label">Confirm Password</label>
+                <input type="password" class="form-input" id="password_confirm" name="password_confirm" required>
+            </div>
+            
+            <button type="submit" class="btn-primary btn-block">Create Account</button>
+        </form>
+        
+        <div class="auth-alt">
+            <p class="auth-alt-text">
+                Already have an account? 
+                <a href="{% url 'users:login' %}" class="link-primary">Sign In</a>
+            </p>
         </div>
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <div class="form-group">
-            <label for="password_confirm">Confirm Password:</label>
-            <input type="password" id="password_confirm" name="password_confirm" required>
-        </div>
-        <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="{% url 'users:login' %}">Login here</a></p>
+    </div>
 </div>
 {% endblock %}

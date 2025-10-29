@@ -7,7 +7,7 @@
 <div class="transaction-history-modern">
     <div class="page-header">
         <h1 class="page-title">
-            <span class="title-icon">📦</span>
+            <span class="title-icon icon-package"></span>
             Purchase History
         </h1>
         <p class="page-subtitle">Track all your game purchases and download keys</p>
@@ -37,19 +37,19 @@
                     <div class="transaction-body">
                         <div class="transaction-info-grid">
                             <div class="info-block">
-                                <span class="info-label">📅 Date</span>
+                                <span class="info-label icon-calendar">Date</span>
                                 <span class="info-value">{{ transaction.transaction_date|date:"M d, Y" }}</span>
                                 <span class="info-time">{{ transaction.transaction_date|date:"h:i A" }}</span>
                             </div>
                             
                             <div class="info-block">
-                                <span class="info-label">🎮 Items</span>
+                                <span class="info-label icon-gamepad">Items</span>
                                 <span class="info-value">{{ transaction.items.count }}</span>
                                 <span class="info-time">Game{{ transaction.items.count|pluralize }}</span>
                             </div>
                             
                             <div class="info-block price-block">
-                                <span class="info-label">💰 Total</span>
+                                <span class="info-label icon-dollar">Total</span>
                                 <span class="info-value price-highlight">${{ transaction.total_amount }}</span>
                             </div>
                         </div>
@@ -77,344 +77,14 @@
             <h2 class="empty-title">No Purchases Yet</h2>
             <p class="empty-message">Start building your game library today!</p>
             <a href="{% url 'store:game_list' %}" class="btn-browse-games">
-                <span class="btn-icon">🎮</span>
+                <span class="btn-icon icon-gamepad"></span>
                 Browse Games
             </a>
         </div>
     {% endif %}
 </div>
 
-<style>
-.transaction-history-modern {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-    background: #f5f5f5;
-    min-height: 70vh;
-}
-
-.page-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    padding: 2rem 0;
-}
-
-.page-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 0 0.5rem 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-}
-
-.title-icon {
-    font-size: 2.5rem;
-}
-
-.page-subtitle {
-    color: #666;
-    font-size: 1.1rem;
-    margin: 0;
-}
-
-.transactions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.transaction-card-modern {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    cursor: pointer;
-}
-
-.transaction-card-modern:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-    border-color: #667eea;
-}
-
-.transaction-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.order-badge {
-    display: flex;
-    flex-direction: column;
-    color: white;
-}
-
-.badge-label {
-    font-size: 0.75rem;
-    opacity: 0.9;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.badge-number {
-    font-size: 1.5rem;
-    font-weight: 700;
-}
-
-.status-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    background: rgba(255,255,255,0.2);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.status-completed {
-    background: rgba(40, 167, 69, 0.9);
-}
-
-.status-pending {
-    background: rgba(255, 193, 7, 0.9);
-}
-
-.status-failed {
-    background: rgba(220, 53, 69, 0.9);
-}
-
-.status-icon {
-    font-size: 1rem;
-}
-
-.transaction-body {
-    padding: 1.5rem;
-}
-
-.transaction-info-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-}
-
-.info-block {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.info-label {
-    font-size: 0.75rem;
-    color: #999;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.info-value {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #333;
-}
-
-.info-time {
-    font-size: 0.85rem;
-    color: #666;
-}
-
-.price-block .info-value {
-    color: #667eea;
-    font-size: 1.5rem;
-}
-
-.transaction-footer {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid #f0f0f0;
-    background: #fafafa;
-}
-
-.btn-view-transaction {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.75rem 1rem;
-    background: #667eea;
-    color: white;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.btn-view-transaction:hover {
-    background: #5568d3;
-    transform: translateX(4px);
-}
-
-.btn-view-transaction svg {
-    transition: transform 0.2s ease;
-}
-
-.btn-view-transaction:hover svg {
-    transform: translateX(4px);
-}
-
-.empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.empty-icon {
-    margin-bottom: 2rem;
-    animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-.empty-title {
-    font-size: 2rem;
-    color: #333;
-    margin: 0 0 1rem 0;
-}
-
-.empty-message {
-    font-size: 1.1rem;
-    color: #666;
-    margin: 0 0 2rem 0;
-}
-
-.btn-browse-games {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 2rem;
-    background: #667eea;
-    color: white;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 1.1rem;
-    transition: all 0.3s ease;
-}
-
-.btn-browse-games:hover {
-    background: #5568d3;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-}
-
-.btn-icon {
-    font-size: 1.3rem;
-}
-
-@media (max-width: 768px) {
-    .transactions-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .transaction-info-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .page-title {
-        font-size: 2rem;
-    }
-}
-
-/* Animation on load */
-.transaction-card-modern {
-    animation: slideUp 0.4s ease-out;
-    animation-fill-mode: backwards;
-}
-
-.transaction-card-modern:nth-child(1) { animation-delay: 0.1s; }
-.transaction-card-modern:nth-child(2) { animation-delay: 0.2s; }
-.transaction-card-modern:nth-child(3) { animation-delay: 0.3s; }
-.transaction-card-modern:nth-child(4) { animation-delay: 0.4s; }
-.transaction-card-modern:nth-child(5) { animation-delay: 0.5s; }
-.transaction-card-modern:nth-child(6) { animation-delay: 0.6s; }
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Add click handler to entire card
-    const cards = document.querySelectorAll('.transaction-card-modern');
-    cards.forEach(card => {
-        card.addEventListener('click', function(e) {
-            // Don't trigger if clicking the actual link
-            if (e.target.closest('.btn-view-transaction')) return;
-            
-            const link = this.querySelector('.btn-view-transaction');
-            if (link) {
-                link.click();
-            }
-        });
-    });
-    
-    // Add ripple effect on click
-    cards.forEach(card => {
-        card.addEventListener('mousedown', function(e) {
-            const ripple = document.createElement('div');
-            ripple.style.position = 'absolute';
-            ripple.style.borderRadius = '50%';
-            ripple.style.background = 'rgba(102, 126, 234, 0.3)';
-            ripple.style.width = ripple.style.height = '100px';
-            ripple.style.left = e.clientX - this.offsetLeft - 50 + 'px';
-            ripple.style.top = e.clientY - this.offsetTop - 50 + 'px';
-            ripple.style.animation = 'ripple 0.6s ease-out';
-            ripple.style.pointerEvents = 'none';
-            
-            this.style.position = 'relative';
-            this.style.overflow = 'hidden';
-            this.appendChild(ripple);
-            
-            setTimeout(() => ripple.remove(), 600);
-        });
-    });
-});
-
-// Add ripple animation
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes ripple {
-        from {
-            transform: scale(0);
-            opacity: 1;
-        }
-        to {
-            transform: scale(4);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
-</script>
+{% block extra_js %}
+<script src="{% static 'js/transaction-history.js' %}"></script>
+{% endblock %}
 {% endblock %}
