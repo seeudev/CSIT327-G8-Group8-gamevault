@@ -4,368 +4,675 @@
 {% block title %}Order Details - GameVault{% endblock %}
 
 {% block content %}
-<div class="transaction-detail-container">
-    <h1>Order #{{ transaction.id }}</h1>
-    
-    <div class="transaction-info">
-        <p><strong>Date:</strong> {{ transaction.transaction_date|date:"F d, Y H:i" }}</p>
-        <p><strong>Total:</strong> ${{ transaction.total_amount }}</p>
-        <p><strong>Status:</strong> {{ transaction.get_payment_status_display }}</p>
-        <p><strong>Download Token:</strong> {{ transaction.download_token }}</p>
+<div class="transaction-detail-modern">
+    <div class="detail-header">
+        <div class="breadcrumb">
+            <a href="{% url 'store:transaction_history' %}">← Back to History</a>
+        </div>
+        <h1 class="detail-title">
+            <span class="title-icon">📦</span>
+            Order #{{ transaction.id }}
+        </h1>
     </div>
     
-    <h2>Purchased Games</h2>
-    <div class="transaction-items">
-        {% for item in transaction_items %}
-            <div class="transaction-item">
-                <h3>{{ item.game.title }}</h3>
-                <p><strong>Price:</strong> ${{ item.price_at_purchase }}</p>
-                
-                <!-- Game Key Display -->
-                {% if item.game_key %}
-                    <div class="game-key-section">
-                        <p class="game-key-label"><strong>Game Activation Key:</strong></p>
-                        <div class="game-key-display">
-                            <code class="game-key">{{ item.game_key }}</code>
-                            <button class="copy-btn" onclick="copyGameKey('{{ item.game_key }}', this)" title="Copy to clipboard">
-                                📋 Copy
-                            </button>
-                        </div>
-                        {% if item.key_sent_at %}
-                            <p class="key-sent-info">✅ Key sent to {{ user.email }} on {{ item.key_sent_at|date:"M d, Y H:i" }}</p>
-                        {% endif %}
+    <div class="detail-grid">
+        <!-- Order Summary Card -->
+        <div class="summary-card card-modern">
+            <h2 class="card-title">Order Summary</h2>
+            <div class="summary-content">
+                <div class="summary-row">
+                    <span class="summary-label">📅 Order Date</span>
+                    <span class="summary-value">{{ transaction.transaction_date|date:"F d, Y" }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">⏰ Time</span>
+                    <span class="summary-value">{{ transaction.transaction_date|date:"h:i A" }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">📊 Status</span>
+                    <span class="summary-value">
+                        <span class="status-badge-inline status-{{ transaction.payment_status }}">
+                            {{ transaction.get_payment_status_display }}
+                        </span>
+                    </span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">🎮 Total Items</span>
+                    <span class="summary-value">{{ transaction_items|length }}</span>
+                </div>
+                <div class="summary-row total-row">
+                    <span class="summary-label">💰 Total Amount</span>
+                    <span class="summary-value total-price">${{ transaction.total_amount }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">🔑 Download Token</span>
+                    <span class="summary-value token-value">
+                        <code>{{ transaction.download_token }}</code>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Games Section -->
+    <div class="games-section">
+        <h2 class="section-header">
+            <span class="header-icon">🎮</span>
+            Your Games
+        </h2>
+        
+        <div class="games-grid-detail">
+            {% for item in transaction_items %}
+                <div class="game-item-card card-modern" data-item-id="{{ item.id }}">
+                    <div class="game-card-header">
+                        <h3 class="game-title">{{ item.game.title }}</h3>
+                        <span class="game-price">${{ item.price_at_purchase }}</span>
                     </div>
-                {% endif %}
-                
-                <!-- Action Buttons -->
-                <div class="item-actions">
-                    {% if item.game.file_url %}
-                        <a href="{% url 'store:download_game' transaction.id item.game.id %}" class="button btn-download">
-                            📥 Download Game
-                        </a>
-                    {% else %}
-                        <p class="no-download">Download not available</p>
+                    
+                    <!-- Game Key Section -->
+                    {% if item.game_key %}
+                        <div class="game-key-modern">
+                            <div class="key-label-row">
+                                <span class="key-icon">🔑</span>
+                                <span class="key-label">Activation Key</span>
+                            </div>
+                            <div class="key-display-row">
+                                <code class="key-code" id="key-{{ item.id }}">{{ item.game_key }}</code>
+                                <button class="btn-copy" onclick="copyKey('{{ item.game_key }}', {{ item.id }})" title="Copy key">
+                                    <svg width="18" height="18" fill="currentColor">
+                                        <rect x="4" y="4" width="10" height="10" rx="1" stroke="currentColor" fill="none"/>
+                                        <rect x="7" y="7" width="10" height="10" rx="1" fill="currentColor"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            {% if item.key_sent_at %}
+                                <div class="key-sent-badge">
+                                    <svg width="14" height="14" fill="currentColor">
+                                        <circle cx="7" cy="7" r="6" fill="#28a745"/>
+                                        <path d="M4 7 L6 9 L10 5" stroke="white" stroke-width="1.5" fill="none"/>
+                                    </svg>
+                                    <span>Sent to {{ user.email }} on {{ item.key_sent_at|date:"M d, Y" }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
                     {% endif %}
                     
-                    <!-- Send Game Key Button -->
-                    <button 
-                        class="button btn-send-key" 
-                        data-item-id="{{ item.id }}"
-                        data-transaction-id="{{ transaction.id }}"
-                        onclick="sendGameKey(this)"
-                        {% if item.key_sent_at %}disabled{% endif %}>
-                        {% if item.key_sent_at %}
-                            ✓ Key Sent
+                    <!-- Action Buttons -->
+                    <div class="game-actions-modern">
+                        {% if item.game.file_url %}
+                            <a href="{% url 'store:download_game' transaction.id item.game.id %}" class="btn-action btn-download">
+                                <svg width="16" height="16" fill="currentColor">
+                                    <path d="M8 0 L8 10 M4 7 L8 11 L12 7 M2 14 L14 14" stroke="currentColor" stroke-width="2" fill="none"/>
+                                </svg>
+                                <span>Download</span>
+                            </a>
                         {% else %}
-                            📧 Send Game Key to Email
+                            <button class="btn-action btn-disabled" disabled>
+                                <span>Download Unavailable</span>
+                            </button>
                         {% endif %}
-                    </button>
+                        
+                        <button 
+                            class="btn-action btn-email {% if item.key_sent_at %}btn-sent{% endif %}"
+                            data-item-id="{{ item.id }}"
+                            data-transaction-id="{{ transaction.id }}"
+                            onclick="sendKey(this)"
+                            {% if item.key_sent_at %}disabled{% endif %}>
+                            <svg width="16" height="16" fill="currentColor">
+                                <path d="M2 4 L8 9 L14 4 M2 4 L2 12 L14 12 L14 4" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                            </svg>
+                            <span>{% if item.key_sent_at %}Key Sent{% else %}Email Key{% endif %}</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Status Messages -->
+                    <div class="status-message" id="status-{{ item.id }}"></div>
                 </div>
-                
-                <!-- Success/Error Messages -->
-                <div class="key-message" id="key-message-{{ item.id }}"></div>
-            </div>
-        {% endfor %}
-    </div>
-    
-    <div class="transaction-actions">
-        <a href="{% url 'store:transaction_history' %}" class="button">Back to History</a>
+            {% endfor %}
+        </div>
     </div>
 </div>
 
 <style>
-    .transaction-detail-container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 20px;
+.transaction-detail-modern {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: #f5f5f5;
+    min-height: 70vh;
+}
+
+.detail-header {
+    margin-bottom: 2rem;
+}
+
+.breadcrumb {
+    margin-bottom: 1rem;
+}
+
+.breadcrumb a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.breadcrumb a:hover {
+    color: #5568d3;
+    transform: translateX(-4px);
+}
+
+.detail-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.title-icon {
+    font-size: 2.5rem;
+}
+
+.detail-grid {
+    margin-bottom: 3rem;
+}
+
+.card-modern {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.card-modern:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 1.5rem 0;
+    color: #1a1a1a;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.summary-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.summary-label {
+    color: #666;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.summary-value {
+    color: #333;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.total-row {
+    padding-top: 1.5rem;
+    margin-top: 1rem;
+    border-top: 2px solid #e0e0e0;
+    border-bottom: none;
+}
+
+.total-price {
+    font-size: 2rem;
+    color: #667eea;
+    font-weight: 700;
+}
+
+.status-badge-inline {
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+}
+
+.status-completed {
+    background: #28a745;
+}
+
+.status-pending {
+    background: #ffc107;
+}
+
+.status-failed {
+    background: #dc3545;
+}
+
+.token-value code {
+    background: #f5f5f5;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    color: #667eea;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.games-section {
+    margin-top: 3rem;
+}
+
+.section-header {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 2rem 0;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-icon {
+    font-size: 2rem;
+}
+
+.games-grid-detail {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.game-item-card {
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.game-item-card:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+.game-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.game-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    flex: 1;
+}
+
+.game-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #667eea;
+    margin-left: 1rem;
+}
+
+.game-key-modern {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #667eea;
+}
+
+.key-label-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.key-icon {
+    font-size: 1.25rem;
+}
+
+.key-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.key-display-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.key-code {
+    flex: 1;
+    background: white;
+    padding: 1rem 1.25rem;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #333;
+}
+
+.btn-copy {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-copy:hover {
+    background: #5568d3;
+    transform: scale(1.05);
+}
+
+.btn-copy:active {
+    transform: scale(0.95);
+}
+
+.btn-copy.copied {
+    background: #28a745;
+    animation: pulse 0.3s ease;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.key-sent-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #28a745;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.75rem;
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 6px;
+}
+
+.game-actions-modern {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.btn-action {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: white;
+}
+
+.btn-download {
+    background: #667eea;
+}
+
+.btn-download:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-email {
+    background: #28a745;
+}
+
+.btn-email:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-sent {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+.btn-disabled {
+    background: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.status-message {
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: none;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.status-message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    display: block;
+}
+
+.status-message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .games-grid-detail {
+        grid-template-columns: 1fr;
     }
     
-    .transaction-info {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 30px;
-    }
-    
-    .transaction-info p {
-        margin: 10px 0;
-        font-size: 16px;
-    }
-    
-    .transaction-items {
-        display: flex;
+    .game-actions-modern {
         flex-direction: column;
-        gap: 20px;
     }
     
-    .transaction-item {
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 25px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    .key-display-row {
+        flex-direction: column;
     }
     
-    .transaction-item h3 {
-        margin: 0 0 15px 0;
-        color: #667eea;
-        font-size: 22px;
+    .btn-copy {
+        width: 100%;
     }
     
-    .game-key-section {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        padding: 20px;
-        margin: 20px 0;
-        border-radius: 8px;
-        border-left: 4px solid #667eea;
+    .detail-title {
+        font-size: 2rem;
     }
-    
-    .game-key-label {
-        margin: 0 0 10px 0;
-        font-size: 14px;
-        color: #555;
+}
+
+/* Loading animation */
+.game-item-card {
+    animation: fadeInUp 0.5s ease-out;
+    animation-fill-mode: backwards;
+}
+
+.game-item-card:nth-child(1) { animation-delay: 0.1s; }
+.game-item-card:nth-child(2) { animation-delay: 0.2s; }
+.game-item-card:nth-child(3) { animation-delay: 0.3s; }
+.game-item-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
     }
-    
-    .game-key-display {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin: 10px 0;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
-    
-    .game-key {
-        background: white;
-        padding: 12px 20px;
-        border: 2px solid #667eea;
-        font-size: 18px;
-        letter-spacing: 2px;
-        font-weight: bold;
-        display: inline-block;
-        border-radius: 5px;
-        font-family: 'Courier New', monospace;
-        color: #333;
-        flex: 1;
-    }
-    
-    .copy-btn {
-        background: #667eea;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: background 0.3s;
-    }
-    
-    .copy-btn:hover {
-        background: #5568d3;
-    }
-    
-    .copy-btn.copied {
-        background: #28a745;
-    }
-    
-    .key-sent-info {
-        color: #28a745;
-        font-size: 14px;
-        margin-top: 10px;
-        padding: 10px;
-        background: rgba(40, 167, 69, 0.1);
-        border-radius: 5px;
-    }
-    
-    .item-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-        flex-wrap: wrap;
-    }
-    
-    .button {
-        padding: 12px 24px;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: bold;
-        cursor: pointer;
-        border: none;
-        transition: all 0.3s;
-        font-size: 14px;
-    }
-    
-    .btn-download {
-        background: #667eea;
-        color: white;
-    }
-    
-    .btn-download:hover {
-        background: #5568d3;
-    }
-    
-    .btn-send-key {
-        background: #28a745;
-        color: white;
-    }
-    
-    .btn-send-key:hover:not(:disabled) {
-        background: #218838;
-    }
-    
-    .btn-send-key:disabled {
-        background: #6c757d;
-        cursor: not-allowed;
-        opacity: 0.6;
-    }
-    
-    .key-message {
-        margin-top: 15px;
-        padding: 12px 15px;
-        border-radius: 5px;
-        display: none;
-        font-size: 14px;
-    }
-    
-    .key-message.success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-        display: block;
-    }
-    
-    .key-message.error {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-        display: block;
-    }
-    
-    .no-download {
-        color: #666;
-        font-style: italic;
-    }
-    
-    .transaction-actions {
-        margin-top: 30px;
-        text-align: center;
-    }
-    
-    @media (max-width: 600px) {
-        .item-actions {
-            flex-direction: column;
-        }
-        
-        .button {
-            width: 100%;
-            text-align: center;
-        }
-        
-        .game-key-display {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .copy-btn {
-            width: 100%;
-        }
-    }
+}
 </style>
 
 <script>
-    // Get CSRF token for POST requests
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+// CSRF token helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
         }
-        return cookieValue;
     }
-    const csrftoken = getCookie('csrftoken');
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+// Copy key to clipboard with animation
+function copyKey(key, itemId) {
+    navigator.clipboard.writeText(key).then(() => {
+        const btn = event.target.closest('.btn-copy');
+        const keyCode = document.getElementById(`key-${itemId}`);
+        
+        // Animate button
+        btn.classList.add('copied');
+        
+        // Animate key code
+        keyCode.style.transition = 'all 0.3s ease';
+        keyCode.style.background = '#d4edda';
+        keyCode.style.borderColor = '#28a745';
+        
+        // Show success message
+        const statusDiv = document.getElementById(`status-${itemId}`);
+        statusDiv.className = 'status-message success';
+        statusDiv.textContent = '✓ Key copied to clipboard!';
+        
+        // Reset after delay
+        setTimeout(() => {
+            btn.classList.remove('copied');
+            keyCode.style.background = 'white';
+            keyCode.style.borderColor = '#667eea';
+            statusDiv.style.display = 'none';
+        }, 2000);
+    }).catch(err => {
+        console.error('Copy failed:', err);
+        const statusDiv = document.getElementById(`status-${itemId}`);
+        statusDiv.className = 'status-message error';
+        statusDiv.textContent = '✗ Failed to copy. Please copy manually.';
+    });
+}
+
+// Send key via email with loading state
+async function sendKey(btn) {
+    const itemId = btn.dataset.itemId;
+    const transactionId = btn.dataset.transactionId;
+    const statusDiv = document.getElementById(`status-${itemId}`);
     
-    // Copy game key to clipboard
-    function copyGameKey(gameKey, buttonElement) {
-        navigator.clipboard.writeText(gameKey).then(function() {
-            const originalText = buttonElement.textContent;
-            buttonElement.textContent = '✓ Copied!';
-            buttonElement.classList.add('copied');
-            
-            setTimeout(function() {
-                buttonElement.textContent = originalText;
-                buttonElement.classList.remove('copied');
-            }, 2000);
-        }).catch(function(err) {
-            console.error('Failed to copy: ', err);
-            alert('Failed to copy game key. Please copy it manually.');
-        });
-    }
+    // Disable button and show loading
+    btn.disabled = true;
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = `
+        <svg width="16" height="16" fill="currentColor" class="spinning">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+        </svg>
+        <span>Sending...</span>
+    `;
     
-    // Handle "Send Game Key" button clicks
-    async function sendGameKey(buttonElement) {
-        const itemId = buttonElement.dataset.itemId;
-        const transactionId = buttonElement.dataset.transactionId;
-        const messageDiv = document.getElementById(`key-message-${itemId}`);
-        
-        // Disable button and show loading state
-        buttonElement.disabled = true;
-        const originalText = buttonElement.textContent;
-        buttonElement.textContent = '⏳ Sending...';
-        
-        // Hide previous messages
-        messageDiv.className = 'key-message';
-        messageDiv.style.display = 'none';
-        
-        try {
-            const response = await fetch(
-                `/store/transactions/${transactionId}/items/${itemId}/send-key/`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrftoken
-                    }
-                }
-            );
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                // Show success message
-                messageDiv.className = 'key-message success';
-                messageDiv.textContent = `✅ ${data.message} Check your email at {{ user.email }}`;
-                messageDiv.style.display = 'block';
-                
-                // Update button to show sent state
-                buttonElement.textContent = '✓ Key Sent';
-                
-                // Reload page after 3 seconds to show updated state
-                setTimeout(function() {
-                    window.location.reload();
-                }, 3000);
-            } else {
-                // Show error message
-                messageDiv.className = 'key-message error';
-                messageDiv.textContent = `❌ ${data.error}`;
-                messageDiv.style.display = 'block';
-                
-                // Re-enable button
-                buttonElement.disabled = false;
-                buttonElement.textContent = originalText;
+    // Hide previous messages
+    statusDiv.style.display = 'none';
+    
+    try {
+        const response = await fetch(
+            `/store/transactions/${transactionId}/items/${itemId}/send-key/`,
+            {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken }
             }
-        } catch (error) {
-            // Show network error message
-            messageDiv.className = 'key-message error';
-            messageDiv.textContent = '❌ Network error. Please try again.';
-            messageDiv.style.display = 'block';
+        );
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            statusDiv.className = 'status-message success';
+            statusDiv.textContent = `✓ ${data.message} Check {{ user.email }}`;
+            btn.classList.add('btn-sent');
+            btn.innerHTML = `
+                <svg width="16" height="16" fill="currentColor">
+                    <circle cx="8" cy="8" r="7" fill="#28a745"/>
+                    <path d="M4 8 L7 11 L12 6" stroke="white" stroke-width="2" fill="none"/>
+                </svg>
+                <span>Key Sent</span>
+            `;
             
-            // Re-enable button
-            buttonElement.disabled = false;
-            buttonElement.textContent = originalText;
+            // Reload after delay
+            setTimeout(() => window.location.reload(), 3000);
+        } else {
+            throw new Error(data.error || 'Failed to send');
         }
+    } catch (error) {
+        statusDiv.className = 'status-message error';
+        statusDiv.textContent = `✗ ${error.message}`;
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
     }
+}
+
+// Add spinning animation for loading state
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    .spinning {
+        animation: spin 1s linear infinite;
+    }
+`;
+document.head.appendChild(style);
 </script>
 {% endblock %}
