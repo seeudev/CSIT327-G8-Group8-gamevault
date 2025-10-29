@@ -6,12 +6,12 @@
 {% block content %}
 <div class="transaction-detail-modern">
     <div class="detail-header">
-        <div class="breadcrumb">
+        <div class="breadcrumb-detail">
             <a href="{% url 'store:transaction_history' %}">← Back to History</a>
         </div>
         <h1 class="detail-title">
             <span class="title-icon icon-package"></span>
-            Order #{{ transaction.id }}
+            Order ID#{{ transaction.id }}
         </h1>
     </div>
     
@@ -43,12 +43,7 @@
                     <span class="summary-label icon-dollar">Total Amount</span>
                     <span class="summary-value total-price">${{ transaction.total_amount }}</span>
                 </div>
-                <div class="summary-row">
-                    <span class="summary-label icon-key">Download Token</span>
-                    <span class="summary-value token-value">
-                        <code>{{ transaction.download_token }}</code>
-                    </span>
-                </div>
+                
             </div>
         </div>
     </div>

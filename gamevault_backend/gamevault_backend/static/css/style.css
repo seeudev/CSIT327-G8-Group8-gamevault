@@ -1319,6 +1319,21 @@ footer p {
     transform: translateX(-4px);
 }
 
+.breadcrumb-detail a {
+    color: red;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.breadcrumb-detail a:hover {
+    color: black;
+    transform: translateX(-4px);
+}
+
 .game-title-hero {
     font-size: 3rem;
     font-weight: 700;
@@ -1576,10 +1591,13 @@ footer p {
 }
 
 .transactions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 1.5rem;
     margin-bottom: 2rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .transaction-card-modern {
@@ -1901,9 +1919,12 @@ footer p {
 }
 
 .games-grid-detail {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 1.5rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .game-item-card {
@@ -1981,10 +2002,12 @@ footer p {
     border: 2px solid #667eea;
     border-radius: 8px;
     font-family: 'Courier New', monospace;
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     color: #333;
+    word-break: break-all;
+    overflow-wrap: break-word;
 }
 
 .btn-copy {
@@ -2196,20 +2219,12 @@ footer p {
         grid-template-columns: 1fr;
     }
     
-    .transactions-grid {
-        grid-template-columns: 1fr;
-    }
-    
     .transaction-info-grid {
         grid-template-columns: 1fr;
     }
     
     .page-title {
         font-size: 2rem;
-    }
-    
-    .games-grid-detail {
-        grid-template-columns: 1fr;
     }
     
     .game-actions-modern {
@@ -2230,6 +2245,11 @@ footer p {
     
     .auth-card {
         padding: 2rem 1.5rem;
+    }
+    
+    .key-code {
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
     }
 }
 
