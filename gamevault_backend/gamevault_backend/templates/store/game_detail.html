@@ -3,6 +3,11 @@
 
 {% block title %}{{ game.title }} - GameVault{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modules/game-detail.css' %}">
+<link rel="stylesheet" href="{% static 'css/modules/animations.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="game-detail-modern">
     <div class="game-detail-hero">
