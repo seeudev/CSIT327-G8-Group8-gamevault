@@ -1,605 +1,103 @@
 /* ============================================
    TRANSACTIONS MODULE
    Transaction history and detail pages
+   Red Gaming Theme with CSS Variables
    ============================================ */
 
-/* ============================================
-   TRANSACTION HISTORY
-   ============================================ */
-.transaction-history-modern {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-    background: #f5f5f5;
-    min-height: 70vh;
-}
-
-.page-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    padding: 2rem 0;
-}
-
-.page-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0 0 0.5rem 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-}
-
-.title-icon {
-    font-size: 2.5rem;
-}
-
-.page-subtitle {
-    color: #666;
-    font-size: 1.1rem;
-    margin: 0;
-}
-
-.transactions-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.transaction-card-modern {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    cursor: pointer;
-}
-
-.transaction-card-modern:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-    border-color: #667eea;
-}
-
-.transaction-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.order-badge {
-    display: flex;
-    flex-direction: column;
-    color: white;
-}
-
-.badge-label {
-    font-size: 0.75rem;
-    opacity: 0.9;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.badge-number {
-    font-size: 1.5rem;
-    font-weight: 700;
-}
-
-.status-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    background: rgba(255,255,255,0.2);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.status-completed {
-    background: rgba(40, 167, 69, 0.9);
-}
-
-.status-pending {
-    background: rgba(255, 193, 7, 0.9);
-}
-
-.status-failed {
-    background: rgba(220, 53, 69, 0.9);
-}
-
-.status-icon {
-    font-size: 1rem;
-}
-
-.transaction-body {
-    padding: 1.5rem;
-}
-
-.transaction-info-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-}
-
-.info-block {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.info-label {
-    font-size: 0.75rem;
-    color: #999;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.info-value {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #333;
-}
-
-.info-time {
-    font-size: 0.85rem;
-    color: #666;
-}
-
-.price-block .info-value {
-    color: #667eea;
-    font-size: 1.5rem;
-}
-
-.transaction-footer {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid #f0f0f0;
-    background: #fafafa;
-}
-
-.btn-view-transaction {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.75rem 1rem;
-    background: #667eea;
-    color: white;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.btn-view-transaction:hover {
-    background: #5568d3;
-    transform: translateX(4px);
-}
-
-.btn-view-transaction svg {
-    transition: transform 0.2s ease;
-}
-
-.btn-view-transaction:hover svg {
-    transform: translateX(4px);
-}
-
-.empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.empty-icon {
-    margin-bottom: 2rem;
-    animation: float 3s ease-in-out infinite;
-}
-
-.empty-title {
-    font-size: 2rem;
-    color: #333;
-    margin: 0 0 1rem 0;
-}
-
-.empty-message {
-    font-size: 1.1rem;
-    color: #666;
-    margin: 0 0 2rem 0;
-}
-
-.btn-browse-games {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 2rem;
-    background: #667eea;
-    color: white;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 1.1rem;
-    transition: all 0.3s ease;
-}
-
-.btn-browse-games:hover {
-    background: #5568d3;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-}
-
-/* ============================================
-   TRANSACTION DETAIL
-   ============================================ */
-.transaction-detail-modern {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-    background: #f5f5f5;
-    min-height: 70vh;
-}
-
-.detail-header {
-    margin-bottom: 2rem;
-}
-
-.detail-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.detail-grid {
-    margin-bottom: 3rem;
-}
-
-.card-modern {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-}
-
-.card-modern:hover {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-}
-
-.card-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0 0 1.5rem 0;
-    color: #1a1a1a;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #f0f0f0;
-}
-
-.summary-content {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.summary-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #f5f5f5;
-}
-
-.summary-label {
-    color: #666;
-    font-weight: 600;
-    font-size: 0.95rem;
-}
-
-.summary-value {
-    color: #333;
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-.total-row {
-    padding-top: 1.5rem;
-    margin-top: 1rem;
-    border-top: 2px solid #e0e0e0;
-    border-bottom: none;
-}
-
-.total-price {
-    font-size: 2rem;
-    color: #667eea;
-    font-weight: 700;
-}
-
-.status-badge-inline {
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: white;
-}
-
-.token-value code {
-    background: #f5f5f5;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-family: 'Courier New', monospace;
-    color: #667eea;
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-
-.games-section {
-    margin-top: 3rem;
-}
-
-.section-header {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 2rem 0;
-    color: #1a1a1a;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.header-icon {
-    font-size: 2rem;
-}
-
-.games-grid-detail {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.game-item-card {
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-}
-
-.game-item-card:hover {
-    border-color: #667eea;
-    transform: translateY(-2px);
-}
-
-.game-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #f0f0f0;
-}
-
-.game-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin: 0;
-    flex: 1;
-}
-
-.game-price {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #667eea;
-    margin-left: 1rem;
-}
-
-.game-key-modern {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    padding: 1.5rem;
-    border-radius: 10px;
-    margin-bottom: 1.5rem;
-    border-left: 4px solid #667eea;
-}
-
-.key-label-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.key-icon {
-    font-size: 1.25rem;
-}
-
-.key-label {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #555;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.key-display-row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-
-.key-code {
-    flex: 1;
-    background: white;
-    padding: 1rem 1.25rem;
-    border: 2px solid #667eea;
-    border-radius: 8px;
-    font-family: 'Courier New', monospace;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: #333;
-    word-break: break-all;
-    overflow-wrap: break-word;
-}
-
-.btn-copy {
-    background: #667eea;
-    color: white;
-    border: none;
-    padding: 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-copy:hover {
-    background: #5568d3;
-    transform: scale(1.05);
-}
-
-.btn-copy:active {
-    transform: scale(0.95);
-}
-
-.btn-copy.copied {
-    background: #28a745;
-    animation: pulse 0.3s ease;
-}
-
-.key-sent-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #28a745;
-    font-size: 0.9rem;
-    font-weight: 600;
-    padding: 0.75rem;
-    background: rgba(40, 167, 69, 0.1);
-    border-radius: 6px;
-}
-
-.game-actions-modern {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-
-.btn-action {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.875rem 1.5rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    color: white;
-}
-
-.btn-download {
-    background: #667eea;
-}
-
-.btn-download:hover {
-    background: #5568d3;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-.btn-email {
-    background: #28a745;
-}
-
-.btn-email:hover:not(:disabled) {
-    background: #218838;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-}
-
-.btn-sent {
-    background: #6c757d;
-    cursor: not-allowed;
-}
-
-.btn-disabled {
-    background: #e0e0e0;
-    color: #999;
-    cursor: not-allowed;
-}
-
-.status-message {
-    padding: 1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    display: none;
-    animation: slideDown 0.3s ease;
-}
-
-.status-message.success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-    display: block;
-}
-
-.status-message.error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-    display: block;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .transaction-info-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .page-title {
-        font-size: 2rem;
-    }
-    
-    .game-actions-modern {
-        flex-direction: column;
-    }
-    
-    .key-display-row {
-        flex-direction: column;
-    }
-    
-    .btn-copy {
-        width: 100%;
-    }
-    
-    .detail-title {
-        font-size: 2rem;
-    }
-    
-    .key-code {
-        font-size: 0.9rem;
-        letter-spacing: 0.5px;
-    }
+.transaction-history-modern{max-width:1200px;margin:0 auto;padding:var(--space-xl);background:var(--color-bg-secondary);min-height:70vh}
+.page-header{text-align:center;margin-bottom:var(--space-2xl);padding:var(--space-xl) 0}
+.page-title{font-size:var(--font-size-4xl);font-weight:var(--font-weight-bold);color:var(--color-text-primary);margin:0 0 var(--space-sm) 0;display:flex;align-items:center;justify-content:center;gap:var(--space-md)}
+.title-icon{font-size:var(--font-size-4xl)}
+.page-subtitle{color:var(--color-text-secondary);font-size:var(--font-size-lg);margin:0}
+.transactions-grid{display:flex;flex-direction:column;gap:var(--space-lg);margin-bottom:var(--space-xl);max-width:900px;margin-left:auto;margin-right:auto}
+.transaction-card-modern{background:var(--color-bg-primary);border-radius:var(--card-radius);overflow:hidden;box-shadow:var(--card-shadow);transition:var(--transition-all);border:2px solid transparent;cursor:pointer}
+.transaction-card-modern:hover{transform:translateY(-4px);box-shadow:var(--card-shadow-hover);border-color:var(--color-primary)}
+.transaction-header{background:var(--gradient-primary);padding:var(--space-lg);display:flex;justify-content:space-between;align-items:center}
+.order-badge{display:flex;flex-direction:column;color:var(--color-text-inverse)}
+.badge-label{font-size:var(--font-size-xs);opacity:0.9;text-transform:uppercase;letter-spacing:1px}
+.badge-number{font-size:var(--font-size-2xl);font-weight:var(--font-weight-bold)}
+.status-badge{display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-md);border-radius:var(--radius-full);font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold);background:rgba(255,255,255,0.2);color:var(--color-text-inverse);border:1px solid rgba(255,255,255,0.3)}
+.status-completed{background:rgba(40,167,69,0.9)}
+.status-pending{background:rgba(255,193,7,0.9)}
+.status-failed{background:rgba(220,53,69,0.9)}
+.status-icon{font-size:var(--font-size-base)}
+.transaction-body{padding:var(--space-lg)}
+.transaction-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md)}
+.info-block{display:flex;flex-direction:column;gap:var(--space-xs)}
+.info-label{font-size:var(--font-size-xs);color:var(--color-text-tertiary);font-weight:var(--font-weight-semibold);text-transform:uppercase}
+.info-value{font-size:var(--font-size-xl);font-weight:var(--font-weight-bold);color:var(--color-text-primary)}
+.info-time{font-size:var(--font-size-sm);color:var(--color-text-secondary)}
+.price-block .info-value{color:var(--color-primary);font-size:var(--font-size-2xl)}
+.transaction-footer{padding:var(--space-md) var(--space-lg);border-top:1px solid var(--color-border-light);background:var(--color-bg-secondary)}
+.btn-view-transaction{display:flex;align-items:center;justify-content:space-between;width:100%;padding:var(--space-md) var(--space-md);background:var(--gradient-primary);color:var(--color-text-inverse);border-radius:var(--radius-lg);text-decoration:none;font-weight:var(--font-weight-semibold);transition:var(--transition-all)}
+.btn-view-transaction:hover{transform:translateX(4px);box-shadow:var(--shadow-primary)}
+.btn-view-transaction svg{transition:transform var(--transition-base)}
+.btn-view-transaction:hover svg{transform:translateX(4px)}
+.empty-state{text-align:center;padding:var(--space-3xl) var(--space-xl);background:var(--color-bg-primary);border-radius:var(--card-radius);box-shadow:var(--shadow-sm)}
+.empty-state-icon{font-size:var(--font-size-5xl);opacity:0.3;margin-bottom:var(--space-lg)}
+.empty-state h3{font-size:var(--font-size-2xl);color:var(--color-text-secondary);margin-bottom:var(--space-sm)}
+.empty-state p{color:var(--color-text-tertiary);margin-bottom:var(--space-xl)}
+.btn-browse{display:inline-block;padding:var(--btn-padding-lg);background:var(--gradient-primary);color:var(--color-text-inverse);border-radius:var(--radius-lg);font-weight:var(--font-weight-semibold);text-decoration:none;transition:var(--transition-all)}
+.btn-browse:hover{transform:translateY(-2px);box-shadow:var(--shadow-primary-lg)}
+.transaction-detail-modern{max-width:1200px;margin:0 auto;padding:var(--space-xl);background:var(--color-bg-secondary);min-height:70vh}
+.detail-header-card{background:var(--color-bg-primary);border-radius:var(--card-radius);padding:var(--space-xl);margin-bottom:var(--space-xl);box-shadow:var(--shadow-sm)}
+.breadcrumb-nav{margin-bottom:var(--space-lg)}
+.breadcrumb-link{color:var(--color-primary);text-decoration:none;font-weight:var(--font-weight-medium);transition:var(--transition-base)}
+.breadcrumb-link:hover{text-decoration:underline}
+.detail-title{font-size:var(--font-size-3xl);font-weight:var(--font-weight-bold);color:var(--color-text-primary);margin:0 0 var(--space-lg) 0;display:flex;align-items:center;gap:var(--space-md)}
+.detail-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-xl);padding:var(--space-lg);background:var(--color-bg-secondary);border-radius:var(--radius-xl)}
+.meta-item{display:flex;flex-direction:column;gap:var(--space-xs)}
+.meta-label{font-size:var(--font-size-xs);color:var(--color-text-tertiary);font-weight:var(--font-weight-semibold);text-transform:uppercase}
+.meta-value{font-size:var(--font-size-lg);font-weight:var(--font-weight-bold);color:var(--color-text-primary)}
+.meta-date{font-size:var(--font-size-sm);color:var(--color-text-secondary)}
+.status-badge-large{display:inline-flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-lg);border-radius:var(--radius-full);font-size:var(--font-size-base);font-weight:var(--font-weight-semibold)}
+.games-section{margin-bottom:var(--space-xl)}
+.section-title-detail{font-size:var(--font-size-2xl);font-weight:var(--font-weight-bold);color:var(--color-text-primary);margin:0 0 var(--space-lg) 0;display:flex;align-items:center;gap:var(--space-sm)}
+.games-grid-detail{display:flex;flex-direction:column;gap:var(--space-lg)}
+.game-item-card{background:var(--color-bg-primary);border-radius:var(--card-radius);padding:var(--space-lg);box-shadow:var(--shadow-sm);transition:var(--transition-all)}
+.game-item-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.game-item-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-md)}
+.game-info-section{flex:1;min-width:250px}
+.game-title-detail{font-size:var(--font-size-xl);font-weight:var(--font-weight-bold);color:var(--color-text-primary);margin:0 0 var(--space-xs) 0}
+.game-category-detail{color:var(--color-text-secondary);font-size:var(--font-size-sm)}
+.game-price-detail{font-size:var(--font-size-2xl);font-weight:var(--font-weight-bold);color:var(--color-primary);white-space:nowrap}
+.game-key-section{margin-top:var(--space-md);padding:var(--space-md);background:var(--color-bg-secondary);border-radius:var(--radius-lg);border:2px solid var(--color-border-light)}
+.key-label{font-size:var(--font-size-sm);color:var(--color-text-secondary);font-weight:var(--font-weight-semibold);margin-bottom:var(--space-sm)}
+.game-key-modern{display:flex;align-items:center;gap:var(--space-md);padding:var(--space-md);background:var(--color-bg-primary);border-radius:var(--radius-lg);font-family:monospace;margin-bottom:var(--space-md)}
+.key-code{flex:1;font-size:var(--font-size-lg);font-weight:var(--font-weight-bold);color:var(--color-primary);letter-spacing:2px}
+.btn-copy-key{padding:var(--space-sm) var(--space-md);background:var(--gradient-primary);color:var(--color-text-inverse);border:none;border-radius:var(--radius-md);font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold);cursor:pointer;transition:var(--transition-all);display:flex;align-items:center;gap:var(--space-xs)}
+.btn-copy-key:hover{transform:translateY(-1px);box-shadow:var(--shadow-primary)}
+.btn-copy-key.copied{background:var(--color-success)}
+.game-actions{display:flex;gap:var(--space-sm);flex-wrap:wrap}
+.btn-action{padding:var(--space-sm) var(--space-md);background:var(--color-bg-tertiary);color:var(--color-text-primary);border:none;border-radius:var(--radius-md);font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:var(--space-xs);transition:var(--transition-all)}
+.btn-action:hover{background:var(--color-border-dark);transform:translateY(-1px)}
+.btn-download{background:var(--gradient-primary);color:var(--color-text-inverse)}
+.btn-download:hover{box-shadow:var(--shadow-primary)}
+.btn-email{background:var(--color-info);color:var(--color-text-inverse)}
+.btn-email:hover{background:var(--color-info-light)}
+.btn-email:disabled{opacity:0.6;cursor:not-allowed}
+.btn-email.sending{opacity:0.7;cursor:wait}
+.status-message{padding:var(--space-sm) var(--space-md);border-radius:var(--radius-md);font-size:var(--font-size-sm);margin-top:var(--space-sm);display:flex;align-items:center;gap:var(--space-sm)}
+.status-success{background:var(--color-success-bg);color:var(--color-success);border:1px solid var(--color-success-light)}
+.status-error{background:var(--color-error-bg);color:var(--color-error);border:1px solid var(--color-error-light)}
+.key-status-detail{color:var(--color-text-secondary);font-size:var(--font-size-sm);margin-top:var(--space-xs);display:flex;align-items:center;gap:var(--space-xs)}
+@media (max-width:1024px){
+    .detail-meta{grid-template-columns:repeat(2,1fr)}
+    .transaction-info-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:768px){
+    .transaction-history-modern,.transaction-detail-modern{padding:var(--space-md)}
+    .page-title,.detail-title{font-size:var(--font-size-3xl);flex-direction:column}
+    .detail-meta{grid-template-columns:1fr;gap:var(--space-md)}
+    .transaction-info-grid{grid-template-columns:1fr}
+    .game-item-header{flex-direction:column}
+    .game-price-detail{align-self:flex-start}
+}
+@media (max-width:480px){
+    .page-title,.detail-title{font-size:var(--font-size-2xl)}
+    .transaction-card-modern:hover{transform:none}
+    .game-key-modern{flex-direction:column;align-items:stretch}
+    .key-code{font-size:var(--font-size-base)}
+    .game-actions{flex-direction:column}
+    .btn-action{justify-content:center}
 }

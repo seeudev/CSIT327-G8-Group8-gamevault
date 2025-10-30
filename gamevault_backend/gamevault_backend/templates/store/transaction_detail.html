@@ -10,114 +10,93 @@
 
 {% block content %}
 <div class="transaction-detail-modern">
-    <div class="detail-header">
-        <div class="breadcrumb-detail">
-            <a href="{% url 'store:transaction_history' %}">← Back to History</a>
-        </div>
+    <div class="detail-header-card">
+        <nav class="breadcrumb-nav">
+            <a href="{% url 'store:transaction_history' %}" class="breadcrumb-link">← Back to Transaction History</a>
+        </nav>
         <h1 class="detail-title">
-            <span class="title-icon icon-package"></span>
-            Order ID#{{ transaction.id }}
+            <span class="title-icon">📦</span>
+            Order #{{ transaction.id }}
         </h1>
-    </div>
-    
-    <div class="detail-grid">
-        <div class="summary-card card-modern">
-            <h2 class="card-title">Order Summary</h2>
-            <div class="summary-content">
-                <div class="summary-row">
-                    <span class="summary-label icon-calendar">Order Date</span>
-                    <span class="summary-value">{{ transaction.transaction_date|date:"F d, Y" }}</span>
-                </div>
-                <div class="summary-row">
-                    <span class="summary-label icon-clock">Time</span>
-                    <span class="summary-value">{{ transaction.transaction_date|date:"h:i A" }}</span>
-                </div>
-                <div class="summary-row">
-                    <span class="summary-label icon-chart">Status</span>
-                    <span class="summary-value">
-                        <span class="status-badge-inline status-{{ transaction.payment_status }}">
-                            {{ transaction.get_payment_status_display }}
-                        </span>
+        
+        <div class="detail-meta">
+            <div class="meta-item">
+                <span class="meta-label">📅 Order Date</span>
+                <span class="meta-value">{{ transaction.transaction_date|date:"F d, Y" }}</span>
+                <span class="meta-date">{{ transaction.transaction_date|date:"h:i A" }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">📊 Status</span>
+                <span class="meta-value">
+                    <span class="status-badge-large status-{{ transaction.payment_status }}">
+                        <span class="status-icon">{% if transaction.payment_status == 'completed' %}✓{% elif transaction.payment_status == 'pending' %}⏳{% else %}✗{% endif %}</span>
+                        {{ transaction.get_payment_status_display }}
                     </span>
-                </div>
-                <div class="summary-row">
-                    <span class="summary-label icon-gamepad">Total Items</span>
-                    <span class="summary-value">{{ transaction_items|length }}</span>
-                </div>
-                <div class="summary-row total-row">
-                    <span class="summary-label icon-dollar">Total Amount</span>
-                    <span class="summary-value total-price">${{ transaction.total_amount }}</span>
-                </div>
-                
+                </span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">🎮 Total Items</span>
+                <span class="meta-value">{{ transaction_items|length }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">💰 Total Amount</span>
+                <span class="meta-value" style="color:var(--color-primary)">${{ transaction.total_amount }}</span>
             </div>
         </div>
     </div>
     
     <div class="games-section">
-        <h2 class="section-header">
-            <span class="header-icon icon-gamepad"></span>
+        <h2 class="section-title-detail">
+            <span>🎮</span>
             Your Games
         </h2>
         
         <div class="games-grid-detail">
             {% for item in transaction_items %}
-                <div class="game-item-card card-modern" data-item-id="{{ item.id }}">
-                    <div class="game-card-header">
-                        <h3 class="game-title">{{ item.game.title }}</h3>
-                        <span class="game-price">${{ item.price_at_purchase }}</span>
+                <div class="game-item-card" data-item-id="{{ item.id }}">
+                    <div class="game-item-header">
+                        <div class="game-info-section">
+                            <h3 class="game-title-detail">{{ item.game.title }}</h3>
+                            <p class="game-category-detail">{{ item.game.category|default:"Digital Game" }}</p>
+                        </div>
+                        <span class="game-price-detail">${{ item.price_at_purchase }}</span>
                     </div>
                     
                     {% if item.game_key %}
-                        <div class="game-key-modern">
-                            <div class="key-label-row">
-                                <span class="key-icon icon-key"></span>
-                                <span class="key-label">Activation Key</span>
-                            </div>
-                            <div class="key-display-row">
+                        <div class="game-key-section">
+                            <div class="key-label">🔑 Activation Key</div>
+                            <div class="game-key-modern">
                                 <code class="key-code" id="key-{{ item.id }}">{{ item.game_key }}</code>
-                                <button class="btn-copy" onclick="copyKey('{{ item.game_key }}', {{ item.id }})" title="Copy key">
-                                    <svg width="18" height="18" fill="currentColor">
-                                        <rect x="4" y="4" width="10" height="10" rx="1" stroke="currentColor" fill="none"/>
-                                        <rect x="7" y="7" width="10" height="10" rx="1" fill="currentColor"/>
-                                    </svg>
+                                <button class="btn-copy-key" onclick="copyKey('{{ item.game_key }}', {{ item.id }})" title="Copy key">
+                                    📋 Copy
                                 </button>
                             </div>
                             {% if item.key_sent_at %}
-                                <div class="key-sent-badge">
-                                    <svg width="14" height="14" fill="currentColor">
-                                        <circle cx="7" cy="7" r="6" fill="#28a745"/>
-                                        <path d="M4 7 L6 9 L10 5" stroke="white" stroke-width="1.5" fill="none"/>
-                                    </svg>
-                                    <span>Sent to {{ user.email }} on {{ item.key_sent_at|date:"M d, Y" }}</span>
+                                <div class="key-status-detail">
+                                    ✅ Key sent to {{ user.email }} on {{ item.key_sent_at|date:"M d, Y" }}
                                 </div>
                             {% endif %}
                         </div>
                     {% endif %}
                     
-                    <div class="game-actions-modern">
+                    <div class="game-actions">
                         {% if item.game.file_url %}
                             <a href="{% url 'store:download_game' transaction.id item.game.id %}" class="btn-action btn-download">
-                                <svg width="16" height="16" fill="currentColor">
-                                    <path d="M8 0 L8 10 M4 7 L8 11 L12 7 M2 14 L14 14" stroke="currentColor" stroke-width="2" fill="none"/>
-                                </svg>
-                                <span>Download</span>
+                                ⬇️ Download Game
                             </a>
                         {% else %}
-                            <button class="btn-action btn-disabled" disabled>
-                                <span>Download Unavailable</span>
+                            <button class="btn-action" disabled>
+                                Download Unavailable
                             </button>
                         {% endif %}
                         
                         <button 
-                            class="btn-action btn-email {% if item.key_sent_at %}btn-sent{% endif %}"
+                            class="btn-action btn-email {% if item.key_sent_at %}sending{% endif %}"
                             data-item-id="{{ item.id }}"
                             data-transaction-id="{{ transaction.id }}"
                             onclick="sendKey(this)"
                             {% if item.key_sent_at %}disabled{% endif %}>
-                            <svg width="16" height="16" fill="currentColor">
-                                <path d="M2 4 L8 9 L14 4 M2 4 L2 12 L14 12 L14 4" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                            </svg>
-                            <span>{% if item.key_sent_at %}Key Sent{% else %}Email Key{% endif %}</span>
+                            {% if item.key_sent_at %}✅ Key Sent{% else %}📧 Email Key{% endif %}
                         </button>
                     </div>
                     

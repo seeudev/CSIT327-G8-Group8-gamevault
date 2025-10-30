@@ -79,17 +79,36 @@
                 </select>
             </div>
 
-            <div class="filter-group">
+            <div class="filter-group filter-group-tags">
                 <label class="filter-label">Tags</label>
-                <select name="tags" class="filter-select-compact" multiple onchange="this.form.submit()">
-                    {% for tag in tags %}
-                        <option value="{{ tag.id }}"
-                            {% if tag.id|stringformat:"s" in selected_tags %}selected{% endif %}>
-                            {{ tag.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-                <small class="filter-note">Hold Ctrl to select multiple tags</small>
+                <div class="tags-dropdown">
+                    <button type="button" class="tags-dropdown-toggle" onclick="toggleTagsDropdown(event)">
+                        <span class="tags-selected-text">
+                            {% if selected_tags %}
+                                {{ selected_tags|length }} tag{{ selected_tags|length|pluralize }} selected
+                            {% else %}
+                                Select tags...
+                            {% endif %}
+                        </span>
+                        <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div class="tags-dropdown-menu">
+                        <div class="tags-search-wrapper">
+                            <input type="text" class="tags-search-input" placeholder="Search tags..." onkeyup="filterTags(this)">
+                        </div>
+                        <div class="tags-options-list">
+                            {% for tag in tags %}
+                                <label class="tag-option">
+                                    <input type="checkbox" name="tags" value="{{ tag.id }}"
+                                        {% if tag.id|stringformat:"s" in selected_tags %}checked{% endif %}>
+                                    <span class="tag-option-text">{{ tag.name }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <button type="submit" class="filter-apply-btn">Apply Filters</button>
@@ -198,5 +217,73 @@ document.addEventListener('DOMContentLoaded', function() {
         setInterval(nextSlide, 5000);
     }
 });
+
+// Tags Dropdown Functions
+function toggleTagsDropdown(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const dropdown = event.currentTarget.parentElement;
+    const menu = dropdown.querySelector('.tags-dropdown-menu');
+    const isOpen = menu.classList.contains('show');
+    
+    // Close all other dropdowns
+    document.querySelectorAll('.tags-dropdown-menu.show').forEach(m => {
+        if (m !== menu) m.classList.remove('show');
+    });
+    
+    // Toggle current dropdown
+    menu.classList.toggle('show');
+    
+    // Close dropdown when clicking outside
+    if (!isOpen) {
+        setTimeout(() => {
+            document.addEventListener('click', closeTagsDropdown);
+        }, 0);
+    }
+}
+
+function closeTagsDropdown(event) {
+    const dropdowns = document.querySelectorAll('.tags-dropdown-menu.show');
+    dropdowns.forEach(menu => {
+        if (!menu.contains(event.target) && !menu.previousElementSibling.contains(event.target)) {
+            menu.classList.remove('show');
+        }
+    });
+    document.removeEventListener('click', closeTagsDropdown);
+}
+
+function filterTags(input) {
+    const searchText = input.value.toLowerCase();
+    const options = input.closest('.tags-dropdown-menu').querySelectorAll('.tag-option');
+    
+    options.forEach(option => {
+        const text = option.querySelector('.tag-option-text').textContent.toLowerCase();
+        if (text.includes(searchText)) {
+            option.style.display = '';
+        } else {
+            option.style.display = 'none';
+        }
+    });
+}
+
+// Update selected count when checkboxes change
+document.addEventListener('DOMContentLoaded', function() {
+    const tagCheckboxes = document.querySelectorAll('.tag-option input[type="checkbox"]');
+    tagCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedTagsCount);
+    });
+});
+
+function updateSelectedTagsCount() {
+    const checkedBoxes = document.querySelectorAll('.tag-option input[type="checkbox"]:checked');
+    const selectedText = document.querySelector('.tags-selected-text');
+    
+    if (checkedBoxes.length > 0) {
+        selectedText.textContent = `${checkedBoxes.length} tag${checkedBoxes.length > 1 ? 's' : ''} selected`;
+    } else {
+        selectedText.textContent = 'Select tags...';
+    }
+}
+
 </script>
 {% endblock %}

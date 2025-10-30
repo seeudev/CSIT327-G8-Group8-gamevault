@@ -28,6 +28,27 @@ def register_view(request):
     if request.user.is_authenticated:
         return redirect('store:game_list')
     
+    # Get featured games with screenshots for background grid
+    # (moved to top so it's available for both GET and POST error responses)
+    featured_games = list(Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:5])
+
+    # Build a grid_images list of screenshot URLs, repeating the available
+    # screenshots until we have at least 9 tiles (3x3 mosaic). This keeps
+    # the grid looking full on wider screens even when the DB has few games.
+    grid_images = []
+    if featured_games:
+        urls = [g.screenshot_url for g in featured_games]
+        while len(grid_images) < 9:
+            grid_images.extend(urls)
+        grid_images = grid_images[:9]
+    else:
+        grid_images = []
+
+    context = {
+        'featured_games': featured_games,
+        'grid_images': grid_images,
+    }
+    
     if request.method == 'POST':
         username = request.POST.get('username')
         email = request.POST.get('email')
@@ -37,20 +58,20 @@ def register_view(request):
         # Simple validation
         if not all([username, email, password, password_confirm]):
             messages.error(request, 'All fields are required.')
-            return render(request, 'users/register.html')
+            return render(request, 'users/register.html', context)
         
         if password != password_confirm:
             messages.error(request, 'Passwords do not match.')
-            return render(request, 'users/register.html')
+            return render(request, 'users/register.html', context)
         
         # Check if username or email already exists
         if User.objects.filter(username=username).exists():
             messages.error(request, 'Username already exists.')
-            return render(request, 'users/register.html')
+            return render(request, 'users/register.html', context)
         
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Email already exists.')
-            return render(request, 'users/register.html')
+            return render(request, 'users/register.html', context)
         
         # Create user
         try:
@@ -67,27 +88,9 @@ def register_view(request):
             return redirect('store:game_list')
         except Exception as e:
             messages.error(request, f'Error creating account: {str(e)}')
-            return render(request, 'users/register.html')
-    
-    # Get featured games with screenshots for background grid
-    featured_games = list(Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:5])
+            return render(request, 'users/register.html', context)
 
-    # Build a grid_images list of screenshot URLs, repeating the available
-    # screenshots until we have at least 9 tiles (3x3 mosaic). This keeps
-    # the grid looking full on wider screens even when the DB has few games.
-    grid_images = []
-    if featured_games:
-        urls = [g.screenshot_url for g in featured_games]
-        while len(grid_images) < 9:
-            grid_images.extend(urls)
-        grid_images = grid_images[:9]
-    else:
-        grid_images = []
-
-    return render(request, 'users/register.html', {
-        'featured_games': featured_games,
-        'grid_images': grid_images,
-    })
+    return render(request, 'users/register.html', context)
 
 
 @require_http_methods(["GET", "POST"])
@@ -100,28 +103,8 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect('store:game_list')
     
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        
-        if not username or not password:
-            messages.error(request, 'Username and password are required.')
-            return render(request, 'users/login.html')
-        
-        # Authenticate user
-        user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            login(request, user)
-            messages.success(request, 'Login successful!')
-            # Redirect to next page if specified, otherwise to game list
-            next_url = request.GET.get('next', 'store:game_list')
-            return redirect(next_url)
-        else:
-            messages.error(request, 'Invalid username or password.')
-            return render(request, 'users/login.html')
-    
     # Get featured games with screenshots for background grid
+    # (moved to top so it's available for both GET and POST error responses)
     featured_games = list(Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:5])
 
     # Build grid_images (repeat to at least 9 tiles)
@@ -134,10 +117,33 @@ def login_view(request):
     else:
         grid_images = []
 
-    return render(request, 'users/login.html', {
+    context = {
         'featured_games': featured_games,
         'grid_images': grid_images,
-    })
+    }
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        if not username or not password:
+            messages.error(request, 'Username and password are required.')
+            return render(request, 'users/login.html', context)
+        
+        # Authenticate user
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            messages.success(request, 'Login successful!')
+            # Redirect to next page if specified, otherwise to game list
+            next_url = request.GET.get('next', 'store:game_list')
+            return redirect(next_url)
+        else:
+            messages.error(request, 'Invalid username or password.')
+            return render(request, 'users/login.html', context)
+
+    return render(request, 'users/login.html', context)
 
 
 @login_required

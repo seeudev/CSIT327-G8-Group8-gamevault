@@ -1,10 +1,15 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Shopping Cart - GameVault{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modules/cart.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="cart-container">
-    <h1>Shopping Cart</h1>
+    <h1 class="cart-title">Shopping Cart</h1>
     
     {% if cart_items %}
         <table class="cart-table">
@@ -33,7 +38,7 @@
                         <td>
                             <form method="post" action="{% url 'store:remove_from_cart' item.id %}" class="inline-form">
                                 {% csrf_token %}
-                                <button type="submit" class="small-button">Remove</button>
+                                <button type="submit" class="small-button btn-remove">Remove</button>
                             </form>
                         </td>
                     </tr>
@@ -49,12 +54,28 @@
         </table>
         
         <div class="cart-actions">
-            <a href="{% url 'store:game_list' %}" class="button">Continue Shopping</a>
-            <a href="{% url 'store:checkout' %}" class="button">Proceed to Checkout</a>
+            <a href="{% url 'store:game_list' %}" class="btn-secondary">Continue Shopping</a>
+            <a href="{% url 'store:checkout' %}" class="btn-primary">Proceed to Checkout</a>
         </div>
     {% else %}
-        <p>Your cart is empty.</p>
-        <a href="{% url 'store:game_list' %}" class="button">Browse Games</a>
+        <div class="empty-cart">
+            <div class="empty-cart-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+            </div>
+            <h2 class="empty-cart-title">Your cart is empty</h2>
+            <p class="empty-cart-text">Looks like you haven't added any games to your cart yet. Browse our collection and find your next adventure!</p>
+            <a href="{% url 'store:game_list' %}" class="btn-browse-games">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+                    <polyline points="17 2 12 7 7 2"></polyline>
+                </svg>
+                Browse Games
+            </a>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

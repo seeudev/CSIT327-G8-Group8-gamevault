@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Game Vault{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    <!-- CSS Variables - Red Gaming Theme -->
+    <link rel="stylesheet" href="{% static 'css/variables.css' %}">
+    <!-- Core Styles -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
@@ -13,7 +17,10 @@
         <nav>
             <div class="nav-container">
                 <div class="logo">
-                    <a href="{% url 'store:game_list' %}">Game Vault</a>
+                    <a href="{% url 'store:game_list' %}">
+                        <img src="{% static 'images/gamevault-logo.png' %}" class="logo-image">
+                        <span class="logo-text">Game Vault</span>
+                    </a>
                 </div>
                 <div class="nav-links">
                     <a href="{% url 'store:game_list' %}">Games</a>
@@ -36,10 +43,11 @@
 
     <main>
         {% if messages %}
-            <div class="messages">
+            <div class="messages-container">
                 {% for message in messages %}
                     <div class="message {{ message.tags }}">
-                        {{ message }}
+                        <span class="message-text">{{ message }}</span>
+                        <button class="message-close" onclick="this.parentElement.remove()" aria-label="Close message">×</button>
                     </div>
                 {% endfor %}
             </div>

@@ -1,0 +1,62 @@
+/* ============================================
+   PROFILE MODULE
+   User profile page styles
+   Red Gaming Theme with CSS Variables
+   ============================================ */
+
+.profile-container{max-width:800px;margin:0 auto;padding:var(--space-xl)}
+.profile-tabs{display:flex;gap:var(--space-lg);margin-bottom:var(--space-2xl);border-bottom:2px solid var(--color-border-medium)}
+.profile-tab{padding:var(--space-lg);background:none;border:none;cursor:pointer;font-size:var(--font-size-base);color:var(--color-text-secondary);border-bottom:2px solid transparent;margin-bottom:-2px;transition:var(--transition-base);font-weight:var(--font-weight-medium)}
+.profile-tab.active{color:var(--color-primary);font-weight:var(--font-weight-bold);border-bottom-color:var(--color-primary)}
+.profile-tab:hover:not(.active){color:var(--color-text-primary)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.profile-info{background:var(--color-bg-secondary);padding:var(--space-xl);border-radius:var(--card-radius);margin-bottom:var(--space-xl);box-shadow:var(--shadow-sm)}
+.profile-info-item{display:flex;justify-content:space-between;padding:var(--space-md) 0;border-bottom:1px solid var(--color-border-light)}
+.profile-info-item:last-child{border-bottom:none}
+.profile-info-label{font-weight:var(--font-weight-bold);color:var(--color-text-secondary)}
+.profile-info-value{color:var(--color-text-primary);font-weight:var(--font-weight-medium)}
+.profile-actions{margin-top:var(--space-lg)}
+.edit-section{margin-top:var(--space-xl)}
+.edit-section h2{font-size:var(--font-size-2xl);font-weight:var(--font-weight-bold);color:var(--color-text-primary);margin-bottom:var(--space-lg)}
+.password-section{margin-top:var(--space-2xl);padding-top:var(--space-2xl);border-top:2px solid var(--color-border-medium)}
+.password-section h2{font-size:var(--font-size-2xl);font-weight:var(--font-weight-bold);color:var(--color-text-primary);margin-bottom:var(--space-lg)}
+.form-group{margin-bottom:var(--space-lg)}
+.form-group label{display:block;font-weight:var(--font-weight-semibold);color:var(--color-text-primary);margin-bottom:var(--space-sm)}
+.form-group input[type="text"],.form-group input[type="email"],.form-group input[type="password"]{width:100%;padding:var(--input-padding);border:var(--input-border);border-radius:var(--radius-md);font-size:var(--font-size-base);transition:var(--transition-base)}
+.form-group input:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(230,57,70,0.1)}
+.form-actions{display:flex;gap:var(--space-md);margin-top:var(--space-xl)}
+.btn-primary{padding:var(--btn-padding-lg);background:var(--gradient-primary);color:var(--color-text-inverse);border:none;cursor:pointer;font-size:var(--font-size-base);border-radius:var(--radius-md);font-weight:var(--font-weight-semibold);transition:var(--transition-all)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:var(--shadow-primary)}
+.btn-secondary{padding:var(--btn-padding-lg);background:var(--color-bg-tertiary);color:var(--color-text-primary);border:none;cursor:pointer;font-size:var(--font-size-base);border-radius:var(--radius-md);font-weight:var(--font-weight-semibold);transition:var(--transition-all)}
+.btn-secondary:hover{background:var(--color-border-dark)}
+.danger-zone{margin-top:var(--space-3xl);padding:var(--space-xl);border:2px solid var(--color-error);border-radius:var(--card-radius);background:var(--color-error-bg)}
+.danger-zone h3{color:var(--color-error);margin-bottom:var(--space-md);font-size:var(--font-size-xl);font-weight:var(--font-weight-bold)}
+.danger-zone p{color:var(--color-text-secondary);margin-bottom:var(--space-lg)}
+.btn-danger{background:var(--color-error);color:var(--color-text-inverse);padding:var(--btn-padding-lg);border:none;cursor:pointer;font-size:var(--font-size-base);border-radius:var(--radius-md);font-weight:var(--font-weight-semibold);transition:var(--transition-all)}
+.btn-danger:hover{background:var(--color-error-dark);transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.modal{display:none;position:fixed;z-index:var(--z-modal);left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,0.7)}
+.modal.active{display:flex;align-items:center;justify-content:center}
+.modal-content{background-color:var(--color-bg-primary);padding:var(--space-2xl);border-radius:var(--card-radius);max-width:500px;width:90%;box-shadow:var(--shadow-xl)}
+.modal-header{margin-bottom:var(--space-lg)}
+.modal-header h2{color:var(--color-error);font-size:var(--font-size-2xl);font-weight:var(--font-weight-bold)}
+.modal-body{margin-bottom:var(--space-xl)}
+.modal-body p{margin-bottom:var(--space-md);color:var(--color-text-primary)}
+.modal-body p strong{color:var(--color-text-primary);font-weight:var(--font-weight-bold)}
+.modal-body input{width:100%;padding:var(--input-padding);margin-top:var(--space-sm);border:var(--input-border);border-radius:var(--radius-md);font-size:var(--font-size-base)}
+.modal-footer{display:flex;gap:var(--space-md);justify-content:flex-end}
+.error-message{color:var(--color-error);font-size:var(--font-size-sm);margin-top:var(--space-sm)}
+.success-message{color:var(--color-success);font-size:var(--font-size-sm);margin-top:var(--space-sm)}
+.password-requirements{font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-top:var(--space-sm);padding-left:var(--space-lg)}
+.password-requirements li{margin:var(--space-xs) 0}
+.alert-success{margin-top:var(--space-lg);padding:var(--space-lg);background:var(--color-success-bg);border:1px solid var(--color-success-light);color:var(--color-success);border-radius:var(--radius-md)}
+.alert-error{margin-top:var(--space-lg);padding:var(--space-lg);background:var(--color-error-bg);border:1px solid var(--color-error-light);color:var(--color-error);border-radius:var(--radius-md)}
+@media (max-width:768px){
+    .profile-container{padding:var(--space-md)}
+    .profile-tabs{flex-direction:column;gap:0;border-bottom:none}
+    .profile-tab{border-bottom:1px solid var(--color-border-light);border-radius:0;margin-bottom:0}
+    .profile-tab.active{border-left:3px solid var(--color-primary);padding-left:calc(var(--space-lg) - 3px)}
+    .profile-info-item{flex-direction:column;gap:var(--space-xs)}
+    .form-actions{flex-direction:column}
+    .form-actions button{width:100%}
+}
