@@ -15,6 +15,7 @@ from django.core.exceptions import ValidationError
 import json
 from .models import User, PasswordResetToken
 from .email_service import send_password_reset_email
+from store.models import Game
 
 
 @require_http_methods(["GET", "POST"])
@@ -68,7 +69,25 @@ def register_view(request):
             messages.error(request, f'Error creating account: {str(e)}')
             return render(request, 'users/register.html')
     
-    return render(request, 'users/register.html')
+    # Get featured games with screenshots for background grid
+    featured_games = list(Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:5])
+
+    # Build a grid_images list of screenshot URLs, repeating the available
+    # screenshots until we have at least 9 tiles (3x3 mosaic). This keeps
+    # the grid looking full on wider screens even when the DB has few games.
+    grid_images = []
+    if featured_games:
+        urls = [g.screenshot_url for g in featured_games]
+        while len(grid_images) < 9:
+            grid_images.extend(urls)
+        grid_images = grid_images[:9]
+    else:
+        grid_images = []
+
+    return render(request, 'users/register.html', {
+        'featured_games': featured_games,
+        'grid_images': grid_images,
+    })
 
 
 @require_http_methods(["GET", "POST"])
@@ -102,7 +121,23 @@ def login_view(request):
             messages.error(request, 'Invalid username or password.')
             return render(request, 'users/login.html')
     
-    return render(request, 'users/login.html')
+    # Get featured games with screenshots for background grid
+    featured_games = list(Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:5])
+
+    # Build grid_images (repeat to at least 9 tiles)
+    grid_images = []
+    if featured_games:
+        urls = [g.screenshot_url for g in featured_games]
+        while len(grid_images) < 9:
+            grid_images.extend(urls)
+        grid_images = grid_images[:9]
+    else:
+        grid_images = []
+
+    return render(request, 'users/login.html', {
+        'featured_games': featured_games,
+        'grid_images': grid_images,
+    })
 
 
 @login_required

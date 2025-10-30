@@ -68,8 +68,14 @@ def game_list(request):
     elif sort_by == 'popular' and hasattr(Game, 'popularity'):
         games = games.order_by('-popularity')
 
-    # Get all unique categories for filter
-    categories = Game.objects.values_list('category', flat=True).distinct()
+    # Get all unique categories for filter (case-insensitive, sorted)
+    all_categories = Game.objects.values_list('category', flat=True).exclude(category__isnull=True).exclude(category='')
+    # Convert to set to remove duplicates (case-insensitive), then sort
+    categories_set = set()
+    for cat in all_categories:
+        if cat:
+            categories_set.add(cat.strip().title())  # Normalize to Title Case
+    categories = sorted(categories_set)
     
     # Get featured games with screenshots for hero slideshow (limit to 8)
     featured_games = Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:8]
