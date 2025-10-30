@@ -188,3 +188,57 @@ class EmailLog(models.Model):
 
     def __str__(self):
         return f"Email to {self.user.username} for {self.game.title} - {self.status}"
+
+
+class Review(models.Model):
+    """
+    Review model for game ratings and reviews (Module 11).
+    Users can rate and review games they own.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.PositiveSmallIntegerField(
+        choices=[(1, '1 Star'), (2, '2 Stars'), (3, '3 Stars'), (4, '4 Stars'), (5, '5 Stars')],
+        help_text='Rating from 1 to 5 stars'
+    )
+    review_text = models.TextField(blank=True, help_text='Optional review text')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'reviews'
+        ordering = ['-created_at']  # Most recent first
+        # One review per user per game
+        unique_together = ['user', 'game']
+        indexes = [
+            models.Index(fields=['game', '-created_at']),  # For fetching game reviews
+            models.Index(fields=['user', '-created_at']),  # For fetching user reviews
+        ]
+
+    def __str__(self):
+        return f"{self.user.username}'s review of {self.game.title} - {self.rating} stars"
+
+    @staticmethod
+    def get_average_rating(game):
+        """Calculate average rating for a game."""
+        from django.db.models import Avg
+        result = Review.objects.filter(game=game).aggregate(avg_rating=Avg('rating'))
+        avg = result['avg_rating']
+        return round(avg, 1) if avg else None
+
+    @staticmethod
+    def get_rating_stats(game):
+        """Get detailed rating statistics for a game."""
+        from django.db.models import Count, Avg
+        stats = Review.objects.filter(game=game).aggregate(
+            avg_rating=Avg('rating'),
+            total_reviews=Count('id'),
+            five_star=Count('id', filter=models.Q(rating=5)),
+            four_star=Count('id', filter=models.Q(rating=4)),
+            three_star=Count('id', filter=models.Q(rating=3)),
+            two_star=Count('id', filter=models.Q(rating=2)),
+            one_star=Count('id', filter=models.Q(rating=1)),
+        )
+        if stats['avg_rating']:
+            stats['avg_rating'] = round(stats['avg_rating'], 1)
+        return stats
