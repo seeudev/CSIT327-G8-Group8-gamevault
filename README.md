@@ -87,7 +87,7 @@ main Branch is deployed on Railway (Link down in-between sprints)
 
 ## Database Schema
 
-The application uses the following simple models:
+The application uses the following models:
 
 ### User
 - user_id (Primary Key)
@@ -95,11 +95,28 @@ The application uses the following simple models:
 - registration_date
 - is_admin (Boolean)
 
+### Category (Module 8)
+- id (Integer Primary Key)
+- name (Unique)
+
+### Tag (Module 8)
+- tag_id (Primary Key)
+- name (Unique)
+
+### GameTag (Module 8)
+- game_tag_id (Primary Key)
+- game_id (Foreign Key to Game)
+- tag_id (Foreign Key to Tag)
+- Unique constraint on (game_id, tag_id)
+
 ### Game
 - game_id (Primary Key)
-- title, description, category, price
+- title, description
+- category_id (Foreign Key to Category, nullable)
+- price
 - screenshot_url, file_url
 - upload_date
+- tags (Many-to-Many through GameTag)
 
 ### Cart
 - cart_id (Primary Key)
@@ -121,6 +138,27 @@ The application uses the following simple models:
 - transaction_item_id (Primary Key)
 - transaction_id, game_id (Foreign Keys)
 - price_at_purchase
+- game_key (Unique, Module 5)
+- key_sent_at (Module 5)
+
+### EmailLog (Module 5)
+- log_id (Primary Key)
+- user_id, game_id (Foreign Keys)
+- game_key, sent_at, email_to, status
+
+### PasswordResetToken (Module 9)
+- token_id (Primary Key)
+- user_id (Foreign Key)
+- token (Unique)
+- created_at, expires_at, is_used
+
+### Review (Module 11)
+- review_id (Primary Key)
+- user_id, game_id (Foreign Keys)
+- rating (1-5 stars)
+- review_text (Optional)
+- created_at, updated_at
+- Unique constraint on (user_id, game_id)
 
 ### AdminActionLog
 - log_id (Primary Key)
@@ -134,8 +172,9 @@ The application uses the following simple models:
 
 ### Public Features
 - Browse games (no login required)
-- Search and filter games by category
+- Search and filter games by category and tags (Module 8)
 - View game details
+- View game ratings and reviews (Module 11)
 
 ### User Features (requires login)
 - Register and login
@@ -143,12 +182,18 @@ The application uses the following simple models:
 - Update cart quantities
 - Checkout and complete purchase
 - View transaction history
-- **Edit profile** (username, email, password)
-- **Delete account** with confirmation
+- Download purchased games
+- Receive game keys via email (Module 5)
+- **Edit profile** (username, email, password) (Module 4)
+- **Delete account** with confirmation (Module 4)
+- **Reset password** via email token (Module 9)
+- **Rate and review games** (1-5 stars with optional text) (Module 11)
+- **Edit and delete own reviews** (Module 11)
 
 ### Admin Features (requires is_admin=True)
 - Access admin dashboard
 - Create, edit, and delete games
+- Manage categories and tags (Module 8)
 - View admin action logs
 - View statistics
 
@@ -220,6 +265,174 @@ The application uses the following simple models:
 - **Side Effects**:
   - User is logged out immediately
   - All user data is permanently deleted
+
+### Password Reset (Module 9)
+
+#### Request Password Reset
+**POST** `/auth/api/password-reset/request/`
+- **Authentication**: Not required
+- **Request Body**:
+  ```json
+  {
+    "email": "user@example.com"
+  }
+  ```
+- **Response**: Always returns success (prevents email enumeration)
+  ```json
+  {
+    "success": true,
+    "message": "If an account exists with this email, a password reset link has been sent."
+  }
+  ```
+
+#### Confirm Password Reset
+**POST** `/auth/api/password-reset/confirm/<token>/`
+- **Authentication**: Not required
+- **Request Body**:
+  ```json
+  {
+    "new_password": "newpassword123"
+  }
+  ```
+- **Response (Success)**:
+  ```json
+  {
+    "success": true,
+    "message": "Password has been reset successfully"
+  }
+  ```
+- **Response (Error)**:
+  ```json
+  {
+    "success": false,
+    "error": "Invalid or expired token"
+  }
+  ```
+
+### Game Reviews (Module 11)
+
+#### Get Game Reviews
+**GET** `/store/api/reviews/<game_id>/`
+- **Authentication**: Not required (public endpoint)
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "reviews": [
+      {
+        "id": 1,
+        "user_id": 2,
+        "username": "john_doe",
+        "rating": 5,
+        "review_text": "Great game!",
+        "created_at": "2025-10-30 12:00:00",
+        "updated_at": "2025-10-30 12:00:00",
+        "is_owner": false
+      }
+    ],
+    "stats": {
+      "average_rating": 4.5,
+      "total_reviews": 10,
+      "rating_breakdown": {
+        "5": 6,
+        "4": 2,
+        "3": 1,
+        "2": 1,
+        "1": 0
+      }
+    }
+  }
+  ```
+
+#### Create Review
+**POST** `/store/api/reviews/<game_id>/create/`
+- **Authentication**: Required
+- **Request Body**:
+  ```json
+  {
+    "rating": 5,
+    "review_text": "Amazing game!"
+  }
+  ```
+- **Response (Success)**:
+  ```json
+  {
+    "success": true,
+    "message": "Review created successfully",
+    "review": {
+      "id": 15,
+      "username": "john_doe",
+      "rating": 5,
+      "review_text": "Amazing game!",
+      "created_at": "2025-10-30 14:30:00"
+    }
+  }
+  ```
+- **Response (Error)**:
+  ```json
+  {
+    "success": false,
+    "error": "You have already reviewed this game. Use the edit endpoint to update your review."
+  }
+  ```
+
+#### Update Review
+**PUT** `/store/api/reviews/<review_id>/update/`
+- **Authentication**: Required
+- **Authorization**: Users can only update their own reviews
+- **Request Body**:
+  ```json
+  {
+    "rating": 4,
+    "review_text": "Updated review text"
+  }
+  ```
+- **Response (Success)**:
+  ```json
+  {
+    "success": true,
+    "message": "Review updated successfully",
+    "review": {
+      "id": 15,
+      "rating": 4,
+      "review_text": "Updated review text",
+      "updated_at": "2025-10-30 15:00:00"
+    }
+  }
+  ```
+
+#### Delete Review
+**DELETE** `/store/api/reviews/<review_id>/delete/`
+- **Authentication**: Required
+- **Authorization**: Users can only delete their own reviews
+- **Response (Success)**:
+  ```json
+  {
+    "success": true,
+    "message": "Review for Game Title deleted successfully"
+  }
+  ```
+
+#### Get Rating Statistics
+**GET** `/store/api/reviews/<game_id>/stats/`
+- **Authentication**: Not required
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "stats": {
+      "average_rating": 4.5,
+      "total_reviews": 10,
+      "rating_breakdown": {
+        "5": 6,
+        "4": 2,
+        "3": 1,
+        "2": 1,
+        "1": 0
+      }
+    }
+  }
+  ```
 
 
 ## Project Structure

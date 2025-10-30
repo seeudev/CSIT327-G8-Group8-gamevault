@@ -12,7 +12,7 @@ from django.http import JsonResponse
 from decimal import Decimal
 import json
 
-from .models import Game, Cart, CartItem, Transaction, TransactionItem, AdminActionLog, GameTag, Tag, Category
+from .models import Game, Cart, CartItem, Transaction, TransactionItem, AdminActionLog, GameTag, Tag, Category, Review
 from .middleware import PurchaseValidationMiddleware
 from .email_service import send_game_key_email
 from users.models import User
@@ -832,3 +832,240 @@ def api_admin_transactions(request):
             'success': False,
             'error': str(e)
         }, status=500)
+
+
+# ========================================
+# Review API Endpoints (Module 11)
+# ========================================
+
+def api_get_game_reviews(request, game_id):
+    """
+    Get all reviews for a specific game.
+    Public endpoint - no login required.
+    GET /api/reviews/<game_id>/
+    """
+    try:
+        game = get_object_or_404(Game, id=game_id)
+        reviews = Review.objects.filter(game=game).select_related('user')
+        
+        reviews_data = []
+        for review in reviews:
+            reviews_data.append({
+                'id': review.id,
+                'user_id': review.user.id,
+                'username': review.user.username,
+                'rating': review.rating,
+                'review_text': review.review_text,
+                'created_at': review.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'updated_at': review.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'is_owner': request.user.is_authenticated and review.user == request.user
+            })
+        
+        # Get rating statistics
+        rating_stats = Review.get_rating_stats(game)
+        
+        return JsonResponse({
+            'success': True,
+            'reviews': reviews_data,
+            'stats': {
+                'average_rating': rating_stats['avg_rating'],
+                'total_reviews': rating_stats['total_reviews'],
+                'rating_breakdown': {
+                    '5': rating_stats['five_star'],
+                    '4': rating_stats['four_star'],
+                    '3': rating_stats['three_star'],
+                    '2': rating_stats['two_star'],
+                    '1': rating_stats['one_star']
+                }
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def api_create_review(request, game_id):
+    """
+    Create a new review for a game.
+    Requires login. User can only have one review per game.
+    POST /api/reviews/<game_id>/
+    Body: { "rating": 1-5, "review_text": "optional text" }
+    """
+    try:
+        game = get_object_or_404(Game, id=game_id)
+        
+        # Parse JSON body
+        data = json.loads(request.body)
+        rating = data.get('rating')
+        review_text = data.get('review_text', '').strip()
+        
+        # Validate rating
+        if not rating or rating not in [1, 2, 3, 4, 5]:
+            return JsonResponse({
+                'success': False,
+                'error': 'Rating must be between 1 and 5'
+            }, status=400)
+        
+        # Check if user already reviewed this game
+        existing_review = Review.objects.filter(user=request.user, game=game).first()
+        if existing_review:
+            return JsonResponse({
+                'success': False,
+                'error': 'You have already reviewed this game. Use the edit endpoint to update your review.'
+            }, status=400)
+        
+        # Create review
+        review = Review.objects.create(
+            user=request.user,
+            game=game,
+            rating=rating,
+            review_text=review_text
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Review created successfully',
+            'review': {
+                'id': review.id,
+                'username': review.user.username,
+                'rating': review.rating,
+                'review_text': review.review_text,
+                'created_at': review.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["PUT"])
+def api_update_review(request, review_id):
+    """
+    Update user's own review.
+    PUT /api/reviews/<review_id>/
+    Body: { "rating": 1-5, "review_text": "optional text" }
+    """
+    try:
+        review = get_object_or_404(Review, id=review_id)
+        
+        # Check ownership
+        if review.user != request.user:
+            return JsonResponse({
+                'success': False,
+                'error': 'You can only edit your own reviews'
+            }, status=403)
+        
+        # Parse JSON body
+        data = json.loads(request.body)
+        rating = data.get('rating')
+        review_text = data.get('review_text', '').strip()
+        
+        # Validate rating
+        if rating and rating not in [1, 2, 3, 4, 5]:
+            return JsonResponse({
+                'success': False,
+                'error': 'Rating must be between 1 and 5'
+            }, status=400)
+        
+        # Update review
+        if rating:
+            review.rating = rating
+        if 'review_text' in data:  # Allow empty string
+            review.review_text = review_text
+        review.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Review updated successfully',
+            'review': {
+                'id': review.id,
+                'rating': review.rating,
+                'review_text': review.review_text,
+                'updated_at': review.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required
+@require_http_methods(["DELETE"])
+def api_delete_review(request, review_id):
+    """
+    Delete user's own review.
+    DELETE /api/reviews/<review_id>/
+    """
+    try:
+        review = get_object_or_404(Review, id=review_id)
+        
+        # Check ownership
+        if review.user != request.user:
+            return JsonResponse({
+                'success': False,
+                'error': 'You can only delete your own reviews'
+            }, status=403)
+        
+        game_title = review.game.title
+        review.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Review for {game_title} deleted successfully'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+def api_get_game_rating_stats(request, game_id):
+    """
+    Get rating statistics for a game.
+    Public endpoint.
+    GET /api/reviews/<game_id>/stats/
+    """
+    try:
+        game = get_object_or_404(Game, id=game_id)
+        stats = Review.get_rating_stats(game)
+        
+        return JsonResponse({
+            'success': True,
+            'stats': {
+                'average_rating': stats['avg_rating'],
+                'total_reviews': stats['total_reviews'],
+                'rating_breakdown': {
+                    '5': stats['five_star'],
+                    '4': stats['four_star'],
+                    '3': stats['three_star'],
+                    '2': stats['two_star'],
+                    '1': stats['one_star']
+                }
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+

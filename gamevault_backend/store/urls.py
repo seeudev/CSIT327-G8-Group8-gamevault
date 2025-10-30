@@ -41,4 +41,11 @@ urlpatterns = [
     path('api/admin/stats/', views.api_admin_dashboard_stats, name='api_admin_stats'),
     path('api/users/', views.api_admin_users, name='api_admin_users'),
     path('api/transactions/', views.api_admin_transactions, name='api_admin_transactions'),
+    
+    # Review API endpoints (Module 11)
+    path('api/reviews/<int:game_id>/', views.api_get_game_reviews, name='api_get_game_reviews'),
+    path('api/reviews/<int:game_id>/create/', views.api_create_review, name='api_create_review'),
+    path('api/reviews/<int:review_id>/update/', views.api_update_review, name='api_update_review'),
+    path('api/reviews/<int:review_id>/delete/', views.api_delete_review, name='api_delete_review'),
+    path('api/reviews/<int:game_id>/stats/', views.api_get_game_rating_stats, name='api_get_game_rating_stats'),
 ]

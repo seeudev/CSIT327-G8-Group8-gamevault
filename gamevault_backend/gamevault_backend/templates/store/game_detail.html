@@ -76,6 +76,55 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Reviews Section (Module 11) -->
+            <div class="reviews-section card-interactive">
+                <div class="reviews-header">
+                    <h2 class="section-title">Ratings & Reviews</h2>
+                    <div class="rating-summary" id="ratingSummary">
+                        <div class="average-rating">
+                            <div class="rating-number">--</div>
+                            <div class="rating-stars" id="averageStars"></div>
+                            <div class="rating-count"><span id="reviewCount">0</span> reviews</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Review Form -->
+                {% if user.is_authenticated %}
+                <div class="review-form-container" id="reviewFormContainer">
+                    <h3>Write a Review</h3>
+                    <form id="reviewForm" class="review-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label class="form-label">Your Rating</label>
+                            <div class="star-rating-input" id="starRatingInput">
+                                <span class="star" data-rating="1">★</span>
+                                <span class="star" data-rating="2">★</span>
+                                <span class="star" data-rating="3">★</span>
+                                <span class="star" data-rating="4">★</span>
+                                <span class="star" data-rating="5">★</span>
+                            </div>
+                            <input type="hidden" id="ratingValue" name="rating" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="reviewText">Your Review (Optional)</label>
+                            <textarea id="reviewText" name="review_text" class="form-textarea" rows="4" placeholder="Share your thoughts about this game..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit-review">Submit Review</button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="login-prompt">
+                    <p><a href="{% url 'users:login' %}">Login</a> to write a review</p>
+                </div>
+                {% endif %}
+                
+                <!-- Reviews List -->
+                <div class="reviews-list" id="reviewsList">
+                    <div class="loading-reviews">Loading reviews...</div>
+                </div>
+            </div>
         </div>
 
         <aside class="game-sidebar">
@@ -119,5 +168,15 @@
 
 {% block extra_js %}
 <script src="{% static 'js/game-detail.js' %}"></script>
+<script src="{% static 'js/reviews.js' %}"></script>
+<script>
+    const gameId = {{ game.id }};
+    const isAuthenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
+    
+    // Initialize reviews when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        ReviewSystem.init(gameId, isAuthenticated);
+    });
+</script>
 {% endblock %}
 {% endblock %}
