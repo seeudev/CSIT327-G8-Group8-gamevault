@@ -4,12 +4,102 @@
    ============================================ */
 
 .auth-container {
-    min-height: 70vh;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 2rem;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 30%, #667eea 100%);
+    /* Break out of main container to fill full width */
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    width: 100vw;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Background Grid (mosaic of game images) */
+.auth-background-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: grid;
+    /* Use fixed 3 columns on desktop, auto-fit on mobile */
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 0;
+}
+
+.auth-grid-item {
+    position: relative;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    animation: fadeInGrid 0.8s ease-out forwards;
+}
+
+/* Stagger animation for each grid item */
+.auth-grid-item:nth-child(1) { animation-delay: 0.1s; }
+.auth-grid-item:nth-child(2) { animation-delay: 0.2s; }
+.auth-grid-item:nth-child(3) { animation-delay: 0.3s; }
+.auth-grid-item:nth-child(4) { animation-delay: 0.4s; }
+.auth-grid-item:nth-child(5) { animation-delay: 0.5s; }
+.auth-grid-item:nth-child(6) { animation-delay: 0.6s; }
+.auth-grid-item:nth-child(7) { animation-delay: 0.7s; }
+.auth-grid-item:nth-child(8) { animation-delay: 0.8s; }
+.auth-grid-item:nth-child(9) { animation-delay: 0.9s; }
+
+/* Subtle continuous animation - smooth and non-jarring */
+.auth-grid-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    background-size: cover;
+    background-position: center;
+    will-change: transform, opacity;
+    transform-origin: center;
+    pointer-events: none;
+    /* Use alternate to avoid snapping back at the end of the animation */
+    animation: gentleZoom 20s ease-in-out infinite alternate;
+    animation-delay: inherit;
+}
+
+@keyframes fadeInGrid {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes gentleZoom {
+    0%, 100% { 
+        transform: scale(1);
+    }
+    50% { 
+        transform: scale(1.05);
+    }
+}
+
+.auth-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.85) 0%, rgba(118, 75, 162, 0.85) 100%);
+    z-index: 2;
 }
 
 .auth-card {
@@ -20,6 +110,8 @@
     width: 100%;
     max-width: 450px;
     animation: slideUp 0.5s ease-out;
+    position: relative;
+    z-index: 3;
 }
 
 .auth-header {
@@ -144,5 +236,19 @@
 @media (max-width: 768px) {
     .auth-card {
         padding: 2rem 1.5rem;
+    }
+    
+    /* Use 2x3 grid on tablets */
+    .auth-background-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    /* Use 2x2 grid on mobile */
+    .auth-background-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
     }
 }

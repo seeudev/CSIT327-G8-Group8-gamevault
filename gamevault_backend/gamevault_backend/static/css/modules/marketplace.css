@@ -20,6 +20,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Break out of main container to fill full width */
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    width: 100vw;
 }
 
 /* Hero Slideshow Container */
@@ -44,28 +48,16 @@
     background-repeat: no-repeat;
     opacity: 0;
     filter: blur(8px);
-    transform: scale(1.1);
-    transition: opacity 2s ease-in-out, transform 8s ease-in-out;
+    transition: opacity 1.5s ease-in-out, filter 1.5s ease-in-out;
 }
 
-/* Active slide - visible with animation */
+/* Active slide - visible with gaussian blur to hide pixelation */
 .hero-slide.active {
     opacity: 1;
-    animation: slideZoom 10s ease-in-out infinite;
+    filter: blur(2px);
 }
 
-/* Zoom animation for active slide */
-@keyframes slideZoom {
-    0% {
-        transform: scale(1.1);
-    }
-    50% {
-        transform: scale(1.15);
-    }
-    100% {
-        transform: scale(1.1);
-    }
-}
+/* Remove the zoom animation to prevent jarring snap */
 
 /* Dark overlay to ensure text readability */
 .hero-overlay {
@@ -74,7 +66,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, rgba(141, 113, 113, 0.85) 0%, rgb(255, 255, 255) 100%);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.3) 100%);
     z-index: 2;
 }
 
@@ -106,6 +98,10 @@
     background: white;
     padding: 2rem;
     border-bottom: 1px solid #e0e0e0;
+    /* Break out of main container to fill full width */
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    width: 100vw;
 }
 
 .search-form {
@@ -165,6 +161,10 @@
     background: white;
     padding: 1.5rem 2rem;
     border-bottom: 1px solid #e0e0e0;
+    /* Break out of main container to fill full width */
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    width: 100vw;
 }
 
 .filter-form-inline {
@@ -607,12 +607,19 @@
     }
     
     .search-wrapper {
-        flex-direction: column;
-        gap: 0.75rem;
+        flex-direction: row;
+        gap: 0.5rem;
+        padding: 0.75rem;
+    }
+    
+    .search-input {
+        font-size: 0.9rem;
+        padding: 0.25rem 0.5rem;
     }
     
     .search-btn {
-        width: 100%;
+        padding: 0.75rem 1.5rem;
+        white-space: nowrap;
     }
     
     .filter-bar {
@@ -622,10 +629,15 @@
     .filter-form-inline {
         flex-direction: column;
         align-items: stretch;
+        gap: 1rem;
     }
     
     .filter-select-compact {
         min-width: 100%;
+    }
+    
+    .filter-group {
+        width: 100%;
     }
     
     .games-grid {

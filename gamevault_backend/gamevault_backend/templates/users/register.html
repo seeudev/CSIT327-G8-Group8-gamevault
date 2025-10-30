@@ -10,6 +10,21 @@
 
 {% block content %}
 <div class="auth-container">
+    <!-- Background Grid (mosaic of game images) -->
+    <div class="auth-background-grid">
+        {% if grid_images %}
+            {% for url in grid_images %}
+                <div class="auth-grid-item" style="background-image: url('{{ url }}');"></div>
+            {% endfor %}
+        {% else %}
+            <!-- Fallback gradient tiles if no games -->
+            <div class="auth-grid-item" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+            <div class="auth-grid-item" style="background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);"></div>
+            <div class="auth-grid-item" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+        {% endif %}
+    </div>
+    <div class="auth-overlay"></div>
+    
     <div class="auth-card">
         <div class="auth-header">
             <h1 class="auth-title">Create Account</h1>
