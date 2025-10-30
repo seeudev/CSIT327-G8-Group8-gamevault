@@ -59,7 +59,20 @@ Default credentials:
 - Username: `admin`
 - Password: `admin123`
 
-### 6. Run Development Server
+### 6. (Optional) Seed Sample Games
+
+```bash
+python seed_games.py
+```
+
+This will populate the database with:
+- 9 game categories (Action, Adventure, RPG, etc.)
+- 23 game tags (3D, Fantasy, Singleplayer, etc.)
+- 14 sample games with real data
+
+The script is safe to run multiple times - it only creates missing records and won't modify existing data.
+
+### 7. Run Development Server
 
 ```bash
 python manage.py runserver
