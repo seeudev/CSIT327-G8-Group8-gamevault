@@ -1,0 +1,234 @@
+/* ============================================
+   GAMEVAULT - CSS VARIABLES
+   Design tokens for consistent theming
+   Red Gaming Theme - Minimalist & Modern
+   ============================================ */
+
+:root {
+    /* ========================================
+       PRIMARY COLOR PALETTE - Red Gaming Theme
+       ======================================== */
+    
+    /* Primary Red - Main brand color */
+    --color-primary: #e63946;           /* Bright red */
+    --color-primary-light: #f25c66;     /* Light red for hovers */
+    --color-primary-dark: #d62839;      /* Dark red for active states */
+    --color-primary-subtle: #fef2f3;    /* Very light red for backgrounds */
+    
+    /* Secondary Colors */
+    --color-secondary: #1d3557;         /* Deep blue-gray */
+    --color-secondary-light: #457b9d;   /* Medium blue */
+    --color-secondary-dark: #0d1b2a;    /* Almost black */
+    
+    /* Accent Colors */
+    --color-accent: #f77f00;            /* Orange accent */
+    --color-accent-light: #ff9e2c;      /* Light orange */
+    
+    /* ========================================
+       NEUTRAL COLORS
+       ======================================== */
+    
+    /* Backgrounds */
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f8f9fa;
+    --color-bg-tertiary: #e9ecef;
+    --color-bg-dark: #1a1a1a;
+    --color-bg-darker: #0f0f0f;
+    
+    /* Text Colors */
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #666666;
+    --color-text-tertiary: #999999;
+    --color-text-inverse: #ffffff;
+    --color-text-muted: #adb5bd;
+    
+    /* Border Colors */
+    --color-border-light: #e0e0e0;
+    --color-border-medium: #d0d0d0;
+    --color-border-dark: #b0b0b0;
+    
+    /* ========================================
+       SEMANTIC COLORS
+       ======================================== */
+    
+    /* Status Colors */
+    --color-success: #2ecc71;
+    --color-success-light: #58d68d;
+    --color-success-bg: #eafaf1;
+    
+    --color-warning: #f39c12;
+    --color-warning-light: #f8b739;
+    --color-warning-bg: #fef5e7;
+    
+    --color-error: #e74c3c;
+    --color-error-light: #ec7063;
+    --color-error-bg: #fadbd8;
+    
+    --color-info: #3498db;
+    --color-info-light: #5dade2;
+    --color-info-bg: #ebf5fb;
+    
+    /* ========================================
+       GRADIENTS
+       ======================================== */
+    
+    /* Primary Gradients */
+    --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    --gradient-primary-soft: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+    
+    /* Hero/Background Gradients */
+    --gradient-hero: linear-gradient(135deg, rgba(230, 57, 70, 0.4) 0%, rgba(29, 53, 87, 0.3) 100%);
+    --gradient-overlay: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 100%);
+    --gradient-card: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+    
+    /* ========================================
+       SPACING SCALE
+       ======================================== */
+    
+    --space-xs: 0.25rem;    /* 4px */
+    --space-sm: 0.5rem;     /* 8px */
+    --space-md: 1rem;       /* 16px */
+    --space-lg: 1.5rem;     /* 24px */
+    --space-xl: 2rem;       /* 32px */
+    --space-2xl: 3rem;      /* 48px */
+    --space-3xl: 4rem;      /* 64px */
+    
+    /* ========================================
+       TYPOGRAPHY
+       ======================================== */
+    
+    /* Font Sizes */
+    --font-size-xs: 0.75rem;      /* 12px */
+    --font-size-sm: 0.875rem;     /* 14px */
+    --font-size-base: 1rem;       /* 16px */
+    --font-size-lg: 1.125rem;     /* 18px */
+    --font-size-xl: 1.25rem;      /* 20px */
+    --font-size-2xl: 1.5rem;      /* 24px */
+    --font-size-3xl: 1.875rem;    /* 30px */
+    --font-size-4xl: 2.25rem;     /* 36px */
+    --font-size-5xl: 3rem;        /* 48px */
+    
+    /* Font Weights */
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    /* Line Heights */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+    
+    /* ========================================
+       BORDER RADIUS
+       ======================================== */
+    
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-2xl: 16px;
+    --radius-full: 9999px;
+    
+    /* ========================================
+       SHADOWS
+       ======================================== */
+    
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+    --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.2);
+    
+    /* Red-specific shadows for hover states */
+    --shadow-primary: 0 4px 12px rgba(230, 57, 70, 0.3);
+    --shadow-primary-lg: 0 8px 24px rgba(230, 57, 70, 0.4);
+    
+    /* ========================================
+       TRANSITIONS
+       ======================================== */
+    
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.2s ease;
+    --transition-slow: 0.3s ease;
+    --transition-all: all 0.2s ease;
+    
+    /* ========================================
+       Z-INDEX SCALE
+       ======================================== */
+    
+    --z-base: 1;
+    --z-dropdown: 100;
+    --z-sticky: 500;
+    --z-modal-backdrop: 900;
+    --z-modal: 1000;
+    --z-tooltip: 1100;
+    
+    /* ========================================
+       BREAKPOINTS (for reference in media queries)
+       ======================================== */
+    
+    --breakpoint-sm: 480px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1400px;
+    
+    /* ========================================
+       COMPONENT-SPECIFIC TOKENS
+       ======================================== */
+    
+    /* Buttons */
+    --btn-padding-sm: 0.5rem 1rem;
+    --btn-padding-md: 0.625rem 1.25rem;
+    --btn-padding-lg: 0.75rem 2rem;
+    
+    /* Cards */
+    --card-padding: var(--space-lg);
+    --card-radius: var(--radius-xl);
+    --card-shadow: var(--shadow-sm);
+    --card-shadow-hover: var(--shadow-lg);
+    
+    /* Inputs */
+    --input-padding: 0.625rem 1rem;
+    --input-border: 1px solid var(--color-border-medium);
+    --input-radius: var(--radius-md);
+    --input-focus-border: var(--color-primary);
+    
+    /* Header */
+    --header-height: 64px;
+    --header-bg: var(--color-bg-darker);
+}
+
+/* ============================================
+   DARK MODE SUPPORT (Future Implementation)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Override variables for dark mode if needed */
+        /* Currently using dark header by default */
+    }
+}
+
+/* ============================================
+   UTILITY: Theme Switcher
+   Add class to body to override theme
+   ============================================ */
+
+body.theme-blue {
+    --color-primary: #3498db;
+    --color-primary-light: #5dade2;
+    --color-primary-dark: #2980b9;
+}
+
+body.theme-purple {
+    --color-primary: #667eea;
+    --color-primary-light: #8b9cf4;
+    --color-primary-dark: #5568d3;
+}
+
+body.theme-green {
+    --color-primary: #2ecc71;
+    --color-primary-light: #58d68d;
+    --color-primary-dark: #27ae60;
+}

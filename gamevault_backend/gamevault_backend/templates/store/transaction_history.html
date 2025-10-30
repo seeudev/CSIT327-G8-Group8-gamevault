@@ -12,7 +12,7 @@
 <div class="transaction-history-modern">
     <div class="page-header">
         <h1 class="page-title">
-            <span class="title-icon icon-package"></span>
+            <span class="title-icon">📦</span>
             Purchase History
         </h1>
         <p class="page-subtitle">Track all your game purchases and download keys</p>
@@ -42,20 +42,20 @@
                     <div class="transaction-body">
                         <div class="transaction-info-grid">
                             <div class="info-block">
-                                <span class="info-label icon-calendar">Date</span>
+                                <span class="info-label">📅 Date</span>
                                 <span class="info-value">{{ transaction.transaction_date|date:"M d, Y" }}</span>
                                 <span class="info-time">{{ transaction.transaction_date|date:"h:i A" }}</span>
                             </div>
                             
                             <div class="info-block">
-                                <span class="info-label icon-gamepad">Items</span>
+                                <span class="info-label">🎮 Items</span>
                                 <span class="info-value">{{ transaction.items.count }}</span>
                                 <span class="info-time">Game{{ transaction.items.count|pluralize }}</span>
                             </div>
                             
                             <div class="info-block price-block">
-                                <span class="info-label icon-dollar">Total</span>
-                                <span class="info-value price-highlight">${{ transaction.total_amount }}</span>
+                                <span class="info-label">💰 Total</span>
+                                <span class="info-value">${{ transaction.total_amount }}</span>
                             </div>
                         </div>
                     </div>
@@ -73,17 +73,11 @@
         </div>
     {% else %}
         <div class="empty-state">
-            <div class="empty-icon">
-                <svg width="120" height="120" fill="#ddd">
-                    <circle cx="60" cy="60" r="50" stroke="#ccc" stroke-width="2" fill="none"/>
-                    <path d="M40 60 L50 70 L80 40" stroke="#ccc" stroke-width="4" fill="none"/>
-                </svg>
-            </div>
-            <h2 class="empty-title">No Purchases Yet</h2>
-            <p class="empty-message">Start building your game library today!</p>
-            <a href="{% url 'store:game_list' %}" class="btn-browse-games">
-                <span class="btn-icon icon-gamepad"></span>
-                Browse Games
+            <div class="empty-state-icon">🛒</div>
+            <h3>No Purchases Yet</h3>
+            <p>Start building your game library today!</p>
+            <a href="{% url 'store:game_list' %}" class="btn-browse">
+                🎮 Browse Games
             </a>
         </div>
     {% endif %}
