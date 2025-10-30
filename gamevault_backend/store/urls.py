@@ -11,7 +11,10 @@ urlpatterns = [
     # Public game browsing
     path('', views.game_list, name='game_list'),
     path('game/<int:game_id>/', views.game_detail, name='game_detail'),
-    
+    path('games/', views.game_list, name='game_list'),
+    path('api/games/search/', views.game_search, name='game_search'),
+    path('tag/<int:tag_id>/', views.games_by_tag, name='games_by_tag'),
+
     # Shopping cart
     path('cart/', views.cart_view, name='cart'),
     path('cart/add/<int:game_id>/', views.add_to_cart, name='add_to_cart'),

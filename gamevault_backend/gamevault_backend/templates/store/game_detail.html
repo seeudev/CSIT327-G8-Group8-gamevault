@@ -17,6 +17,19 @@
         <p><strong>Price:</strong> ${{ game.price }}</p>
         <p><strong>Uploaded:</strong> {{ game.upload_date|date:"F d, Y" }}</p>
     </div>
+
+    <div class="game-detail-tags">
+        <h2>Tags</h2>
+        {% if game.tags.all.count > 0 %}
+            <p>
+                {% for tag in game.tags.all %}
+                    <a href="{% url 'store:games_by_tag' tag.id %}" class="tag-label">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+        {% else %}
+            <p>No tags</p>
+        {% endif %}
+    </div>
     
     <div class="game-detail-description">
         <h2>Description</h2>

@@ -21,7 +21,12 @@
         
         <div class="form-group">
             <label for="category">Category:</label>
-            <input type="text" id="category" name="category" value="{% if game %}{{ game.category }}{% endif %}" required>
+            <select name="category" id="category" required>
+                <option value="">Select a category</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+            </select>
         </div>
         
         <div class="form-group">
@@ -38,6 +43,25 @@
             <label for="file_url">Download File URL (optional):</label>
             <input type="url" id="file_url" name="file_url" value="{% if game %}{{ game.file_url }}{% endif %}">
         </div>
+
+        <div class="form-group">
+            <label>Tags:</label>
+            <div class="checkbox-group">
+                {% for tag in tags %}
+                    <label class="checkbox-label">
+                        <input
+                            type="checkbox"
+                            name="tags"
+                            id="tag_{{ tag.id }}"
+                            value="{{ tag.id }}"
+                            {% if game and tag in game.tags.all %}checked{% endif %}
+                        >
+                        {{ tag.name }}
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
         
         <div class="form-actions">
             <a href="{% url 'store:admin_game_list' %}" class="button">Cancel</a>

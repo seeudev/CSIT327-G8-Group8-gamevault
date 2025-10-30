@@ -12,7 +12,9 @@ from django.http import JsonResponse
 from decimal import Decimal
 import json
 
-from .models import Game, Cart, CartItem, Transaction, TransactionItem, AdminActionLog
+from unicodedata import category
+
+from .models import Game, Cart, CartItem, Transaction, TransactionItem, AdminActionLog, GameTag, Tag, Category
 from .middleware import PurchaseValidationMiddleware
 from .email_service import send_game_key_email
 from users.models import User
@@ -22,7 +24,15 @@ def game_list(request):
     """
     Display list of all games with optional filtering.
     Public view - no login required.
+
+    Display list of all games with optional filtering by category, tag, search, price, and date.
+    Supports:
+    Public view - no login required.
+      /store/games/?category=Action
+      /store/games/?tag=Singleplayer
+      /store/games/?category=Action&tag=Singleplayer
     """
+
     games = Game.objects.all()
     
     # Search functionality
@@ -32,11 +42,17 @@ def game_list(request):
             Q(title__icontains=search_query) | 
             Q(description__icontains=search_query)
         )
-    
+
     # Filter by category
     category = request.GET.get('category', '')
     if category:
-        games = games.filter(category__iexact=category)
+        games = games.filter(category__name__iexact=category)
+
+    # Filter by tag
+    selected_tags = request.GET.getlist('tags')
+    if selected_tags:
+        games = games.filter(tags__id__in=selected_tags).distinct()
+
 
     # Filter by price range
     min_price = request.GET.get('min_price')
@@ -69,22 +85,111 @@ def game_list(request):
         games = games.order_by('-popularity')
 
     # Get all unique categories for filter
-    categories = Game.objects.values_list('category', flat=True).distinct()
-    
+    #categories = Game.objects.values_list('category', flat=True).distinct()
+    categories = Category.objects.all()
+    tags = Tag.objects.all()
+
     # Get featured games with screenshots for hero slideshow (limit to 8)
     featured_games = Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:8]
-    
+
+    # Filter display info
+    filter_type = ''
+    filter_value = ''
+    if selected_tags:
+        filter_type = 'tag'
+        filter_value = ','.join(Tag.objects.filter(id__in=selected_tags).values_list('name',flat=True))
+    elif category:
+        filter_type = 'category'
+        filter_value = category
+
+
+    # Check if the request wants JSON output
+    if request.GET.get('format') == 'json':
+        game_list_json = [
+            {
+                "id": g.id,
+                "title": g.title,
+                "description": g.description,
+                "category": g.category,
+                "price": str(g.price),
+                "screenshot_url": g.screenshot_url,
+                "file_url": g.file_url,
+                "upload_date": g.upload_date.isoformat(),
+                "tags": [gt.tag.name for gt in g.gametag_set.all()]
+            }
+            for g in games
+        ]
+        return JsonResponse(game_list_json,safe=False)
+
     return render(request, 'store/game_list.html', {
         'games': games,
         'categories': categories,
+        'tags': tags,
         'search_query': search_query,
         'selected_category': category,
+        'selected_tags': selected_tags,
         'selected_sort': sort_by,
         'min_price': min_price,
         'max_price': max_price,
         'start_date': start_date,
         'end_date': end_date,
         'featured_games': featured_games,
+        'filter_type': filter_type,
+        'filter_value': filter_value,
+    })
+
+
+def game_search(request):
+    """
+    GET /api/games/search/?q=
+    Searches games by title, description, category, or tag name.
+    Returns JSON list of matching games.
+    """
+
+    query = request.GET.get('q','').strip()
+    if not query:
+        return JsonResponse({"results": [], "message": "No search query provided."}, status=200)
+
+    games = Game.objects.filter(
+        Q(title__icontains=query) |
+        Q(description__icontains=query) |
+        Q(category__name__icontains=query) |
+        Q(gametag__tag__name__icontains=query)
+    ).distinct()
+
+    results = [
+        {
+            "id": g.id,
+            "title": g.title,
+            "description": g.description,
+            "category": g.category,
+            "price": str(g.price),
+            "screenshot_url": g.screenshot_url,
+            # "file_url": g.file_url,
+            "upload_date": g.upload_date.isoformat(),
+            "tags": [gt.tag.name for gt in g.gametag_set.all()],
+        }
+        for g in games
+    ]
+
+    if not results:
+        return JsonResponse({"results": [], "message": "No games found for your search"}, status=200)
+
+    return JsonResponse({"results": results}, status=200)
+
+
+def games_by_tag(request, tag_id):
+    """
+    Display a list of games that have the selected tag.
+    """
+    tag = get_object_or_404(Tag, id=tag_id)
+    games = tag.games.all()  # uses the related_name from Game.tags
+
+    return render(request, 'store/game_list.html', {
+        'games': games,
+        'filter_type': 'tag',
+        'filter_value': tag.name,
+        'categories': Category.objects.all()
     })
 
 
@@ -409,31 +514,45 @@ def admin_game_create(request):
     if not request.user.is_admin:
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('store:game_list')
-    
+
+    categories = Category.objects.all()  # fetch all categories
+    tags = Tag.objects.all()
+
     if request.method == 'POST':
         title = request.POST.get('title')
         description = request.POST.get('description')
-        category = request.POST.get('category')
+        category_id = request.POST.get('category')
         price = request.POST.get('price')
         screenshot_url = request.POST.get('screenshot_url')
         file_url = request.POST.get('file_url')
+        tag_ids = request.POST.getlist('tags')
         
         # Simple validation
-        if not all([title, description, category, price]):
+        if not all([title, description, category_id, price]):
             messages.error(request, 'All required fields must be filled.')
-            return render(request, 'store/admin_game_form.html')
-        
+            return render(request, 'store/admin_game_form.html', {
+                "categories": categories,
+                "tags": tags
+            })
+
         try:
+            # Fetch the actual Category instance
+            category_instance = Category.objects.get(id=int(category_id))
+
             game = Game.objects.create(
                 title=title,
                 description=description,
-                category=category,
+                category=category_instance,
                 price=Decimal(price),
                 screenshot_url=screenshot_url if screenshot_url else None,
                 file_url=file_url if file_url else None,
             )
+
+            # Add tags
+            if tag_ids:
+                game.tags.set(Tag.objects.filter(id__in=tag_ids))
             
-            # Log the action
+            # Log admin action
             AdminActionLog.objects.create(
                 admin=request.user,
                 action_type='create',
@@ -445,9 +564,11 @@ def admin_game_create(request):
             return redirect('store:admin_game_list')
         except Exception as e:
             messages.error(request, f'Error creating game: {str(e)}')
-            return render(request, 'store/admin_game_form.html')
     
-    return render(request, 'store/admin_game_form.html')
+    return render(request, 'store/admin_game_form.html', {
+        "categories": categories,
+        "tags": tags
+    })
 
 
 @login_required
@@ -461,15 +582,20 @@ def admin_game_edit(request, game_id):
         return redirect('store:game_list')
     
     game = get_object_or_404(Game, id=game_id)
+    categories = Category.objects.all()
+    tags = Tag.objects.all()
     
     if request.method == 'POST':
         game.title = request.POST.get('title')
         game.description = request.POST.get('description')
-        game.category = request.POST.get('category')
+        game.category_id = request.POST.get('category')
         game.price = Decimal(request.POST.get('price'))
         screenshot_url = request.POST.get('screenshot_url')
         file_url = request.POST.get('file_url')
-        
+        game.tag_ids = request.POST.getlist('tags')
+
+        if game.category_id:
+            game.category = Category.objects.get(id=int(game.category_id))
         if screenshot_url:
             game.screenshot_url = screenshot_url
         if file_url:
@@ -477,6 +603,7 @@ def admin_game_edit(request, game_id):
         
         try:
             game.save()
+            game.tags.set(Tag.objects.filter(id__in=game.tag_ids))
             
             # Log the action
             AdminActionLog.objects.create(
@@ -493,6 +620,8 @@ def admin_game_edit(request, game_id):
     
     return render(request, 'store/admin_game_form.html', {
         'game': game,
+        'categories': categories,
+        'tags': tags,
         'is_edit': True
     })
 
