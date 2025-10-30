@@ -46,6 +46,24 @@ header {
     font-size: 1.75rem;
     font-weight: 700;
     letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-image {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.logo a:hover .logo-image {
+    transform: rotate(360deg);
+}
+
+.logo-text {
+    display: inline-block;
 }
 
 .nav-links {
@@ -494,6 +512,16 @@ footer p {
 
     .filter-row {
         grid-template-columns: 1fr 1fr;
+    }
+    
+    /* Logo responsive */
+    .logo a {
+        font-size: 1.5rem;
+    }
+    
+    .logo-image {
+        width: 32px;
+        height: 32px;
     }
     
     /* Floating messages responsive */

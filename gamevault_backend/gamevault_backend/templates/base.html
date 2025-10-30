@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Game Vault{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
@@ -13,7 +14,10 @@
         <nav>
             <div class="nav-container">
                 <div class="logo">
-                    <a href="{% url 'store:game_list' %}">Game Vault</a>
+                    <a href="{% url 'store:game_list' %}">
+                        <img src="{% static 'images/gamevault-logo.png' %}" alt="Game Vault Logo" class="logo-image">
+                        <span class="logo-text">Game Vault</span>
+                    </a>
                 </div>
                 <div class="nav-links">
                     <a href="{% url 'store:game_list' %}">Games</a>
