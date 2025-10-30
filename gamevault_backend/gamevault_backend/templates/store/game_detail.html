@@ -24,7 +24,7 @@
                 <div class="hero-overlay"></div>
             {% endif %}
         </div>
-        
+
         <div class="game-hero-content">
             <div class="breadcrumb">
                 <a href="{% url 'store:game_list' %}">← Back to Store</a>
@@ -36,14 +36,27 @@
             </div>
         </div>
     </div>
-    
+
+    <div class="game-detail-tags">
+        <h2>Tags</h2>
+        {% if game.tags.all.count > 0 %}
+            <p>
+                {% for tag in game.tags.all %}
+                    <a href="{% url 'store:games_by_tag' tag.id %}" class="tag-label">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+        {% else %}
+            <p>No tags</p>
+        {% endif %}
+    </div>
+
     <div class="game-detail-content">
         <div class="game-main-section">
             <div class="game-description-card card-interactive">
                 <h2 class="section-title">About This Game</h2>
                 <p class="game-description-text">{{ game.description }}</p>
             </div>
-            
+
             <div class="game-features-card card-interactive">
                 <h2 class="section-title">Game Details</h2>
                 <div class="features-grid">
@@ -113,14 +126,14 @@
                 </div>
             </div>
         </div>
-        
+
         <aside class="game-sidebar">
             <div class="purchase-card card-interactive">
                 <div class="price-section">
                     <span class="price-label">Price</span>
                     <span class="price-value">${{ game.price }}</span>
                 </div>
-                
+
                 <div class="purchase-actions">
                     {% if user.is_authenticated %}
                         <form method="post" action="{% url 'store:add_to_cart' game.id %}" class="add-cart-form-detail">
@@ -137,7 +150,7 @@
                         </a>
                     {% endif %}
                 </div>
-                
+
                 <div class="purchase-info">
                     <div class="info-item">
                         <svg width="16" height="16" fill="currentColor"><path d="M8 0 L10 6 L16 6 L11 10 L13 16 L8 12 L3 16 L5 10 L0 6 L6 6 Z"/></svg>
