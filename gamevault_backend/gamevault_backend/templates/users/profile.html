@@ -397,9 +397,14 @@
                 document.getElementById('profile-update-message').innerHTML = 
                     '<div class="success-message" style="margin-top: 1rem; padding: 1rem; background: #d4edda; border: 1px solid #c3e6cb; color: #155724;">Profile updated successfully!</div>';
                 
-                // Update the view tab
-                document.querySelector('#view-tab .profile-info-value:nth-of-type(1)').textContent = data.user.username;
-                document.querySelector('#view-tab .profile-info-value:nth-of-type(2)').textContent = data.user.email;
+                // Update the view tab - use more specific selectors
+                const profileInfoItems = document.querySelectorAll('#view-tab .profile-info-item');
+                if (profileInfoItems.length >= 2) {
+                    // First item is username (index 0)
+                    profileInfoItems[0].querySelector('.profile-info-value').textContent = data.user.username;
+                    // Second item is email (index 1)
+                    profileInfoItems[1].querySelector('.profile-info-value').textContent = data.user.email;
+                }
                 
                 // Update navigation
                 const profileLink = document.querySelector('.nav-links a[href*="profile"]');
@@ -420,8 +425,9 @@
                 }
             }
         } catch (error) {
+            console.error('Profile update error:', error);
             document.getElementById('profile-update-message').innerHTML = 
-                '<div class="error-message" style="margin-top: 1rem; padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24;">An error occurred. Please try again.</div>';
+                `<div class="error-message" style="margin-top: 1rem; padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24;">An error occurred: ${error.message || 'Please try again.'}</div>`;
         }
     });
     
@@ -492,8 +498,9 @@
                 }
             }
         } catch (error) {
+            console.error('Password update error:', error);
             document.getElementById('password-update-message').innerHTML = 
-                '<div class="error-message" style="margin-top: 1rem; padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24;">An error occurred. Please try again.</div>';
+                `<div class="error-message" style="margin-top: 1rem; padding: 1rem; background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24;">An error occurred: ${error.message || 'Please try again.'}</div>`;
         }
     });
     
