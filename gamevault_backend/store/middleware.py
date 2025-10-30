@@ -5,6 +5,8 @@ Module 5: Secure Game Delivery
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.contrib import messages
+from django.db import connection
+from django.utils.deprecation import MiddlewareMixin
 from .models import Transaction
 
 
@@ -45,3 +47,23 @@ class PurchaseValidationMiddleware:
                 return True, transaction
         
         return False, None
+
+
+class CloseDBConnectionMiddleware(MiddlewareMixin):
+    """
+    Middleware to force-close database connections after each request.
+    Critical for Supabase Session Pooler to prevent MaxClientsInSessionMode errors.
+    
+    Solution for: django.db.utils.OperationalError: MaxClientsInSessionMode
+    Context: Free tier Supabase Session Pooler has limited connections (~15-30)
+    """
+    
+    def process_response(self, request, response):
+        """Close DB connection after successful response."""
+        connection.close()
+        return response
+    
+    def process_exception(self, request, exception):
+        """Close DB connection even if exception occurs."""
+        connection.close()
+        return None

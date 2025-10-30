@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'store.middleware.CloseDBConnectionMiddleware',  # MUST be last - closes DB connections after all processing
 ]
 
 ROOT_URLCONF = 'gamevault_backend.urls'
@@ -81,10 +82,19 @@ WSGI_APPLICATION = 'gamevault_backend.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default='sqlite:///db.sqlite3',  # Fallback to SQLite for development
-        conn_max_age=600,
-        conn_health_checks=True,
+        conn_max_age=0,  # Don't persist connections (critical for Supabase Session Pooler)
+        conn_health_checks=False,  # Disabled - health checks keep connections alive
     )
 }
+
+# Additional Supabase-specific database configuration
+# Prevents connection pool exhaustion on free tier Session Pooler
+if 'ENGINE' in DATABASES['default'] and 'postgresql' in DATABASES['default']['ENGINE']:
+    DATABASES['default']['ATOMIC_REQUESTS'] = False  # Don't wrap requests in transactions
+    DATABASES['default']['OPTIONS'] = {
+        'connect_timeout': 10,  # Timeout if can't connect within 10 seconds
+        'options': '-c statement_timeout=30000',  # Kill queries after 30 seconds
+    }
 
 
 # Password validation
