@@ -6,6 +6,40 @@ import secrets
 
 User = get_user_model()
 
+class Category(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        db_table = 'categories'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        db_table = 'tags'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class GameTag(models.Model):
+    game = models.ForeignKey('Game', on_delete=models.CASCADE)
+    tag = models.ForeignKey('Tag', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'game_tags'
+        unique_together = ('game', 'tag')
+
+    def __str__(self):
+        return f"{self.game.title} - {self.tag.name}"
+
 
 class Game(models.Model):
     """
@@ -14,11 +48,12 @@ class Game(models.Model):
     # game_id is the primary key (id field by default)
     title = models.CharField(max_length=200)
     description = models.TextField()
-    category = models.CharField(max_length=100)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     screenshot_url = models.URLField(blank=True, null=True)
     file_url = models.URLField(blank=True, null=True)  # URL to download the game file
     upload_date = models.DateTimeField(auto_now_add=True)
+    tags = models.ManyToManyField(Tag, through='GameTag', related_name='games')
 
     class Meta:
         db_table = 'games'

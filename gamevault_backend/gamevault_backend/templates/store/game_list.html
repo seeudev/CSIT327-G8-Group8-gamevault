@@ -79,10 +79,31 @@
                 </select>
             </div>
 
+            <div class="filter-group">
+                <label class="filter-label">Tags</label>
+                <select name="tags" class="filter-select-compact" multiple onchange="this.form.submit()">
+                    {% for tag in tags %}
+                        <option value="{{ tag.id }}"
+                            {% if tag.id|stringformat:"s" in selected_tags %}selected{% endif %}>
+                            {{ tag.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <small class="filter-note">Hold Ctrl to select multiple tags</small>
+            </div>
+
             <button type="submit" class="filter-apply-btn">Apply Filters</button>
             <a href="{% url 'store:game_list' %}" class="filter-clear-btn">Clear All</a>
         </form>
     </div>
+
+
+    {% if filter_type == 'tag' %}
+        <p class="filter-info">Showing games tagged with: <strong>{{ filter_value }}</strong></p>
+    {% elif filter_type == 'category' %}
+        <p class="filter-info">Showing games in category: <strong>{{ filter_value }}</strong></p>
+    {% endif %}
+
 
     <!-- Results Count -->
     <div class="results-info">
