@@ -37,21 +37,20 @@
         </div>
     </div>
 
-    <div class="game-detail-tags">
-        <h2>Tags</h2>
-        {% if game.tags.all.count > 0 %}
-            <p>
-                {% for tag in game.tags.all %}
-                    <a href="{% url 'store:games_by_tag' tag.id %}" class="tag-label">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-            </p>
-        {% else %}
-            <p>No tags</p>
-        {% endif %}
-    </div>
-
     <div class="game-detail-content">
         <div class="game-main-section">
+            <!-- Tags Section -->
+            {% if game.tags.all.count > 0 %}
+            <div class="game-tags-card card-interactive">
+                <h3 class="tags-title">Tags</h3>
+                <div class="tags-container">
+                    {% for tag in game.tags.all %}
+                        <a href="{% url 'store:games_by_tag' tag.id %}" class="tag-badge">{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
             <div class="game-description-card card-interactive">
                 <h2 class="section-title">About This Game</h2>
                 <p class="game-description-text">{{ game.description }}</p>

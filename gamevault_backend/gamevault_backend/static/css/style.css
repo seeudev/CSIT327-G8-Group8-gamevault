@@ -81,20 +81,81 @@ main {
 }
 
 /* ============================================
-   MESSAGES
+   MESSAGES - Floating Notifications
    ============================================ */
-.messages {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 1rem 2rem 0;
+.messages-container {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    max-width: 500px;
+    width: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .message {
-    padding: 1rem 1.5rem;
+    position: relative;
+    padding: 1rem 3.5rem 1rem 1.5rem;
     margin-bottom: 0.75rem;
     border-radius: 8px;
     font-weight: 500;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    pointer-events: all;
+    animation: slideInDown 0.3s ease-out;
+    display: flex;
+    align-items: center;
+    width: 90%;
+    max-width: 500px;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.message-text {
+    flex: 1;
+    padding-right: 0.5rem;
+}
+
+.message-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 2.5rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 0 8px 8px 0;
+}
+
+.message-close:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.message-close:active {
+    transform: scale(0.95);
 }
 
 .message.success {
@@ -433,6 +494,26 @@ footer p {
 
     .filter-row {
         grid-template-columns: 1fr 1fr;
+    }
+    
+    /* Floating messages responsive */
+    .messages-container {
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 20px);
+        max-width: none;
+        padding: 0 10px;
+    }
+    
+    .message {
+        font-size: 0.9rem;
+        padding: 0.875rem 3rem 0.875rem 1rem;
+        width: 100%;
+    }
+    
+    .message-close {
+        width: 2.25rem;
     }
 }
 

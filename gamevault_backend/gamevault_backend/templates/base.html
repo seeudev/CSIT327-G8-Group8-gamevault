@@ -36,10 +36,11 @@
 
     <main>
         {% if messages %}
-            <div class="messages">
+            <div class="messages-container">
                 {% for message in messages %}
                     <div class="message {{ message.tags }}">
-                        {{ message }}
+                        <span class="message-text">{{ message }}</span>
+                        <button class="message-close" onclick="this.parentElement.remove()" aria-label="Close message">×</button>
                     </div>
                 {% endfor %}
             </div>
