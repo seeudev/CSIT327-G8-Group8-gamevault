@@ -3,7 +3,7 @@ Simple authentication views for GameVault.
 Uses Django's built-in session-based authentication.
 """
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -13,7 +13,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 import json
-from .models import User
+from .models import User, PasswordResetToken
+from .email_service import send_password_reset_email
+from store.models import Game
 
 
 @require_http_methods(["GET", "POST"])
@@ -67,7 +69,25 @@ def register_view(request):
             messages.error(request, f'Error creating account: {str(e)}')
             return render(request, 'users/register.html')
     
-    return render(request, 'users/register.html')
+    # Get featured games with screenshots for background grid
+    featured_games = list(Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:5])
+
+    # Build a grid_images list of screenshot URLs, repeating the available
+    # screenshots until we have at least 9 tiles (3x3 mosaic). This keeps
+    # the grid looking full on wider screens even when the DB has few games.
+    grid_images = []
+    if featured_games:
+        urls = [g.screenshot_url for g in featured_games]
+        while len(grid_images) < 9:
+            grid_images.extend(urls)
+        grid_images = grid_images[:9]
+    else:
+        grid_images = []
+
+    return render(request, 'users/register.html', {
+        'featured_games': featured_games,
+        'grid_images': grid_images,
+    })
 
 
 @require_http_methods(["GET", "POST"])
@@ -101,7 +121,23 @@ def login_view(request):
             messages.error(request, 'Invalid username or password.')
             return render(request, 'users/login.html')
     
-    return render(request, 'users/login.html')
+    # Get featured games with screenshots for background grid
+    featured_games = list(Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:5])
+
+    # Build grid_images (repeat to at least 9 tiles)
+    grid_images = []
+    if featured_games:
+        urls = [g.screenshot_url for g in featured_games]
+        while len(grid_images) < 9:
+            grid_images.extend(urls)
+        grid_images = grid_images[:9]
+    else:
+        grid_images = []
+
+    return render(request, 'users/login.html', {
+        'featured_games': featured_games,
+        'grid_images': grid_images,
+    })
 
 
 @login_required
@@ -253,3 +289,180 @@ def delete_account_api(request, user_id):
             'success': False,
             'error': str(e)
         }, status=500)
+
+
+@require_http_methods(["GET", "POST"])
+def password_reset_request(request):
+    """
+    Password reset request view.
+    GET: Display password reset request form
+    POST: Generate reset token and send email (API endpoint)
+    """
+    if request.method == 'POST':
+        try:
+            # Handle both form data and JSON
+            if request.content_type == 'application/json':
+                data = json.loads(request.body)
+                email = data.get('email', '').strip()
+            else:
+                email = request.POST.get('email', '').strip()
+            
+            if not email:
+                if request.content_type == 'application/json':
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Email is required'
+                    }, status=400)
+                messages.error(request, 'Email is required.')
+                return render(request, 'users/forgot_password.html')
+            
+            # Check if user exists
+            try:
+                user = User.objects.get(email=email)
+                
+                # Create password reset token
+                token = PasswordResetToken.create_token(user)
+                
+                # Send password reset email
+                success, message = send_password_reset_email(user, token)
+                
+                if not success:
+                    if request.content_type == 'application/json':
+                        return JsonResponse({
+                            'success': False,
+                            'error': message
+                        }, status=500)
+                    messages.error(request, message)
+                    return render(request, 'users/forgot_password.html')
+                
+            except User.DoesNotExist:
+                # Don't reveal if user exists or not for security
+                pass
+            
+            # Always show success message to prevent email enumeration
+            if request.content_type == 'application/json':
+                return JsonResponse({
+                    'success': True,
+                    'message': 'If an account exists with this email, a password reset link has been sent.'
+                })
+            
+            messages.success(request, 'If an account exists with this email, a password reset link has been sent.')
+            return redirect('users:login')
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid JSON data'
+            }, status=400)
+        except Exception as e:
+            if request.content_type == 'application/json':
+                return JsonResponse({
+                    'success': False,
+                    'error': str(e)
+                }, status=500)
+            messages.error(request, f'An error occurred: {str(e)}')
+            return render(request, 'users/forgot_password.html')
+    
+    return render(request, 'users/forgot_password.html')
+
+
+@require_http_methods(["GET", "POST"])
+def password_reset_confirm(request, token):
+    """
+    Password reset confirmation view.
+    GET: Display password reset form
+    POST: Validate token and update password (API endpoint)
+    """
+    # Get token object
+    reset_token = get_object_or_404(PasswordResetToken, token=token)
+    
+    # Check if token is valid
+    if not reset_token.is_valid():
+        if request.method == 'POST' and request.content_type == 'application/json':
+            return JsonResponse({
+                'success': False,
+                'error': 'This password reset link has expired or has already been used.'
+            }, status=400)
+        messages.error(request, 'This password reset link has expired or has already been used.')
+        return redirect('users:password_reset_request')
+    
+    if request.method == 'POST':
+        try:
+            # Handle both form data and JSON
+            if request.content_type == 'application/json':
+                data = json.loads(request.body)
+                new_password = data.get('new_password', '')
+                confirm_password = data.get('confirm_password', '')
+            else:
+                new_password = request.POST.get('new_password', '')
+                confirm_password = request.POST.get('confirm_password', '')
+            
+            # Validate passwords
+            if not new_password or not confirm_password:
+                error_msg = 'Both password fields are required.'
+                if request.content_type == 'application/json':
+                    return JsonResponse({
+                        'success': False,
+                        'error': error_msg
+                    }, status=400)
+                messages.error(request, error_msg)
+                return render(request, 'users/reset_password.html', {'token': token})
+            
+            if new_password != confirm_password:
+                error_msg = 'Passwords do not match.'
+                if request.content_type == 'application/json':
+                    return JsonResponse({
+                        'success': False,
+                        'error': error_msg
+                    }, status=400)
+                messages.error(request, error_msg)
+                return render(request, 'users/reset_password.html', {'token': token})
+            
+            # Validate password strength
+            try:
+                validate_password(new_password, reset_token.user)
+            except ValidationError as e:
+                error_msg = ' '.join(e.messages)
+                if request.content_type == 'application/json':
+                    return JsonResponse({
+                        'success': False,
+                        'error': error_msg
+                    }, status=400)
+                messages.error(request, error_msg)
+                return render(request, 'users/reset_password.html', {'token': token})
+            
+            # Update user password
+            user = reset_token.user
+            user.set_password(new_password)
+            user.save()
+            
+            # Mark token as used
+            reset_token.is_used = True
+            reset_token.save()
+            
+            # Success response
+            if request.content_type == 'application/json':
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Password has been reset successfully. You can now login with your new password.'
+                })
+            
+            messages.success(request, 'Password has been reset successfully. You can now login with your new password.')
+            return redirect('users:login')
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid JSON data'
+            }, status=400)
+        except Exception as e:
+            if request.content_type == 'application/json':
+                return JsonResponse({
+                    'success': False,
+                    'error': str(e)
+                }, status=500)
+            messages.error(request, f'An error occurred: {str(e)}')
+            return render(request, 'users/reset_password.html', {'token': token})
+    
+    return render(request, 'users/reset_password.html', {'token': token})
+

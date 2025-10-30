@@ -12,8 +12,6 @@ from django.http import JsonResponse
 from decimal import Decimal
 import json
 
-from unicodedata import category
-
 from .models import Game, Cart, CartItem, Transaction, TransactionItem, AdminActionLog, GameTag, Tag, Category
 from .middleware import PurchaseValidationMiddleware
 from .email_service import send_game_key_email
@@ -42,7 +40,7 @@ def game_list(request):
             Q(title__icontains=search_query) | 
             Q(description__icontains=search_query)
         )
-
+    
     # Filter by category
     category = request.GET.get('category', '')
     if category:
@@ -85,7 +83,6 @@ def game_list(request):
         games = games.order_by('-popularity')
 
     # Get all unique categories for filter
-    #categories = Game.objects.values_list('category', flat=True).distinct()
     categories = Category.objects.all()
     tags = Tag.objects.all()
 
@@ -526,7 +523,7 @@ def admin_game_create(request):
         screenshot_url = request.POST.get('screenshot_url')
         file_url = request.POST.get('file_url')
         tag_ids = request.POST.getlist('tags')
-        
+
         # Simple validation
         if not all([title, description, category_id, price]):
             messages.error(request, 'All required fields must be filled.')
@@ -551,7 +548,7 @@ def admin_game_create(request):
             # Add tags
             if tag_ids:
                 game.tags.set(Tag.objects.filter(id__in=tag_ids))
-            
+
             # Log admin action
             AdminActionLog.objects.create(
                 admin=request.user,
@@ -584,7 +581,7 @@ def admin_game_edit(request, game_id):
     game = get_object_or_404(Game, id=game_id)
     categories = Category.objects.all()
     tags = Tag.objects.all()
-    
+
     if request.method == 'POST':
         game.title = request.POST.get('title')
         game.description = request.POST.get('description')
@@ -604,7 +601,7 @@ def admin_game_edit(request, game_id):
         try:
             game.save()
             game.tags.set(Tag.objects.filter(id__in=game.tag_ids))
-            
+
             # Log the action
             AdminActionLog.objects.create(
                 admin=request.user,

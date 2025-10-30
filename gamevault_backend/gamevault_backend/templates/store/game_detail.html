@@ -3,19 +3,38 @@
 
 {% block title %}{{ game.title }} - GameVault{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modules/game-detail.css' %}">
+<link rel="stylesheet" href="{% static 'css/modules/animations.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="game-detail-container">
-    <div class="game-detail-header">
-        <h1>{{ game.title }}</h1>
-        {% if game.screenshot_url %}
-            <img src="{{ game.screenshot_url }}" alt="{{ game.title }}" class="game-detail-image">
-        {% endif %}
-    </div>
-    
-    <div class="game-detail-info">
-        <p><strong>Category:</strong> {{ game.category }}</p>
-        <p><strong>Price:</strong> ${{ game.price }}</p>
-        <p><strong>Uploaded:</strong> {{ game.upload_date|date:"F d, Y" }}</p>
+<div class="game-detail-modern">
+    <div class="game-detail-hero">
+        <div class="game-hero-image">
+            {% if game.screenshot_url %}
+                <img src="{{ game.screenshot_url }}" alt="{{ game.title }}" id="gameHeroImage">
+                <div class="hero-overlay"></div>
+            {% else %}
+                <div class="hero-placeholder">
+                    <svg width="120" height="120" fill="rgba(255,255,255,0.3)">
+                        <path d="M60 10 L90 40 L90 90 L30 90 L30 40 Z M45 50 L75 50 L75 60 L45 60 Z M45 70 L75 70 L75 80 L45 80 Z"/>
+                    </svg>
+                </div>
+                <div class="hero-overlay"></div>
+            {% endif %}
+        </div>
+
+        <div class="game-hero-content">
+            <div class="breadcrumb">
+                <a href="{% url 'store:game_list' %}">← Back to Store</a>
+            </div>
+            <h1 class="game-title-hero">{{ game.title }}</h1>
+            <div class="game-meta">
+                <span class="meta-badge category-badge">{{ game.category }}</span>
+                <span class="meta-badge">{{ game.upload_date|date:"F d, Y" }}</span>
+            </div>
+        </div>
     </div>
 
     <div class="game-detail-tags">
@@ -30,22 +49,75 @@
             <p>No tags</p>
         {% endif %}
     </div>
-    
-    <div class="game-detail-description">
-        <h2>Description</h2>
-        <p>{{ game.description }}</p>
-    </div>
-    
-    <div class="game-detail-actions">
-        <a href="{% url 'store:game_list' %}" class="button">Back to Store</a>
-        {% if user.is_authenticated %}
-            <form method="post" action="{% url 'store:add_to_cart' game.id %}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="button">Add to Cart</button>
-            </form>
-        {% else %}
-            <a href="{% url 'users:login' %}" class="button">Login to Purchase</a>
-        {% endif %}
+
+    <div class="game-detail-content">
+        <div class="game-main-section">
+            <div class="game-description-card card-interactive">
+                <h2 class="section-title">About This Game</h2>
+                <p class="game-description-text">{{ game.description }}</p>
+            </div>
+
+            <div class="game-features-card card-interactive">
+                <h2 class="section-title">Game Details</h2>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon icon-gamepad"></div>
+                        <div class="feature-content">
+                            <span class="feature-label">Category</span>
+                            <span class="feature-value">{{ game.category }}</span>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon icon-calendar"></div>
+                        <div class="feature-content">
+                            <span class="feature-label">Date Added</span>
+                            <span class="feature-value">{{ game.upload_date|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <aside class="game-sidebar">
+            <div class="purchase-card card-interactive">
+                <div class="price-section">
+                    <span class="price-label">Price</span>
+                    <span class="price-value">${{ game.price }}</span>
+                </div>
+
+                <div class="purchase-actions">
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'store:add_to_cart' game.id %}" class="add-cart-form-detail">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-purchase">
+                                <span class="btn-icon icon-cart"></span>
+                                Add to Cart
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'users:login' %}" class="btn-purchase">
+                            <span class="btn-icon icon-lock"></span>
+                            Login to Purchase
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div class="purchase-info">
+                    <div class="info-item">
+                        <svg width="16" height="16" fill="currentColor"><path d="M8 0 L10 6 L16 6 L11 10 L13 16 L8 12 L3 16 L5 10 L0 6 L6 6 Z"/></svg>
+                        <span>Instant delivery</span>
+                    </div>
+                    <div class="info-item">
+                        <svg width="16" height="16" fill="currentColor"><path d="M8 0 L10 6 L16 6 L11 10 L13 16 L8 12 L3 16 L5 10 L0 6 L6 6 Z"/></svg>
+                        <span>Lowest Price</span>
+                    </div>
+                </div>
+            </div>
+                </aside>
     </div>
 </div>
+
+{% block extra_js %}
+<script src="{% static 'js/game-detail.js' %}"></script>
+{% endblock %}
 {% endblock %}

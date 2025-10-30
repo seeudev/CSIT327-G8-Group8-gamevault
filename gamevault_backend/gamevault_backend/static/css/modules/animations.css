@@ -1,0 +1,76 @@
+/* ============================================
+   ANIMATIONS MODULE
+   All keyframe animations and transitions
+   ============================================ */
+
+/* Fade In Up */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Slide Up */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Slide Down */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Pulse */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Float */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Transaction Card Staggered Animation */
+.transaction-card-modern {
+    animation: slideUp 0.4s ease-out;
+    animation-fill-mode: backwards;
+}
+
+.transaction-card-modern:nth-child(1) { animation-delay: 0.1s; }
+.transaction-card-modern:nth-child(2) { animation-delay: 0.2s; }
+.transaction-card-modern:nth-child(3) { animation-delay: 0.3s; }
+.transaction-card-modern:nth-child(4) { animation-delay: 0.4s; }
+.transaction-card-modern:nth-child(5) { animation-delay: 0.5s; }
+.transaction-card-modern:nth-child(6) { animation-delay: 0.6s; }
+
+/* Game Item Card Staggered Animation */
+.game-item-card {
+    animation: fadeInUp 0.5s ease-out;
+    animation-fill-mode: backwards;
+}
+
+.game-item-card:nth-child(1) { animation-delay: 0.1s; }
+.game-item-card:nth-child(2) { animation-delay: 0.2s; }
+.game-item-card:nth-child(3) { animation-delay: 0.3s; }
+.game-item-card:nth-child(4) { animation-delay: 0.4s; }

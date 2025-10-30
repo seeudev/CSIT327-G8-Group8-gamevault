@@ -3,26 +3,93 @@
 
 {% block title %}Purchase History - GameVault{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modules/transactions.css' %}">
+<link rel="stylesheet" href="{% static 'css/modules/animations.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="transaction-history-container">
-    <h1>Purchase History</h1>
+<div class="transaction-history-modern">
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="title-icon icon-package"></span>
+            Purchase History
+        </h1>
+        <p class="page-subtitle">Track all your game purchases and download keys</p>
+    </div>
     
     {% if transactions %}
-        <div class="transaction-list">
+        <div class="transactions-grid">
             {% for transaction in transactions %}
-                <div class="transaction-card">
-                    <h3>Order #{{ transaction.id }}</h3>
-                    <p><strong>Date:</strong> {{ transaction.transaction_date|date:"F d, Y H:i" }}</p>
-                    <p><strong>Total:</strong> ${{ transaction.total_amount }}</p>
-                    <p><strong>Status:</strong> {{ transaction.get_payment_status_display }}</p>
-                    <p><strong>Items:</strong> {{ transaction.items.count }}</p>
-                    <a href="{% url 'store:transaction_detail' transaction.id %}" class="button">View Details</a>
+                <div class="transaction-card-modern" data-transaction-id="{{ transaction.id }}">
+                    <div class="transaction-header">
+                        <div class="order-badge">
+                            <span class="badge-label">Order ID</span>
+                            <span class="badge-number">#{{ transaction.id }}</span>
+                        </div>
+                        <div class="status-badge status-{{ transaction.payment_status }}">
+                            {% if transaction.payment_status == 'completed' %}
+                                <span class="status-icon">✓</span>
+                            {% elif transaction.payment_status == 'pending' %}
+                                <span class="status-icon">⏳</span>
+                            {% else %}
+                                <span class="status-icon">✗</span>
+                            {% endif %}
+                            {{ transaction.get_payment_status_display }}
+                        </div>
+                    </div>
+                    
+                    <div class="transaction-body">
+                        <div class="transaction-info-grid">
+                            <div class="info-block">
+                                <span class="info-label icon-calendar">Date</span>
+                                <span class="info-value">{{ transaction.transaction_date|date:"M d, Y" }}</span>
+                                <span class="info-time">{{ transaction.transaction_date|date:"h:i A" }}</span>
+                            </div>
+                            
+                            <div class="info-block">
+                                <span class="info-label icon-gamepad">Items</span>
+                                <span class="info-value">{{ transaction.items.count }}</span>
+                                <span class="info-time">Game{{ transaction.items.count|pluralize }}</span>
+                            </div>
+                            
+                            <div class="info-block price-block">
+                                <span class="info-label icon-dollar">Total</span>
+                                <span class="info-value price-highlight">${{ transaction.total_amount }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="transaction-footer">
+                        <a href="{% url 'store:transaction_detail' transaction.id %}" class="btn-view-transaction">
+                            <span>View Details</span>
+                            <svg width="16" height="16" fill="currentColor">
+                                <path d="M8 0 L16 8 L8 16 L6 14 L11 8 L6 2 Z"/>
+                            </svg>
+                        </a>
+                    </div>
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <p>You haven't made any purchases yet.</p>
-        <a href="{% url 'store:game_list' %}" class="button">Browse Games</a>
+        <div class="empty-state">
+            <div class="empty-icon">
+                <svg width="120" height="120" fill="#ddd">
+                    <circle cx="60" cy="60" r="50" stroke="#ccc" stroke-width="2" fill="none"/>
+                    <path d="M40 60 L50 70 L80 40" stroke="#ccc" stroke-width="4" fill="none"/>
+                </svg>
+            </div>
+            <h2 class="empty-title">No Purchases Yet</h2>
+            <p class="empty-message">Start building your game library today!</p>
+            <a href="{% url 'store:game_list' %}" class="btn-browse-games">
+                <span class="btn-icon icon-gamepad"></span>
+                Browse Games
+            </a>
+        </div>
     {% endif %}
 </div>
+
+{% block extra_js %}
+<script src="{% static 'js/transaction-history.js' %}"></script>
+{% endblock %}
 {% endblock %}
