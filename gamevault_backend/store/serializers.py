@@ -1,38 +1,40 @@
+from PIL.IcnsImagePlugin import read_png_or_jpeg2000
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_image_file_extension
-from .models import Game, GameKey, GameCategory
+from .models import Game, Wishlist
+# from .models import Game, GameKey, GameCategory, Wishlist
 
 
-class GameCategorySerializer(serializers.ModelSerializer):
-    """
-    Serializer for GameCategory model.
-    Used for displaying category information in API responses.
-    """
-    class Meta:
-        model = GameCategory
-        fields = ['id', 'name', 'description', 'icon', 'color', 'slug', 'is_active', 'created_at']
-        read_only_fields = ['id', 'slug', 'created_at']
-
-
-class GameKeySerializer(serializers.ModelSerializer):
-    """
-    Serializer for GameKey model.
-    Used for managing individual game keys.
-    """
-    class Meta:
-        model = GameKey
-        fields = [
-            'id', 'key', 'status', 'platform', 'region',
-            'created_at', 'sold_at', 'sold_to'
-        ]
-        read_only_fields = ['id', 'created_at', 'sold_at', 'sold_to']
-
-    def validate_key(self, value):
-        """Validate that the key is unique"""
-        if GameKey.objects.filter(key=value).exists():
-            raise serializers.ValidationError("A game key with this value already exists.")
-        return value
+# class GameCategorySerializer(serializers.ModelSerializer):
+#     """
+#     Serializer for GameCategory model.
+#     Used for displaying category information in API responses.
+#     """
+#     class Meta:
+#         model = GameCategory
+#         fields = ['id', 'name', 'description', 'icon', 'color', 'slug', 'is_active', 'created_at']
+#         read_only_fields = ['id', 'slug', 'created_at']
+#
+#
+# class GameKeySerializer(serializers.ModelSerializer):
+#     """
+#     Serializer for GameKey model.
+#     Used for managing individual game keys.
+#     """
+#     class Meta:
+#         model = GameKey
+#         fields = [
+#             'id', 'key', 'status', 'platform', 'region',
+#             'created_at', 'sold_at', 'sold_to'
+#         ]
+#         read_only_fields = ['id', 'created_at', 'sold_at', 'sold_to']
+#
+#     def validate_key(self, value):
+#         """Validate that the key is unique"""
+#         if GameKey.objects.filter(key=value).exists():
+#             raise serializers.ValidationError("A game key with this value already exists.")
+#         return value
 
 
 class GameListSerializer(serializers.ModelSerializer):
@@ -70,7 +72,7 @@ class GameDetailSerializer(serializers.ModelSerializer):
     is_on_sale = serializers.BooleanField(read_only=True)
     discount_percentage = serializers.IntegerField(read_only=True)
     is_in_stock = serializers.BooleanField(read_only=True)
-    keys = GameKeySerializer(many=True, read_only=True)
+    # keys = GameKeySerializer(many=True, read_only=True)
 
     class Meta:
         model = Game
@@ -267,64 +269,75 @@ class GamePublicSerializer(serializers.ModelSerializer):
         ]
 
 
-class GameKeyCreateSerializer(serializers.ModelSerializer):
-    """
-    Serializer for creating game keys.
-    Used for bulk key creation.
-    """
+# class GameKeyCreateSerializer(serializers.ModelSerializer):
+#     """
+#     Serializer for creating game keys.
+#     Used for bulk key creation.
+#     """
+#     class Meta:
+#         model = GameKey
+#         fields = ['key', 'platform', 'region']
+#
+#     def validate_key(self, value):
+#         """Validate that the key is unique"""
+#         if GameKey.objects.filter(key=value).exists():
+#             raise serializers.ValidationError("A game key with this value already exists.")
+#         return value
+#
+#     def create(self, validated_data):
+#         """Create a new game key"""
+#         game = self.context.get('game')
+#         if game:
+#             validated_data['game'] = game
+#         return super().create(validated_data)
+
+
+# class GameKeyBulkCreateSerializer(serializers.Serializer):
+#     """
+#     Serializer for bulk creating game keys.
+#     Accepts a list of keys to create for a specific game.
+#     """
+#     keys = serializers.ListField(
+#         child=serializers.CharField(max_length=200),
+#         min_length=1,
+#         max_length=100
+#     )
+#     platform = serializers.CharField(max_length=50, required=False, allow_blank=True)
+#     region = serializers.CharField(max_length=50, required=False, allow_blank=True)
+#
+#     def validate_keys(self, value):
+#         """Validate that all keys are unique"""
+#         existing_keys = GameKey.objects.filter(key__in=value).values_list('key', flat=True)
+#         if existing_keys:
+#             raise serializers.ValidationError(f"Keys already exist: {', '.join(existing_keys)}")
+#         return value
+#
+#     def create(self, validated_data):
+#         """Create multiple game keys"""
+#         game = self.context.get('game')
+#         keys_data = validated_data['keys']
+#         platform = validated_data.get('platform', '')
+#         region = validated_data.get('region', '')
+#
+#         game_keys = []
+#         for key_value in keys_data:
+#             game_key = GameKey.objects.create(
+#                 game=game,
+#                 key=key_value,
+#                 platform=platform,
+#                 region=region
+#             )
+#             game_keys.append(game_key)
+#
+#         return game_keys
+
+
+class WishlistSerializer(serializers.ModelSerializer):
+    game_title = serializers.CharField(source='game.title', read_only=True)
+    game_thumbnail = serializers.ImageField(source='game.thumbnail', read_only=True)
+
     class Meta:
-        model = GameKey
-        fields = ['key', 'platform', 'region']
+        model = Wishlist
+        fields = ['id', 'user', 'game', 'game_title', 'game_thumbnail', 'added_at']
+        read_only_fields = ['user', 'added_at']
 
-    def validate_key(self, value):
-        """Validate that the key is unique"""
-        if GameKey.objects.filter(key=value).exists():
-            raise serializers.ValidationError("A game key with this value already exists.")
-        return value
-
-    def create(self, validated_data):
-        """Create a new game key"""
-        game = self.context.get('game')
-        if game:
-            validated_data['game'] = game
-        return super().create(validated_data)
-
-
-class GameKeyBulkCreateSerializer(serializers.Serializer):
-    """
-    Serializer for bulk creating game keys.
-    Accepts a list of keys to create for a specific game.
-    """
-    keys = serializers.ListField(
-        child=serializers.CharField(max_length=200),
-        min_length=1,
-        max_length=100
-    )
-    platform = serializers.CharField(max_length=50, required=False, allow_blank=True)
-    region = serializers.CharField(max_length=50, required=False, allow_blank=True)
-
-    def validate_keys(self, value):
-        """Validate that all keys are unique"""
-        existing_keys = GameKey.objects.filter(key__in=value).values_list('key', flat=True)
-        if existing_keys:
-            raise serializers.ValidationError(f"Keys already exist: {', '.join(existing_keys)}")
-        return value
-
-    def create(self, validated_data):
-        """Create multiple game keys"""
-        game = self.context.get('game')
-        keys_data = validated_data['keys']
-        platform = validated_data.get('platform', '')
-        region = validated_data.get('region', '')
-
-        game_keys = []
-        for key_value in keys_data:
-            game_key = GameKey.objects.create(
-                game=game,
-                key=key_value,
-                platform=platform,
-                region=region
-            )
-            game_keys.append(game_key)
-
-        return game_keys

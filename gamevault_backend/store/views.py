@@ -3,10 +3,11 @@ Simple store views for GameVault.
 Handles game listing, cart management, checkout, and transactions.
 """
 from django.contrib.auth.models import update_last_login
+from django.db import IntegrityError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.db.models import Q, Sum, Count
 from django.http import JsonResponse
 from decimal import Decimal
@@ -16,6 +17,12 @@ from .models import Game, Cart, CartItem, Transaction, TransactionItem, AdminAct
 from .middleware import PurchaseValidationMiddleware
 from .email_service import send_game_key_email
 from users.models import User
+
+from rest_framework import status, generics, permissions, serializers
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import Wishlist
+from .serializers import WishlistSerializer
 
 
 def game_list(request):
@@ -32,7 +39,14 @@ def game_list(request):
     """
 
     games = Game.objects.all()
-    
+
+    # Wishlist functionality
+    wishlist_game_ids = []
+    if request.user.is_authenticated:
+        wishlist_game_ids = list(
+            Wishlist.objects.filter(user=request.user).values_list('game_id', flat=True)
+        )
+
     # Search functionality
     search_query = request.GET.get('search', '')
     if search_query:
@@ -112,7 +126,9 @@ def game_list(request):
                 "screenshot_url": g.screenshot_url,
                 "file_url": g.file_url,
                 "upload_date": g.upload_date.isoformat(),
-                "tags": [gt.tag.name for gt in g.gametag_set.all()]
+                "tags": [gt.tag.name for gt in g.gametag_set.all()],
+                "games": games,
+                "wishlist_game_ids": wishlist_game_ids,
             }
             for g in games
         ]
@@ -133,7 +149,31 @@ def game_list(request):
         'featured_games': featured_games,
         'filter_type': filter_type,
         'filter_value': filter_value,
+        'wishlist_game_ids': wishlist_game_ids,
     })
+
+
+@login_required
+def wishlist(request):
+    """
+    Display all games the user has added to their wishlist.
+    """
+
+    wishlist_items = Wishlist.objects.filter(user=request.user).select_related('game')
+
+    games = [item.game for item in wishlist_items]
+
+    return render(request, 'store/wishlist.html', {
+        'wishlist_items': wishlist_items,
+        'games': games,
+    })
+
+@login_required
+@require_POST
+def wishlist_remove(request, game_id):
+    wishlist_item = get_object_or_404(Wishlist, user=request.user, game_id=game_id)
+    wishlist_item.delete()
+    return redirect('store:wishlist')
 
 
 def game_search(request):
@@ -1069,3 +1109,32 @@ def api_get_game_rating_stats(request, game_id):
             'error': str(e)
         }, status=500)
 
+
+class WishlistListCreateView(generics.ListCreateAPIView):
+    serializer_class = WishlistSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Only return wishlist items belonging to the logged-in user
+        return Wishlist.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        # Automatically link the wishlist item to the logged-in user
+        try:
+            serializer.save(user=self.request.user)
+        except IntegrityError:
+            # Handle duplicate wishlist entries gracefully
+            raise serializers.ValidationError("This game is already in your wishlist.")
+
+
+class WishlistDeleteView(generics.DestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'game_id'  # look up by game_id instead of pk
+
+    def delete(self, request, *args, **kwargs):
+        game_id = kwargs.get('pk')
+        wishlist_item = Wishlist.objects.filter(user=request.user, game_id=game_id).first()
+        if wishlist_item:
+            wishlist_item.delete()
+            return Response({'message': 'Removed from wishlist'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)

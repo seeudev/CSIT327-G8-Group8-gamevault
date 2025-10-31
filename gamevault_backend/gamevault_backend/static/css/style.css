@@ -871,7 +871,7 @@ footer p {
 
 
 /* ============================================
-   Checkbox, must revamp
+   CHECKBOX
    ============================================ */
 
 .checkbox-group {
@@ -914,4 +914,38 @@ footer p {
     font-size: 0.95rem;
     color: #555;
     margin-bottom: 8px;
+}
+
+
+/* ============================================
+   WISHLIST
+   ============================================ */
+
+.btn-wishlist {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+    color: #ff4d6d;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.btn-wishlist svg {
+    width: 20px;
+    height: 20px;
+    stroke: #ff4d6d;
+}
+
+.btn-wishlist.active svg {
+    fill: #ff4d6d;
+    stroke: #ff4d6d;
+}
+
+.btn-wishlist:hover {
+    transform: scale(1.1);
+}
+
+.btn-wishlist i.fa-solid {
+    color: #e63946; /* red tone */
+    transition: color 0.3s ease;
 }
