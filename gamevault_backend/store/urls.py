@@ -4,6 +4,7 @@ Simple URL patterns for the game store.
 
 from django.urls import path
 from . import views
+from .views import WishlistListCreateView, WishlistDeleteView
 
 app_name = 'store'
 
@@ -41,7 +42,15 @@ urlpatterns = [
     path('api/admin/stats/', views.api_admin_dashboard_stats, name='api_admin_stats'),
     path('api/users/', views.api_admin_users, name='api_admin_users'),
     path('api/transactions/', views.api_admin_transactions, name='api_admin_transactions'),
-    
+
+    # DRF API for AJAX toggle (Module 10)
+    path('api/wishlist/', WishlistListCreateView.as_view(), name='api-wishlist'),
+    path('api/wishlist/<int:pk>/', WishlistDeleteView.as_view(), name='api-wishlist-delete'),
+
+    # Normal wishlist page (Module 10)
+    path('wishlist/', views.wishlist, name='wishlist'),
+    path('wishlist/remove/<int:game_id>/', views.wishlist_remove, name='wishlist_remove'),
+
     # Review API endpoints (Module 11)
     path('api/reviews/<int:game_id>/', views.api_get_game_reviews, name='api_get_game_reviews'),
     path('api/reviews/<int:game_id>/create/', views.api_create_review, name='api_create_review'),

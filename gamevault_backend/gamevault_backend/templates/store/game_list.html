@@ -177,6 +177,22 @@
                         </div>
                     </div>
                 </a>
+
+                {% if user.is_authenticated %}
+                <button
+                    class="btn-wishlist {% if game.id in wishlist_game_ids %}active{% endif %}"
+                    data-game-id="{{ game.id }}"
+                    title="{% if game.id in wishlist_game_ids %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}"
+                    onclick="event.stopPropagation(); toggleWishlist(this);">
+
+                    <!-- Keep SVG heart icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                         fill="{% if game.id in wishlist_game_ids %}currentColor{% else %}none{% endif %}"
+                         stroke="currentColor" stroke-width="2">
+                        <path d="M12 21C12 21 5 13.7273 5 8.63636C5 5.40909 7.46291 3 10.5 3C12.2538 3 13.875 4.09091 14.625 5.54545C15.375 4.09091 16.9962 3 18.75 3C21.7871 3 24.25 5.40909 24.25 8.63636C24.25 13.7273 17.25 21 17.25 21H12Z"></path>
+                    </svg>
+                </button>
+                {% endif %}
             </div>
         {% empty %}
             <div class="no-results">
@@ -194,7 +210,80 @@
 {% endblock %}
 
 {% block extra_js %}
+<!--{{ block.super }}-->
+
 <script>
+// Fetch API for wishlist
+async function toggleWishlist(button) {
+    const gameId = button.getAttribute('data-game-id');
+    const isActive = button.classList.contains('active');
+    const svg = button.querySelector('svg');
+
+    // Use the correct API endpoints
+    const url = isActive
+        ? `/store/api/wishlist/${gameId}/`  // DELETE
+        : `/store/api/wishlist/`;           // POST
+
+    try {
+        const response = await fetch(url, {
+            method: isActive ? 'DELETE' : 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: isActive ? null : JSON.stringify({ game: gameId }),
+        });
+
+        if (response.ok) {
+            // Toggle button and SVG fill
+            button.classList.toggle('active');
+            svg.setAttribute('fill', isActive ? 'none' : 'currentColor');
+
+            // Toast message
+            showMessage(isActive ? "Removed from wishlist" : "Added to wishlist", "success");
+            console.log(isActive ? 'Removed from wishlist' : 'Added to wishlist');
+
+        } else {
+            // Attempt to parse JSON error
+            let data = {};
+            try {
+                data = await response.json();
+            } catch (e) {
+                console.warn("Response was not JSON", e);
+            }
+            console.warn('Wishlist update failed:', data);
+            showMessage("Error updating wishlist", "error");
+
+            // Handle already-in-wishlist edge case gracefully
+            if (data && data.detail && data.detail.includes("already in your wishlist")) {
+                button.classList.add('active');
+                svg.setAttribute('fill', 'currentColor');
+            }
+        }
+    } catch (error) {
+        console.error('Wishlist update error:', error);
+        showMessage("Error updating wishlist", "error");
+    }
+}
+
+// CSRF helper
+function getCSRFToken() {
+    const name = 'csrftoken=';
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name)) {
+            return cookie.substring(name.length);
+        }
+    }
+    return '';
+}
+
+// Temporary feedback function
+function showFeedback(message, type) {
+    alert(message);
+}
+
 // Hero Slideshow Auto-rotation
 document.addEventListener('DOMContentLoaded', function() {
     const slides = document.querySelectorAll('.hero-slide');

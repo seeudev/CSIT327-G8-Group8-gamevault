@@ -25,6 +25,7 @@
                 <div class="nav-links">
                     <a href="{% url 'store:game_list' %}">Games</a>
                     {% if user.is_authenticated %}
+                        <a href="{% url 'store:wishlist' %}">Wishlist</a>
                         <a href="{% url 'store:cart' %}">Cart</a>
                         <a href="{% url 'store:transaction_history' %}">My Purchases</a>
                         {% if user.is_admin %}
@@ -60,6 +61,31 @@
         <p>&copy; 2025 GameVault. All rights reserved.</p>
     </footer>
 
+    <script>
+    function showMessage(text, type = "info") {
+        // Create message element
+        const msgContainer = document.querySelector(".messages-container") || (() => {
+            const c = document.createElement("div");
+            c.className = "messages-container";
+            document.body.prepend(c);
+            return c;
+        })();
+
+        const message = document.createElement("div");
+        message.className = `message ${type}`;
+        message.innerHTML = `
+            <span class="message-text">${text}</span>
+            <button class="message-close" onclick="this.parentElement.remove()" aria-label="Close message">×</button>
+        `;
+
+        msgContainer.appendChild(message);
+
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            message.remove();
+        }, 3000);
+    }
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

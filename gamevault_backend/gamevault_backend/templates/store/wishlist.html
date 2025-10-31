@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Wishlist - GameVault{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modules/cart.css' %}"> {# reuse cart CSS #}
+{% endblock %}
+
+{% block content %}
+<div class="cart-container">
+    <h1 class="cart-title">My Wishlist</h1>
+
+    {% if games %}
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Game</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in wishlist_items %}
+                <tr id="wishlist-row-{{ item.game.id }}">
+                    <td>{{ item.game.title }}</td>
+                    <td>${{ item.game.price }}</td>
+                    <td>
+                        <form method="post" action="{% url 'store:wishlist_remove' item.game.id %}" class="inline-form btn-remove-form">
+                            {% csrf_token %}
+                            <button type="submit" class="small-button btn-remove" data-game-id="{{ item.game.id }}">Remove</button>
+                        </form>
+                        <a href="{% url 'store:game_detail' item.game.id %}" class="small-button btn-primary">View Game</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="cart-actions">
+            <a href="{% url 'store:game_list' %}" class="btn-secondary">Continue Browsing</a>
+        </div>
+    {% else %}
+        <div class="empty-cart">
+            <h2 class="empty-cart-title">Your wishlist is empty</h2>
+            <p class="empty-cart-text">Add games to your wishlist to find them easily later.</p>
+            <a href="{% url 'store:game_list' %}" class="btn-browse-games">Browse Games</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// CSRF helper
+function getCSRFToken() {
+    const name = 'csrftoken=';
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name)) return cookie.substring(name.length);
+    }
+    return '';
+}
+
+// AJAX remove wishlist
+document.addEventListener('DOMContentLoaded', function() {
+    const removeForms = document.querySelectorAll('.btn-remove-form');
+
+    removeForms.forEach(form => {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const gameId = form.querySelector('button').getAttribute('data-game-id');
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCSRFToken() },
+                });
+
+                if (response.ok) {
+                    // remove row from table
+                    const row = document.getElementById(`wishlist-row-${gameId}`);
+                    if (row) row.remove();
+
+                    // show feedback (optional)
+                    showMessage('Removed from wishlist', 'success');
+
+                    // reload page if table empty
+                    if (document.querySelectorAll('.cart-table tbody tr').length === 0) {
+                        location.reload();
+                    }
+                } else {
+                    showMessage('Failed to remove', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showMessage('Error occurred', 'error');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
