@@ -26,10 +26,7 @@
                     <td>{{ item.game.title }}</td>
                     <td>${{ item.game.price }}</td>
                     <td>
-                        <form method="post" action="{% url 'store:wishlist_remove' item.game.id %}" class="inline-form btn-remove-form">
-                            {% csrf_token %}
-                            <button type="submit" class="small-button btn-remove" data-game-id="{{ item.game.id }}">Remove</button>
-                        </form>
+                        <button class="small-button btn-remove btn-wishlist-remove" data-game-id="{{ item.game.id }}">Remove</button>
                         <a href="{% url 'store:game_detail' item.game.id %}" class="small-button btn-primary">View Game</a>
                     </td>
                 </tr>
@@ -65,28 +62,24 @@ function getCSRFToken() {
 
 // AJAX remove wishlist
 document.addEventListener('DOMContentLoaded', function() {
-    const removeForms = document.querySelectorAll('.btn-remove-form');
+    const removeButtons = document.querySelectorAll('.btn-wishlist-remove');
 
-    removeForms.forEach(form => {
-        form.addEventListener('submit', async (e) => {
+    removeButtons.forEach(btn => {
+        btn.addEventListener('click', async (e) => {
             e.preventDefault();
-            const gameId = form.querySelector('button').getAttribute('data-game-id');
+            const gameId = btn.getAttribute('data-game-id');
+            const url = `/store/api/wishlist/${gameId}/`;
 
             try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
+                const response = await fetch(url, {
+                    method: 'DELETE',
                     headers: { 'X-CSRFToken': getCSRFToken() },
                 });
 
                 if (response.ok) {
-                    // remove row from table
                     const row = document.getElementById(`wishlist-row-${gameId}`);
                     if (row) row.remove();
-
-                    // show feedback (optional)
                     showMessage('Removed from wishlist', 'success');
-
-                    // reload page if table empty
                     if (document.querySelectorAll('.cart-table tbody tr').length === 0) {
                         location.reload();
                     }

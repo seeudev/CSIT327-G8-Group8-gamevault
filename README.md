@@ -298,6 +298,27 @@ The application uses the following models:
   }
   ```
 
+  ### Wishlist / Favorites (Module 10)
+
+  The wishlist feature allows authenticated users to save games for later using simple, function-based JSON endpoints.
+
+  - List wishlist items:
+    - GET `/store/api/wishlist/` (requires login)
+    - Response: `{ "success": true, "data": [ { id, game_id, game_title, game_thumbnail, game_price, added_at }, ... ] }`
+
+  - Add a game to wishlist:
+    - POST `/store/api/wishlist/` (requires login)
+    - JSON body: `{ "game_id": <int> }` or `{ "game": <int> }`
+    - Response: `201 Created` with created item data
+
+  - Remove a game from wishlist:
+    - DELETE `/store/api/wishlist/<game_id>/` (requires login)
+    - Also accepts POST for form-based removals
+
+  Frontend:
+  - Game cards include a heart button with class `.btn-wishlist` that calls these endpoints via `fetch()` and toggles an `active` class and SVG fill. CSRF token should be sent with `X-CSRFToken` header.
+
+
 #### Confirm Password Reset
 **POST** `/auth/api/password-reset/confirm/<token>/`
 - **Authentication**: Not required
