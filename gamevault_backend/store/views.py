@@ -18,11 +18,8 @@ from .middleware import PurchaseValidationMiddleware
 from .email_service import send_game_key_email
 from users.models import User
 
-from rest_framework import status, generics, permissions, serializers
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from .models import Wishlist
-from .serializers import WishlistSerializer
+from .serializers import wishlist_to_dict
 
 
 def game_list(request):
@@ -1110,31 +1107,54 @@ def api_get_game_rating_stats(request, game_id):
         }, status=500)
 
 
-class WishlistListCreateView(generics.ListCreateAPIView):
-    serializer_class = WishlistSerializer
-    permission_classes = [permissions.IsAuthenticated]
+@login_required
+@require_http_methods(["GET", "POST"])
+def api_wishlist(request):
+    """
+    GET /store/api/wishlist/ -> list wishlist items for current user
+    POST /store/api/wishlist/ -> add a game to wishlist (JSON body: {"game_id": int})
+    """
+    try:
+        if request.method == 'GET':
+            items = Wishlist.objects.filter(user=request.user).select_related('game')
+            data = [wishlist_to_dict(it) for it in items]
+            return JsonResponse({'success': True, 'data': data})
 
-    def get_queryset(self):
-        # Only return wishlist items belonging to the logged-in user
-        return Wishlist.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        # Automatically link the wishlist item to the logged-in user
+        # POST
         try:
-            serializer.save(user=self.request.user)
-        except IntegrityError:
-            # Handle duplicate wishlist entries gracefully
-            raise serializers.ValidationError("This game is already in your wishlist.")
+            payload = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+
+        game_id = payload.get('game_id') or payload.get('game')
+        if not game_id:
+            return JsonResponse({'success': False, 'error': 'Missing game_id'}, status=400)
+
+        game = get_object_or_404(Game, id=game_id)
+
+        # Prevent duplicates
+        if Wishlist.objects.filter(user=request.user, game=game).exists():
+            return JsonResponse({'success': False, 'error': 'Game already in wishlist'}, status=400)
+
+        item = Wishlist.objects.create(user=request.user, game=game)
+        return JsonResponse({'success': True, 'message': f'{game.title} added to wishlist', 'data': wishlist_to_dict(item)}, status=201)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
-class WishlistDeleteView(generics.DestroyAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'game_id'  # look up by game_id instead of pk
-
-    def delete(self, request, *args, **kwargs):
-        game_id = kwargs.get('pk')
+@login_required
+@require_http_methods(["DELETE", "POST"])  # allow POST for forms that can't send DELETE
+def api_wishlist_delete(request, game_id):
+    """
+    DELETE /store/api/wishlist/<game_id>/ -> remove game from wishlist for current user
+    Also accepts POST to support form-based removal.
+    """
+    try:
         wishlist_item = Wishlist.objects.filter(user=request.user, game_id=game_id).first()
-        if wishlist_item:
-            wishlist_item.delete()
-            return Response({'message': 'Removed from wishlist'}, status=status.HTTP_204_NO_CONTENT)
-        return Response({'detail': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+        if not wishlist_item:
+            return JsonResponse({'success': False, 'error': 'Not found'}, status=404)
+        game_title = wishlist_item.game.title
+        wishlist_item.delete()
+        return JsonResponse({'success': True, 'message': f'{game_title} removed from wishlist'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
