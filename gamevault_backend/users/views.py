@@ -13,9 +13,19 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 import json
-from .models import User, PasswordResetToken
+from .models import User, PasswordResetToken, LoginAttempt
 from .email_service import send_password_reset_email
 from store.models import Game
+
+
+def get_client_ip(request):
+    """Get client IP address from request"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 
 @require_http_methods(["GET", "POST"])
@@ -96,15 +106,17 @@ def register_view(request):
 @require_http_methods(["GET", "POST"])
 def login_view(request):
     """
-    User login view.
+    User login view with failed attempt tracking and lockout.
     GET: Display login form
     POST: Process login
+    - Tracks failed login attempts
+    - Implements 15-minute lockout after 4 failed attempts
+    - Clears password field on failed login (frontend)
     """
     if request.user.is_authenticated:
         return redirect('store:game_list')
     
     # Get featured games with screenshots for background grid
-    # (moved to top so it's available for both GET and POST error responses)
     featured_games = list(Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:5])
 
     # Build grid_images (repeat to at least 9 tiles)
@@ -123,24 +135,63 @@ def login_view(request):
     }
     
     if request.method == 'POST':
-        username = request.POST.get('username')
+        username = request.POST.get('username', '').strip()
         password = request.POST.get('password')
         
         if not username or not password:
             messages.error(request, 'Username and password are required.')
             return render(request, 'users/login.html', context)
         
+        # Check if user is locked out
+        is_locked, remaining_seconds = LoginAttempt.is_locked_out(username)
+        if is_locked:
+            remaining_minutes = (remaining_seconds // 60) + 1
+            messages.error(
+                request, 
+                f'Too many failed login attempts. Please try again in {remaining_minutes} minute(s).'
+            )
+            context['locked_out'] = True
+            context['remaining_seconds'] = remaining_seconds
+            return render(request, 'users/login.html', context)
+        
+        # Get client IP for logging
+        ip_address = get_client_ip(request)
+        
         # Authenticate user
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
+            # Successful login
+            LoginAttempt.record_attempt(username, ip_address, successful=True)
+            LoginAttempt.clear_attempts(username)  # Clear failed attempts
             login(request, user)
             messages.success(request, 'Login successful!')
             # Redirect to next page if specified, otherwise to game list
             next_url = request.GET.get('next', 'store:game_list')
             return redirect(next_url)
         else:
-            messages.error(request, 'Invalid username or password.')
+            # Failed login - record attempt
+            LoginAttempt.record_attempt(username, ip_address, successful=False)
+            
+            # Get updated failed attempt count
+            failed_count = LoginAttempt.get_failed_attempts(username)
+            max_attempts = 4
+            remaining_attempts = max_attempts - failed_count
+            
+            if remaining_attempts > 0:
+                messages.error(
+                    request, 
+                    f'Invalid username or password. {remaining_attempts} attempt(s) remaining before lockout.'
+                )
+            else:
+                messages.error(
+                    request, 
+                    'Invalid username or password. Account temporarily locked due to too many failed attempts.'
+                )
+                context['locked_out'] = True
+                context['remaining_seconds'] = 15 * 60  # 15 minutes in seconds
+            
+            context['clear_password'] = True  # Signal to clear password field
             return render(request, 'users/login.html', context)
 
     return render(request, 'users/login.html', context)
