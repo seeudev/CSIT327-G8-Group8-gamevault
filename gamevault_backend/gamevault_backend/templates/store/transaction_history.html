@@ -16,6 +16,108 @@
             Purchase History
         </h1>
         <p class="page-subtitle">Track all your game purchases and download keys</p>
+        
+        <!-- Summary Statistics -->
+        <div class="summary-stats">
+            <div class="stat-card">
+                <span class="stat-icon">🎮</span>
+                <div class="stat-content">
+                    <span class="stat-value">{{ total_games }}</span>
+                    <span class="stat-label">Total Games</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">🛍️</span>
+                <div class="stat-content">
+                    <span class="stat-value">{{ transactions|length }}</span>
+                    <span class="stat-label">Total Orders</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon">💰</span>
+                <div class="stat-content">
+                    <span class="stat-value">${{ total_spent }}</span>
+                    <span class="stat-label">Total Spent</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filters and Search -->
+    <div class="filters-section">
+        <form method="get" class="filters-form">
+            <div class="filter-group">
+                <label for="search">
+                    <span class="icon-search">🔍</span>
+                    Search Games
+                </label>
+                <input 
+                    type="text" 
+                    id="search" 
+                    name="search" 
+                    placeholder="Search by game title..." 
+                    value="{{ search_query }}"
+                    class="filter-input">
+            </div>
+            
+            <div class="filter-group">
+                <label for="status">
+                    <span class="icon-filter">📊</span>
+                    Status
+                </label>
+                <select id="status" name="status" class="filter-select">
+                    <option value="">All Status</option>
+                    <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="failed" {% if selected_status == 'failed' %}selected{% endif %}>Failed</option>
+                    <option value="refunded" {% if selected_status == 'refunded' %}selected{% endif %}>Refunded</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="start_date">
+                    <span class="icon-calendar">📅</span>
+                    From Date
+                </label>
+                <input 
+                    type="date" 
+                    id="start_date" 
+                    name="start_date" 
+                    value="{{ start_date }}"
+                    class="filter-input">
+            </div>
+            
+            <div class="filter-group">
+                <label for="end_date">
+                    <span class="icon-calendar">📅</span>
+                    To Date
+                </label>
+                <input 
+                    type="date" 
+                    id="end_date" 
+                    name="end_date" 
+                    value="{{ end_date }}"
+                    class="filter-input">
+            </div>
+            
+            <div class="filter-group">
+                <label for="sort">
+                    <span class="icon-sort">⬍</span>
+                    Sort By
+                </label>
+                <select id="sort" name="sort" class="filter-select">
+                    <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Newest First</option>
+                    <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Oldest First</option>
+                    <option value="amount_desc" {% if sort_by == 'amount_desc' %}selected{% endif %}>Highest Amount</option>
+                    <option value="amount_asc" {% if sort_by == 'amount_asc' %}selected{% endif %}>Lowest Amount</option>
+                </select>
+            </div>
+            
+            <div class="filter-actions">
+                <button type="submit" class="btn-apply-filter">Apply Filters</button>
+                <a href="{% url 'store:transaction_history' %}" class="btn-clear-filter">Clear All</a>
+            </div>
+        </form>
     </div>
     
     {% if transactions %}

@@ -381,12 +381,67 @@ def checkout(request):
 @login_required
 def transaction_history(request):
     """
-    Display user's transaction history.
+    Display user's transaction history with filtering and search.
+    Module 13: Purchase History and Viewing for Users
+    
+    Supports:
+    - Search by game title: ?search=game_name
+    - Filter by status: ?status=completed
+    - Filter by date range: ?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
+    - Sort by: ?sort=date_desc (default), date_asc, amount_desc, amount_asc
     """
-    transactions = Transaction.objects.filter(user=request.user).order_by('-transaction_date')
+    transactions = Transaction.objects.filter(user=request.user)
+    
+    # Search by game title in transaction items
+    search_query = request.GET.get('search', '').strip()
+    if search_query:
+        transactions = transactions.filter(
+            items__game__title__icontains=search_query
+        ).distinct()
+    
+    # Filter by payment status
+    status = request.GET.get('status', '')
+    if status and status in ['pending', 'completed', 'failed', 'refunded']:
+        transactions = transactions.filter(payment_status=status)
+    
+    # Filter by date range
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
+    if start_date:
+        transactions = transactions.filter(transaction_date__date__gte=start_date)
+    if end_date:
+        transactions = transactions.filter(transaction_date__date__lte=end_date)
+    
+    # Sorting
+    sort_by = request.GET.get('sort', 'date_desc')
+    if sort_by == 'date_asc':
+        transactions = transactions.order_by('transaction_date')
+    elif sort_by == 'amount_desc':
+        transactions = transactions.order_by('-total_amount')
+    elif sort_by == 'amount_asc':
+        transactions = transactions.order_by('total_amount')
+    else:  # date_desc (default)
+        transactions = transactions.order_by('-transaction_date')
+    
+    # Calculate summary statistics
+    total_spent = transactions.filter(payment_status='completed').aggregate(
+        total=Sum('total_amount')
+    )['total'] or Decimal('0.00')
+    
+    total_games = TransactionItem.objects.filter(
+        transaction__user=request.user,
+        transaction__payment_status='completed'
+    ).count()
     
     return render(request, 'store/transaction_history.html', {
-        'transactions': transactions
+        'transactions': transactions,
+        'search_query': search_query,
+        'selected_status': status,
+        'start_date': start_date,
+        'end_date': end_date,
+        'sort_by': sort_by,
+        'total_spent': total_spent,
+        'total_games': total_games,
     })
 
 
