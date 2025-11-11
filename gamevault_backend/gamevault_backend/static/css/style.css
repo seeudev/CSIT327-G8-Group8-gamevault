@@ -1372,34 +1372,84 @@ footer p {
 
 
 /* ============================================
+   ACCESSIBILITY ENHANCEMENTS - New (Module 14)
+   ============================================ */
+
+/* Focus Styles */
+*:focus-visible{
+    outline:3px solid var(--color-primary);
+    outline-offset:var(--focus-ring-offset);
+}
+
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+    outline:3px solid var(--color-primary);
+    outline-offset:var(--focus-ring-offset);
+}
+
+/* Skip to content link for screen readers */
+.skip-to-content{
+    position:absolute;
+    top:-100px;
+    left:0;
+    background:var(--color-primary);
+    color:var(--color-text-inverse);
+    padding:var(--space-md);
+    text-decoration:none;
+    z-index:var(--z-modal);
+}
+
+.skip-to-content:focus{
+    top:0;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{
+        animation-duration:0.01ms!important;
+        animation-iteration-count:1!important;
+        transition-duration:0.01ms!important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast:high){
+    button,.button{
+        border:2px solid currentColor;
+    }
+}
+
+/* ============================================
    WISHLIST
    ============================================ */
 
-.btn-wishlist {
-    background: none;
-    border: none;
-    cursor: pointer;
-    margin-left: 10px;
-    color: #ff4d6d;
-    transition: transform 0.2s ease, color 0.2s ease;
+.btn-wishlist{
+    background:none;
+    border:none;
+    cursor:pointer;
+    margin-left:var(--space-sm);
+    color:var(--color-primary);
+    transition:transform var(--transition-base),color var(--transition-base);
+    padding:var(--space-xs);
+    border-radius:var(--radius-md);
 }
 
-.btn-wishlist svg {
-    width: 20px;
-    height: 20px;
-    stroke: #ff4d6d;
+.btn-wishlist svg{
+    width:20px;
+    height:20px;
+    stroke:var(--color-primary);
+    transition:var(--transition-base);
 }
 
-.btn-wishlist.active svg {
-    fill: #ff4d6d;
-    stroke: #ff4d6d;
+.btn-wishlist.active svg{
+    fill:var(--color-primary);
+    stroke:var(--color-primary);
 }
 
-.btn-wishlist:hover {
-    transform: scale(1.1);
+.btn-wishlist:hover{
+    transform:scale(1.15);
 }
 
-.btn-wishlist i.fa-solid {
-    color: #e63946; /* red tone */
-    transition: color 0.3s ease;
+.btn-wishlist:focus-visible{
+    outline:3px solid var(--color-primary);
+    outline-offset:2px;
 }
