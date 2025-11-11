@@ -133,10 +133,11 @@
 .admin-actions .button{
     display:inline-flex;
     align-items:center;
+    justify-content:center;
     gap:var(--space-sm);
     padding:var(--btn-padding-md);
     background:var(--gradient-primary);
-    color:var(--color-text-inverse);
+    color:#ffffff;
     text-decoration:none;
     border-radius:var(--radius-md);
     font-weight:var(--font-weight-semibold);
@@ -144,21 +145,18 @@
     transition:var(--transition-all);
     border:none;
     cursor:pointer;
+    min-width:180px;
+    position:relative;
 }
 
+/* Remove ripple effect from admin buttons */
 .admin-actions .button::before{
-    content:'→';
-    font-size:var(--font-size-lg);
-    transition:transform var(--transition-base);
+    display:none;
 }
 
 .admin-actions .button:hover{
     transform:translateY(-2px);
     box-shadow:var(--shadow-primary-lg);
-}
-
-.admin-actions .button:hover::before{
-    transform:translateX(4px);
 }
 
 /* Dashboard Section Wrapper */
@@ -187,10 +185,10 @@
 }
 
 .admin-table thead tr th{
-    color:var(--color-text-inverse);
+    color:#ffffff;
     padding:var(--space-lg) var(--space-xl);
     text-align:left;
-    font-weight:var(--font-weight-semibold);
+    font-weight:var(--font-weight-bold);
     font-size:var(--font-size-sm);
     text-transform:uppercase;
     letter-spacing:0.5px;
