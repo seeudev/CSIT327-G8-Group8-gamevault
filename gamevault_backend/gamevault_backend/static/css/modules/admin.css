@@ -1,0 +1,453 @@
+/* ============================================
+   ADMIN DASHBOARD MODULE - Enhanced (Module 14)
+   Modern admin interface with improved UX
+   Version: 1.0.5 - Fixed header contrast and loading
+   ============================================ */
+
+/* Admin Dashboard Container */
+.admin-dashboard{
+    max-width:1400px;
+    margin:0 auto;
+    padding:var(--space-2xl) var(--space-xl);
+    background:var(--color-bg-secondary);
+    min-height:100vh;
+}
+
+.admin-dashboard h1{
+    font-size:var(--font-size-4xl);
+    font-weight:var(--font-weight-bold);
+    color:var(--color-text-primary);
+    margin-bottom:var(--space-2xl);
+    display:flex;
+    align-items:center;
+    gap:var(--space-md);
+    background:var(--color-bg-primary);
+    padding:var(--space-xl);
+    border-radius:var(--card-radius);
+    box-shadow:var(--card-shadow);
+}
+
+.admin-dashboard h1::before{
+    content:'';
+    width:6px;
+    height:48px;
+    background:var(--gradient-primary);
+    border-radius:var(--radius-full);
+    flex-shrink:0;
+}
+
+.admin-dashboard h2{
+    font-size:var(--font-size-2xl);
+    font-weight:var(--font-weight-semibold);
+    color:var(--color-text-primary);
+    margin:var(--space-2xl) 0 var(--space-lg);
+    padding-bottom:var(--space-md);
+    border-bottom:2px solid var(--color-border-light);
+}
+
+/* Stats Grid */
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:var(--space-lg);
+    margin-bottom:var(--space-2xl);
+}
+
+.stat-card{
+    background:var(--color-bg-primary);
+    border-radius:var(--card-radius);
+    padding:var(--space-xl);
+    box-shadow:var(--card-shadow);
+    transition:var(--transition-all);
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    gap:var(--space-lg);
+}
+
+.stat-card::before{
+    content:'';
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:4px;
+    background:var(--gradient-primary);
+}
+
+.stat-card:hover{
+    transform:translateY(-4px);
+    box-shadow:var(--card-shadow-hover);
+}
+
+.stat-icon{
+    width:56px;
+    height:56px;
+    min-width:56px;
+    background:linear-gradient(135deg,rgba(230,57,70,0.1) 0%,rgba(230,57,70,0.05) 100%);
+    border-radius:var(--radius-lg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--color-primary);
+}
+
+.stat-icon svg{
+    width:28px;
+    height:28px;
+}
+
+.stat-content{
+    flex:1;
+}
+
+.stat-card h3{
+    font-size:var(--font-size-sm);
+    font-weight:var(--font-weight-semibold);
+    color:var(--color-text-secondary);
+    margin-bottom:var(--space-xs);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+}
+
+.stat-number{
+    font-size:var(--font-size-3xl);
+    font-weight:var(--font-weight-bold);
+    color:var(--color-primary);
+    margin:0;
+    line-height:1;
+}
+
+/* Admin Actions */
+.admin-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:var(--space-md);
+    margin-bottom:var(--space-2xl);
+    padding:var(--space-xl);
+    background:var(--color-bg-primary);
+    border-radius:var(--card-radius);
+    box-shadow:var(--card-shadow);
+}
+
+.admin-actions .button{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:var(--space-sm);
+    padding:var(--btn-padding-md);
+    background:var(--gradient-primary);
+    color:#ffffff;
+    text-decoration:none;
+    border-radius:var(--radius-md);
+    font-weight:var(--font-weight-semibold);
+    font-size:var(--font-size-base);
+    transition:var(--transition-all);
+    border:none;
+    cursor:pointer;
+    min-width:180px;
+    position:relative;
+}
+
+/* Remove ripple effect from admin buttons */
+.admin-actions .button::before{
+    display:none;
+}
+
+.admin-actions .button:hover{
+    transform:translateY(-2px);
+    box-shadow:var(--shadow-primary-lg);
+}
+
+/* Dashboard Section Wrapper */
+.dashboard-section{
+    margin-bottom:var(--space-2xl);
+}
+
+.table-wrapper{
+    overflow-x:auto;
+    border-radius:var(--card-radius);
+    box-shadow:var(--card-shadow);
+}
+
+/* Enhanced Tables */
+.admin-table{
+    width:100%;
+    background:var(--color-bg-primary);
+    border-radius:var(--card-radius);
+    overflow:hidden;
+    border-collapse:collapse;
+    min-width:600px;
+}
+
+.admin-table thead{
+    background:#c02a37 !important;
+    background:linear-gradient(180deg,#d62839 0%,#c02a37 100%) !important;
+}
+
+.admin-table thead tr th{
+    color:#ffffff !important;
+    background:transparent !important;
+    padding:var(--space-lg) var(--space-xl);
+    text-align:left;
+    font-weight:var(--font-weight-bold);
+    font-size:var(--font-size-sm);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    white-space:nowrap;
+    text-shadow:0 1px 2px rgba(0,0,0,0.2);
+}
+
+.admin-table tbody tr{
+    border-bottom:1px solid var(--color-border-light);
+    transition:var(--transition-base);
+}
+
+.admin-table tbody tr:last-child{
+    border-bottom:none;
+}
+
+.admin-table tbody tr:hover{
+    background:rgba(230,57,70,0.05);
+}
+
+.admin-table tbody tr td{
+    padding:var(--space-lg) var(--space-xl);
+    color:var(--color-text-primary);
+    font-size:var(--font-size-base);
+}
+
+.admin-table tbody tr td:first-child{
+    font-weight:var(--font-weight-semibold);
+    color:var(--color-primary);
+}
+
+/* Action Log Table Specific */
+.action-log-table tbody tr td{
+    vertical-align:top;
+}
+
+.action-log-table tbody tr td:nth-child(2){
+    font-weight:var(--font-weight-medium);
+}
+
+.action-log-table tbody tr td:nth-child(4){
+    color:var(--color-text-secondary);
+    font-size:var(--font-size-sm);
+}
+
+.action-log-table tbody tr td:nth-child(5){
+    color:var(--color-text-secondary);
+}
+
+/* Empty State */
+.empty-state{
+    text-align:center!important;
+    padding:var(--space-3xl)!important;
+    color:var(--color-text-tertiary);
+    font-style:italic;
+    font-weight:normal!important;
+}
+
+/* Loading State for Tables - Fixed positioning */
+.table-loading{
+    position:relative !important;
+    min-height:200px;
+}
+
+.table-loading tbody{
+    opacity:0.3 !important;
+    pointer-events:none;
+}
+
+.table-loading thead{
+    opacity:1 !important;
+}
+
+.table-loading::before{
+    content:'Loading...' !important;
+    position:fixed !important;
+    top:50% !important;
+    left:50% !important;
+    width:60px;
+    height:60px;
+    margin-top:-30px;
+    margin-left:-30px;
+    border:5px solid rgba(230,57,70,0.2);
+    border-top-color:#e63946;
+    border-radius:50%;
+    animation:tableSpinner 0.8s linear infinite !important;
+    z-index:9999 !important;
+    font-size:0;
+}
+
+@keyframes tableSpinner{
+    0%{transform:rotate(0deg)}
+    100%{transform:rotate(360deg)}
+}
+
+/* Responsive Design */
+@media (max-width:1024px){
+    .admin-dashboard{
+        padding:var(--space-xl) var(--space-lg);
+    }
+    
+    .admin-dashboard h1{
+        font-size:var(--font-size-3xl);
+        padding:var(--space-lg);
+    }
+    
+    .stats-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+    
+    .table-wrapper{
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
+    }
+}
+
+@media (max-width:768px){
+    .admin-dashboard{
+        padding:var(--space-lg) var(--space-md);
+    }
+    
+    .admin-dashboard h1{
+        font-size:var(--font-size-2xl);
+        padding:var(--space-md);
+    }
+    
+    .admin-dashboard h1::before{
+        width:4px;
+        height:32px;
+    }
+    
+    .stats-grid{
+        grid-template-columns:1fr;
+        gap:var(--space-md);
+    }
+    
+    .stat-card{
+        padding:var(--space-lg);
+        gap:var(--space-md);
+    }
+    
+    .stat-icon{
+        width:48px;
+        height:48px;
+        min-width:48px;
+    }
+    
+    .stat-icon svg{
+        width:24px;
+        height:24px;
+    }
+    
+    .stat-number{
+        font-size:var(--font-size-2xl);
+    }
+    
+    .admin-actions{
+        flex-direction:column;
+        padding:var(--space-lg);
+        gap:var(--space-sm);
+    }
+    
+    .admin-actions .button{
+        width:100%;
+        justify-content:center;
+    }
+    
+    .dashboard-section{
+        margin-bottom:var(--space-xl);
+    }
+    
+    /* Responsive Table - Card Layout */
+    .table-wrapper{
+        overflow:visible;
+        box-shadow:none;
+    }
+    
+    .admin-table{
+        display:block;
+        min-width:auto;
+        box-shadow:none;
+        background:transparent;
+    }
+    
+    .admin-table thead{
+        display:none;
+    }
+    
+    .admin-table tbody,
+    .admin-table tbody tr,
+    .admin-table tbody tr td{
+        display:block;
+    }
+    
+    .admin-table tbody tr{
+        margin-bottom:var(--space-lg);
+        border:none;
+        border-radius:var(--radius-lg);
+        padding:var(--space-lg);
+        background:var(--color-bg-primary);
+        box-shadow:var(--card-shadow);
+    }
+    
+    .admin-table tbody tr:hover{
+        background:var(--color-bg-primary);
+        box-shadow:var(--card-shadow-hover);
+    }
+    
+    .admin-table tbody tr td{
+        padding:var(--space-sm) 0;
+        border-bottom:none;
+        position:relative;
+        padding-left:40%;
+        min-height:32px;
+        display:flex;
+        align-items:center;
+    }
+    
+    .admin-table tbody tr td::before{
+        content:attr(data-label);
+        position:absolute;
+        left:0;
+        width:38%;
+        font-weight:var(--font-weight-semibold);
+        color:var(--color-text-secondary);
+        font-size:var(--font-size-sm);
+        text-transform:uppercase;
+        letter-spacing:0.5px;
+    }
+    
+    .admin-table tbody tr td:first-child{
+        padding-top:0;
+        font-size:var(--font-size-lg);
+    }
+    
+    .admin-table tbody tr td:last-child{
+        padding-bottom:0;
+    }
+    
+    .empty-state{
+        padding:var(--space-2xl)!important;
+        padding-left:0!important;
+        text-align:center!important;
+    }
+    
+    .empty-state::before{
+        display:none;
+    }
+}
+
+@media (max-width:480px){
+    .admin-dashboard h1{
+        font-size:var(--font-size-2xl);
+    }
+    
+    .stat-number{
+        font-size:var(--font-size-3xl);
+    }
+}

@@ -3,6 +3,10 @@
 
 {% block title %}Admin Dashboard - GameVault{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modules/admin.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="admin-dashboard">
     <h1>Admin Dashboard</h1>
@@ -10,20 +14,55 @@
     <!-- Stats Grid -->
     <div class="stats-grid">
         <div class="stat-card">
-            <h3>Total Users</h3>
-            <p class="stat-number">{{ total_users }}</p>
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>Total Users</h3>
+                <p class="stat-number">{{ total_users }}</p>
+            </div>
         </div>
         <div class="stat-card">
-            <h3>Total Sales</h3>
-            <p class="stat-number">${{ total_sales|floatformat:2 }}</p>
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>Total Sales</h3>
+                <p class="stat-number">${{ total_sales|floatformat:2 }}</p>
+            </div>
         </div>
         <div class="stat-card">
-            <h3>Total Games</h3>
-            <p class="stat-number">{{ total_games }}</p>
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>Total Games</h3>
+                <p class="stat-number">{{ total_games }}</p>
+            </div>
         </div>
         <div class="stat-card">
-            <h3>Transactions</h3>
-            <p class="stat-number">{{ total_transactions }}</p>
+            <div class="stat-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>Transactions</h3>
+                <p class="stat-number">{{ total_transactions }}</p>
+            </div>
         </div>
     </div>
     
@@ -36,57 +75,65 @@
     </div>
     
     <!-- Most Downloaded Games -->
-    <h2>Most Downloaded Games</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Rank</th>
-                <th>Game Title</th>
-                <th>Downloads</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for game in most_downloaded %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ game.game__title }}</td>
-                    <td>{{ game.download_count }}</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="3">No download data available</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <section class="dashboard-section">
+        <h2>Most Downloaded Games</h2>
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Game Title</th>
+                        <th>Downloads</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for game in most_downloaded %}
+                        <tr>
+                            <td data-label="Rank">{{ forloop.counter }}</td>
+                            <td data-label="Game Title">{{ game.game__title }}</td>
+                            <td data-label="Downloads">{{ game.download_count }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3" class="empty-state">No download data available</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
     
     <!-- Recent Admin Actions -->
-    <h2>Recent Admin Actions</h2>
-    <table class="action-log-table">
-        <thead>
-            <tr>
-                <th>Admin</th>
-                <th>Action</th>
-                <th>Game</th>
-                <th>Time</th>
-                <th>Notes</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for action in recent_actions %}
-                <tr>
-                    <td>{{ action.admin.username }}</td>
-                    <td>{{ action.get_action_type_display }}</td>
-                    <td>{% if action.target_game %}{{ action.target_game.title }}{% else %}N/A{% endif %}</td>
-                    <td>{{ action.timestamp|date:"M d, Y H:i" }}</td>
-                    <td>{{ action.notes|truncatewords:10 }}</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="5">No recent actions</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <section class="dashboard-section">
+        <h2>Recent Admin Actions</h2>
+        <div class="table-wrapper">
+            <table class="action-log-table admin-table">
+                <thead>
+                    <tr>
+                        <th>Admin</th>
+                        <th>Action</th>
+                        <th>Game</th>
+                        <th>Time</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for action in recent_actions %}
+                        <tr>
+                            <td data-label="Admin">{{ action.admin.username }}</td>
+                            <td data-label="Action">{{ action.get_action_type_display }}</td>
+                            <td data-label="Game">{% if action.target_game %}{{ action.target_game.title }}{% else %}N/A{% endif %}</td>
+                            <td data-label="Time">{{ action.timestamp|date:"M d, Y H:i" }}</td>
+                            <td data-label="Notes">{{ action.notes|truncatewords:10 }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="empty-state">No recent actions</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
 {% endblock %}
