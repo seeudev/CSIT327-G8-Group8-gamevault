@@ -13,29 +13,115 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
     <header>
         <nav>
             <div class="nav-container">
                 <div class="logo">
-                    <a href="{% url 'store:game_list' %}">
-                        <img src="{% static 'images/gamevault-logo.png' %}" class="logo-image">
+                    <a href="{% url 'store:game_list' %}" aria-label="GameVault Home">
+                        <img src="{% static 'images/gamevault-logo.png' %}" class="logo-image" alt="GameVault Logo">
                         <span class="logo-text">Game Vault</span>
                     </a>
                 </div>
-                <div class="nav-links">
-                    <a href="{% url 'store:game_list' %}">Games</a>
+                
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation menu" aria-expanded="false">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+
+                <div class="nav-links" id="navLinks">
+                    <a href="{% url 'store:game_list' %}" class="nav-link">
+                        <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+                            <polyline points="17 2 12 7 7 2"></polyline>
+                        </svg>
+                        <span>Games</span>
+                    </a>
                     {% if user.is_authenticated %}
-                        <a href="{% url 'store:wishlist' %}">Wishlist</a>
-                        <a href="{% url 'store:cart' %}">Cart</a>
-                        <a href="{% url 'store:transaction_history' %}">My Purchases</a>
+                        <a href="{% url 'store:wishlist' %}" class="nav-link">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            <span>Wishlist</span>
+                        </a>
+                        <a href="{% url 'store:cart' %}" class="nav-link nav-link-cart">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="9" cy="21" r="1"></circle>
+                                <circle cx="20" cy="21" r="1"></circle>
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                            </svg>
+                            <span>Cart</span>
+                        </a>
+                        <a href="{% url 'store:transaction_history' %}" class="nav-link">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 3h18v18H3z"></path>
+                                <path d="M3 9h18"></path>
+                            </svg>
+                            <span>Purchases</span>
+                        </a>
                         {% if user.is_admin %}
-                            <a href="{% url 'store:admin_dashboard' %}">Admin</a>
+                            <a href="{% url 'store:admin_dashboard' %}" class="nav-link nav-link-admin">
+                                <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2v20M17 7H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                                <span>Admin</span>
+                            </a>
                         {% endif %}
-                        <a href="{% url 'users:profile' %}">Profile ({{ user.username }})</a>
-                        <a href="{% url 'users:logout' %}">Logout</a>
+                        
+                        <!-- User Dropdown -->
+                        <div class="nav-dropdown">
+                            <button class="nav-dropdown-toggle" id="userDropdownToggle" aria-expanded="false" aria-haspopup="true">
+                                <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                <span>{{ user.username }}</span>
+                                <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+                            <div class="nav-dropdown-menu" id="userDropdownMenu">
+                                <a href="{% url 'users:profile' %}" class="dropdown-item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                    Profile
+                                </a>
+                                <a href="{% url 'users:logout' %}" class="dropdown-item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                        <polyline points="16 17 21 12 16 7"></polyline>
+                                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                                    </svg>
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
                     {% else %}
-                        <a href="{% url 'users:login' %}">Login</a>
-                        <a href="{% url 'users:register' %}">Register</a>
+                        <a href="{% url 'users:login' %}" class="nav-link nav-link-login">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                <polyline points="10 17 15 12 10 7"></polyline>
+                                <line x1="15" y1="12" x2="3" y2="12"></line>
+                            </svg>
+                            <span>Login</span>
+                        </a>
+                        <a href="{% url 'users:register' %}" class="nav-link nav-link-register">
+                            <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="8.5" cy="7" r="4"></circle>
+                                <line x1="20" y1="8" x2="20" y2="14"></line>
+                                <line x1="23" y1="11" x2="17" y2="11"></line>
+                            </svg>
+                            <span>Register</span>
+                        </a>
                     {% endif %}
                 </div>
             </div>
@@ -43,48 +129,174 @@
     </header>
 
     <main>
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Django Messages (converted to toasts) -->
         {% if messages %}
-            <div class="messages-container">
-                {% for message in messages %}
-                    <div class="message {{ message.tags }}">
-                        <span class="message-text">{{ message }}</span>
-                        <button class="message-close" onclick="this.parentElement.remove()" aria-label="Close message">×</button>
-                    </div>
-                {% endfor %}
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    {% for message in messages %}
+                        showToast("{{ message|escapejs }}", "{{ message.tags }}");
+                    {% endfor %}
+                });
+            </script>
         {% endif %}
 
         {% block content %}{% endblock %}
     </main>
 
     <footer>
-        <p>&copy; 2025 GameVault. All rights reserved.</p>
+        <div class="footer-content">
+            <p>&copy; 2025 GameVault. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Support</a>
+            </div>
+        </div>
     </footer>
 
+    <!-- Global JavaScript -->
     <script>
-    function showMessage(text, type = "info") {
-        // Create message element
-        const msgContainer = document.querySelector(".messages-container") || (() => {
-            const c = document.createElement("div");
-            c.className = "messages-container";
-            document.body.prepend(c);
-            return c;
-        })();
+        // ==========================================
+        // TOAST NOTIFICATION SYSTEM
+        // ==========================================
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toast-container');
+            
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            // Icon based on type
+            const icons = {
+                success: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`,
+                error: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`,
+                warning: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+                info: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-icon">${icons[type] || icons.info}</div>
+                <div class="toast-message">${message}</div>
+                <button class="toast-close" onclick="this.parentElement.remove()" aria-label="Close notification">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            `;
+            
+            // Add progress bar
+            const progressBar = document.createElement('div');
+            progressBar.className = 'toast-progress';
+            toast.appendChild(progressBar);
+            
+            // Add to container
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('toast-show'), 10);
+            
+            // Auto-remove
+            const removeToast = () => {
+                toast.classList.remove('toast-show');
+                toast.classList.add('toast-hide');
+                setTimeout(() => toast.remove(), 300);
+            };
+            
+            setTimeout(removeToast, duration);
+            
+            // Progress bar animation
+            progressBar.style.animation = `toast-progress ${duration}ms linear`;
+        }
 
-        const message = document.createElement("div");
-        message.className = `message ${type}`;
-        message.innerHTML = `
-            <span class="message-text">${text}</span>
-            <button class="message-close" onclick="this.parentElement.remove()" aria-label="Close message">×</button>
-        `;
+        // Alias for backward compatibility
+        function showMessage(text, type = "info") {
+            showToast(text, type);
+        }
 
-        msgContainer.appendChild(message);
+        // ==========================================
+        // LOADING OVERLAY
+        // ==========================================
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+        }
 
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
-            message.remove();
-        }, 3000);
-    }
+        function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        // ==========================================
+        // MOBILE MENU TOGGLE
+        // ==========================================
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', function() {
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                this.setAttribute('aria-expanded', !isExpanded);
+                this.classList.toggle('active');
+                navLinks.classList.toggle('nav-links-open');
+            });
+        }
+
+        // ==========================================
+        // USER DROPDOWN
+        // ==========================================
+        const userDropdownToggle = document.getElementById('userDropdownToggle');
+        const userDropdownMenu = document.getElementById('userDropdownMenu');
+        
+        if (userDropdownToggle && userDropdownMenu) {
+            userDropdownToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                this.setAttribute('aria-expanded', !isExpanded);
+                userDropdownMenu.classList.toggle('show');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!userDropdownToggle.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                    userDropdownToggle.setAttribute('aria-expanded', 'false');
+                    userDropdownMenu.classList.remove('show');
+                }
+            });
+        }
+
+        // ==========================================
+        // CSRF TOKEN HELPER
+        // ==========================================
+        function getCSRFToken() {
+            const name = 'csrftoken=';
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name)) {
+                    return cookie.substring(name.length);
+                }
+            }
+            return '';
+        }
+
+        // ==========================================
+        // FORM LOADING STATES
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add loading state to all forms on submit
+            const forms = document.querySelectorAll('form[data-loading="true"]');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const submitBtn = this.querySelector('[type="submit"]');
+                    if (submitBtn && !submitBtn.disabled) {
+                        submitBtn.classList.add('btn-loading');
+                        submitBtn.disabled = true;
+                    }
+                });
+            });
+        });
     </script>
     {% block extra_js %}{% endblock %}
 </body>
