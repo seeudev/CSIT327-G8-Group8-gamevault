@@ -181,7 +181,8 @@
 }
 
 .admin-table thead{
-    background:var(--gradient-primary);
+    background:#c02a37;
+    background:linear-gradient(180deg,#d62839 0%,#c02a37 100%);
 }
 
 .admin-table thead tr th{
@@ -193,6 +194,7 @@
     text-transform:uppercase;
     letter-spacing:0.5px;
     white-space:nowrap;
+    text-shadow:0 1px 2px rgba(0,0,0,0.2);
 }
 
 .admin-table tbody tr{
@@ -249,33 +251,33 @@
 /* Loading State for Tables */
 .table-loading{
     position:relative;
-    opacity:0.6;
+    min-height:200px;
+}
+
+.table-loading tbody{
+    opacity:0.3;
     pointer-events:none;
 }
 
-.table-loading::after{
+.table-loading::before{
     content:'';
     position:absolute;
     top:50%;
     left:50%;
-    width:32px;
-    height:32px;
-    margin-top:-16px;
-    margin-left:-16px;
-    border:3px solid rgba(0,0,0,0.1);
-    border-top-color:var(--color-primary);
+    width:48px;
+    height:48px;
+    margin-top:-24px;
+    margin-left:-24px;
+    border:4px solid rgba(230,57,70,0.2);
+    border-top-color:#e63946;
     border-radius:50%;
-    animation:spin 0.8s linear infinite;
-    z-index:10;
+    animation:tableSpinner 0.8s linear infinite;
+    z-index:1000;
 }
 
-/* Ensure only the spinner spins, not the entire table */
-.table-loading *{
-    animation:none !important;
-}
-
-.table-loading::after{
-    animation:spin 0.8s linear infinite !important;
+@keyframes tableSpinner{
+    0%{transform:rotate(0deg)}
+    100%{transform:rotate(360deg)}
 }
 
 /* Responsive Design */
