@@ -8,16 +8,22 @@
     max-width:1400px;
     margin:0 auto;
     padding:var(--space-2xl) var(--space-xl);
+    background:var(--color-bg-secondary);
+    min-height:100vh;
 }
 
 .admin-dashboard h1{
     font-size:var(--font-size-4xl);
     font-weight:var(--font-weight-bold);
     color:var(--color-text-primary);
-    margin-bottom:var(--space-xl);
+    margin-bottom:var(--space-2xl);
     display:flex;
     align-items:center;
     gap:var(--space-md);
+    background:var(--color-bg-primary);
+    padding:var(--space-xl);
+    border-radius:var(--card-radius);
+    box-shadow:var(--card-shadow);
 }
 
 .admin-dashboard h1::before{
@@ -26,6 +32,7 @@
     height:48px;
     background:var(--gradient-primary);
     border-radius:var(--radius-full);
+    flex-shrink:0;
 }
 
 .admin-dashboard h2{
@@ -53,6 +60,9 @@
     transition:var(--transition-all);
     position:relative;
     overflow:hidden;
+    display:flex;
+    align-items:center;
+    gap:var(--space-lg);
 }
 
 .stat-card::before{
@@ -70,17 +80,38 @@
     box-shadow:var(--card-shadow-hover);
 }
 
+.stat-icon{
+    width:56px;
+    height:56px;
+    min-width:56px;
+    background:linear-gradient(135deg,rgba(230,57,70,0.1) 0%,rgba(230,57,70,0.05) 100%);
+    border-radius:var(--radius-lg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--color-primary);
+}
+
+.stat-icon svg{
+    width:28px;
+    height:28px;
+}
+
+.stat-content{
+    flex:1;
+}
+
 .stat-card h3{
-    font-size:var(--font-size-base);
+    font-size:var(--font-size-sm);
     font-weight:var(--font-weight-semibold);
     color:var(--color-text-secondary);
-    margin-bottom:var(--space-md);
+    margin-bottom:var(--space-xs);
     text-transform:uppercase;
     letter-spacing:0.5px;
 }
 
 .stat-number{
-    font-size:var(--font-size-4xl);
+    font-size:var(--font-size-3xl);
     font-weight:var(--font-weight-bold);
     color:var(--color-primary);
     margin:0;
@@ -130,70 +161,91 @@
     transform:translateX(4px);
 }
 
+/* Dashboard Section Wrapper */
+.dashboard-section{
+    margin-bottom:var(--space-2xl);
+}
+
+.table-wrapper{
+    overflow-x:auto;
+    border-radius:var(--card-radius);
+    box-shadow:var(--card-shadow);
+}
+
 /* Enhanced Tables */
-table{
+.admin-table{
     width:100%;
     background:var(--color-bg-primary);
     border-radius:var(--card-radius);
     overflow:hidden;
-    box-shadow:var(--card-shadow);
     border-collapse:collapse;
+    min-width:600px;
 }
 
-thead{
+.admin-table thead{
     background:var(--gradient-primary);
 }
 
-thead tr th{
+.admin-table thead tr th{
     color:var(--color-text-inverse);
-    padding:var(--space-lg) var(--space-md);
+    padding:var(--space-lg) var(--space-xl);
     text-align:left;
     font-weight:var(--font-weight-semibold);
     font-size:var(--font-size-sm);
     text-transform:uppercase;
     letter-spacing:0.5px;
+    white-space:nowrap;
 }
 
-tbody tr{
+.admin-table tbody tr{
     border-bottom:1px solid var(--color-border-light);
     transition:var(--transition-base);
 }
 
-tbody tr:last-child{
+.admin-table tbody tr:last-child{
     border-bottom:none;
 }
 
-tbody tr:hover{
-    background:var(--color-bg-secondary);
+.admin-table tbody tr:hover{
+    background:rgba(230,57,70,0.05);
 }
 
-tbody tr td{
-    padding:var(--space-lg) var(--space-md);
+.admin-table tbody tr td{
+    padding:var(--space-lg) var(--space-xl);
     color:var(--color-text-primary);
     font-size:var(--font-size-base);
 }
 
-tbody tr td:first-child{
+.admin-table tbody tr td:first-child{
     font-weight:var(--font-weight-semibold);
+    color:var(--color-primary);
 }
 
 /* Action Log Table Specific */
 .action-log-table tbody tr td{
-    padding:var(--space-md);
     vertical-align:top;
 }
 
-.action-log-table tbody tr td:first-child{
-    color:var(--color-primary);
-    font-weight:var(--font-weight-semibold);
+.action-log-table tbody tr td:nth-child(2){
+    font-weight:var(--font-weight-medium);
+}
+
+.action-log-table tbody tr td:nth-child(4){
+    color:var(--color-text-secondary);
+    font-size:var(--font-size-sm);
+}
+
+.action-log-table tbody tr td:nth-child(5){
+    color:var(--color-text-secondary);
 }
 
 /* Empty State */
-tbody tr td[colspan]{
-    text-align:center;
-    padding:var(--space-3xl);
+.empty-state{
+    text-align:center!important;
+    padding:var(--space-3xl)!important;
     color:var(--color-text-tertiary);
     font-style:italic;
+    font-weight:normal!important;
 }
 
 /* Loading State for Tables */
@@ -223,8 +275,18 @@ tbody tr td[colspan]{
         padding:var(--space-xl) var(--space-lg);
     }
     
+    .admin-dashboard h1{
+        font-size:var(--font-size-3xl);
+        padding:var(--space-lg);
+    }
+    
     .stats-grid{
         grid-template-columns:repeat(2,1fr);
+    }
+    
+    .table-wrapper{
+        overflow-x:auto;
+        -webkit-overflow-scrolling:touch;
     }
 }
 
@@ -234,16 +296,44 @@ tbody tr td[colspan]{
     }
     
     .admin-dashboard h1{
-        font-size:var(--font-size-3xl);
+        font-size:var(--font-size-2xl);
+        padding:var(--space-md);
+    }
+    
+    .admin-dashboard h1::before{
+        width:4px;
+        height:32px;
     }
     
     .stats-grid{
         grid-template-columns:1fr;
+        gap:var(--space-md);
+    }
+    
+    .stat-card{
+        padding:var(--space-lg);
+        gap:var(--space-md);
+    }
+    
+    .stat-icon{
+        width:48px;
+        height:48px;
+        min-width:48px;
+    }
+    
+    .stat-icon svg{
+        width:24px;
+        height:24px;
+    }
+    
+    .stat-number{
+        font-size:var(--font-size-2xl);
     }
     
     .admin-actions{
         flex-direction:column;
         padding:var(--space-lg);
+        gap:var(--space-sm);
     }
     
     .admin-actions .button{
@@ -251,49 +341,85 @@ tbody tr td[colspan]{
         justify-content:center;
     }
     
-    /* Responsive Table */
-    table{
-        display:block;
-        overflow-x:auto;
+    .dashboard-section{
+        margin-bottom:var(--space-xl);
     }
     
-    thead{
+    /* Responsive Table - Card Layout */
+    .table-wrapper{
+        overflow:visible;
+        box-shadow:none;
+    }
+    
+    .admin-table{
+        display:block;
+        min-width:auto;
+        box-shadow:none;
+        background:transparent;
+    }
+    
+    .admin-table thead{
         display:none;
     }
     
-    tbody,tr,td{
+    .admin-table tbody,
+    .admin-table tbody tr,
+    .admin-table tbody tr td{
         display:block;
     }
     
-    tbody tr{
+    .admin-table tbody tr{
         margin-bottom:var(--space-lg);
-        border:1px solid var(--color-border-light);
+        border:none;
         border-radius:var(--radius-lg);
-        padding:var(--space-md);
+        padding:var(--space-lg);
+        background:var(--color-bg-primary);
+        box-shadow:var(--card-shadow);
     }
     
-    tbody tr td{
+    .admin-table tbody tr:hover{
+        background:var(--color-bg-primary);
+        box-shadow:var(--card-shadow-hover);
+    }
+    
+    .admin-table tbody tr td{
         padding:var(--space-sm) 0;
         border-bottom:none;
         position:relative;
-        padding-left:50%;
+        padding-left:40%;
+        min-height:32px;
+        display:flex;
+        align-items:center;
     }
     
-    tbody tr td::before{
+    .admin-table tbody tr td::before{
         content:attr(data-label);
         position:absolute;
         left:0;
-        width:45%;
+        width:38%;
         font-weight:var(--font-weight-semibold);
         color:var(--color-text-secondary);
         font-size:var(--font-size-sm);
+        text-transform:uppercase;
+        letter-spacing:0.5px;
     }
     
-    tbody tr td[colspan]{
-        padding-left:0;
+    .admin-table tbody tr td:first-child{
+        padding-top:0;
+        font-size:var(--font-size-lg);
     }
     
-    tbody tr td[colspan]::before{
+    .admin-table tbody tr td:last-child{
+        padding-bottom:0;
+    }
+    
+    .empty-state{
+        padding:var(--space-2xl)!important;
+        padding-left:0!important;
+        text-align:center!important;
+    }
+    
+    .empty-state::before{
         display:none;
     }
 }
