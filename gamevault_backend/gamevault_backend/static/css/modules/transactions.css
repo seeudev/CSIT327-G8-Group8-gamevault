@@ -9,6 +9,24 @@
 .page-title{font-size:var(--font-size-4xl);font-weight:var(--font-weight-bold);color:var(--color-text-primary);margin:0 0 var(--space-sm) 0;display:flex;align-items:center;justify-content:center;gap:var(--space-md)}
 .title-icon{font-size:var(--font-size-4xl)}
 .page-subtitle{color:var(--color-text-secondary);font-size:var(--font-size-lg);margin:0}
+.summary-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);margin-top:var(--space-xl)}
+.stat-card{background:var(--color-bg-primary);padding:var(--space-lg);border-radius:var(--card-radius);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:var(--space-md);transition:var(--transition-all)}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.stat-icon{font-size:var(--font-size-3xl);opacity:0.8}
+.stat-content{display:flex;flex-direction:column;gap:var(--space-xs)}
+.stat-value{font-size:var(--font-size-2xl);font-weight:var(--font-weight-bold);color:var(--color-primary)}
+.stat-label{font-size:var(--font-size-sm);color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.5px}
+.filters-section{background:var(--color-bg-primary);border-radius:var(--card-radius);padding:var(--space-lg);margin-bottom:var(--space-xl);box-shadow:var(--shadow-sm)}
+.filters-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-md);align-items:end}
+.filter-group{display:flex;flex-direction:column;gap:var(--space-xs)}
+.filter-group label{font-size:var(--font-size-sm);font-weight:var(--font-weight-semibold);color:var(--color-text-secondary);display:flex;align-items:center;gap:var(--space-xs)}
+.filter-input,.filter-select{padding:var(--space-sm) var(--space-md);border:2px solid var(--color-border-light);border-radius:var(--radius-md);font-size:var(--font-size-base);transition:var(--transition-all);background:var(--color-bg-primary);color:var(--color-text-primary)}
+.filter-input:focus,.filter-select:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(230,57,70,0.1)}
+.filter-actions{grid-column:1/-1;display:flex;gap:var(--space-sm);justify-content:flex-end;margin-top:var(--space-md)}
+.btn-apply-filter{padding:var(--space-sm) var(--space-xl);background:var(--gradient-primary);color:var(--color-text-inverse);border:none;border-radius:var(--radius-md);font-size:var(--font-size-base);font-weight:var(--font-weight-semibold);cursor:pointer;transition:var(--transition-all)}
+.btn-apply-filter:hover{transform:translateY(-2px);box-shadow:var(--shadow-primary)}
+.btn-clear-filter{padding:var(--space-sm) var(--space-lg);background:var(--color-bg-tertiary);color:var(--color-text-primary);border:2px solid var(--color-border-light);border-radius:var(--radius-md);font-size:var(--font-size-base);font-weight:var(--font-weight-semibold);text-decoration:none;cursor:pointer;transition:var(--transition-all);display:inline-flex;align-items:center}
+.btn-clear-filter:hover{background:var(--color-bg-secondary);border-color:var(--color-primary)}
 .transactions-grid{display:flex;flex-direction:column;gap:var(--space-lg);margin-bottom:var(--space-xl);max-width:900px;margin-left:auto;margin-right:auto}
 .transaction-card-modern{background:var(--color-bg-primary);border-radius:var(--card-radius);overflow:hidden;box-shadow:var(--card-shadow);transition:var(--transition-all);border:2px solid transparent;cursor:pointer}
 .transaction-card-modern:hover{transform:translateY(-4px);box-shadow:var(--card-shadow-hover);border-color:var(--color-primary)}
@@ -84,6 +102,8 @@
 @media (max-width:1024px){
     .detail-meta{grid-template-columns:repeat(2,1fr)}
     .transaction-info-grid{grid-template-columns:repeat(2,1fr)}
+    .summary-stats{grid-template-columns:repeat(2,1fr)}
+    .filters-form{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:768px){
     .transaction-history-modern,.transaction-detail-modern{padding:var(--space-md)}
@@ -92,6 +112,10 @@
     .transaction-info-grid{grid-template-columns:1fr}
     .game-item-header{flex-direction:column}
     .game-price-detail{align-self:flex-start}
+    .summary-stats{grid-template-columns:1fr;gap:var(--space-sm)}
+    .filters-form{grid-template-columns:1fr}
+    .filter-actions{flex-direction:column}
+    .btn-apply-filter,.btn-clear-filter{width:100%}
 }
 @media (max-width:480px){
     .page-title,.detail-title{font-size:var(--font-size-2xl)}
