@@ -185,7 +185,7 @@
 }
 
 .admin-table thead tr th{
-    color:#ffffff;
+    color: red;
     padding:var(--space-lg) var(--space-xl);
     text-align:left;
     font-weight:var(--font-weight-bold);
