@@ -241,38 +241,5 @@
 .close:hover {
     color: #333;
 }
-
-.loading-spinner {
-    text-align: center;
-    padding: 4rem 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-}
-
-.loading-spinner::before {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 1rem;
-    border: 5px solid rgba(230, 57, 70, 0.2);
-    border-top-color: #e63946;
-    border-radius: 50%;
-    animation: spinAnimation 0.8s linear infinite;
-}
-
-.loading-spinner p {
-    color: var(--color-text-secondary);
-    font-size: 1rem;
-    margin: 0;
-}
-
-@keyframes spinAnimation {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
 </style>
 {% endblock %}
