@@ -185,7 +185,7 @@
 }
 
 .admin-table thead tr th{
-    color: red;
+    color:#ffffff;
     padding:var(--space-lg) var(--space-xl);
     text-align:left;
     font-weight:var(--font-weight-bold);
@@ -260,11 +260,22 @@
     left:50%;
     width:32px;
     height:32px;
-    margin:-16px 0 0 -16px;
-    border:3px solid var(--color-border-light);
-    border-top:3px solid var(--color-primary);
+    margin-top:-16px;
+    margin-left:-16px;
+    border:3px solid rgba(0,0,0,0.1);
+    border-top-color:var(--color-primary);
     border-radius:50%;
     animation:spin 0.8s linear infinite;
+    z-index:10;
+}
+
+/* Ensure only the spinner spins, not the entire table */
+.table-loading *{
+    animation:none !important;
+}
+
+.table-loading::after{
+    animation:spin 0.8s linear infinite !important;
 }
 
 /* Responsive Design */
