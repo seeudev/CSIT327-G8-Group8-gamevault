@@ -1,1 +1,1 @@
-web: gunicorn gamevault_backend.wsgi:application --chdir gamevault_backend
+web: cd gamevault_backend && gunicorn gamevault_backend.wsgi:application --bind 0.0.0.0:$PORT
