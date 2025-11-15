@@ -90,9 +90,9 @@ Visit `http://127.0.0.1:8000/` in your browser.
 
 ## Deployed Link
 
-main Branch is deployed on Railway (Link down in-between sprints)
+main Branch is deployed on Render (Link down in-between sprints)
 
-(https://csit327-g8-group8-gamevault-production.up.railway.app/store/)
+https://csit327-g8-group8-gamevault.onrender.com
 
 ---
 
