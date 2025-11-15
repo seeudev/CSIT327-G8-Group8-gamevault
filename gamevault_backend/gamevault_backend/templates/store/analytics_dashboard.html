@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics Dashboard - GameVault{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modules/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/modules/analytics.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="analytics-dashboard">
+    <div class="dashboard-header">
+        <h1>Analytics Dashboard</h1>
+        <div class="header-actions">
+            <a href="{% url 'store:admin_dashboard' %}" class="btn-secondary">← Back to Admin</a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="analytics-filters">
+        <div class="filter-group">
+            <label for="dateRange">Date Range:</label>
+            <select id="dateRange" class="filter-select">
+                <option value="7">Last 7 Days</option>
+                <option value="30" selected>Last 30 Days</option>
+                <option value="90">Last 90 Days</option>
+                <option value="180">Last 6 Months</option>
+                <option value="365">Last Year</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="categoryFilter">Category:</label>
+            <select id="categoryFilter" class="filter-select">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="chartPeriod">Chart Period:</label>
+            <select id="chartPeriod" class="filter-select">
+                <option value="daily" selected>Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+            </select>
+        </div>
+
+        <button id="applyFilters" class="btn-primary">Apply Filters</button>
+        <button id="refreshData" class="btn-secondary">Refresh Data</button>
+    </div>
+
+    <!-- Export Options -->
+    <div class="export-section">
+        <h3>Export Data</h3>
+        <div class="export-buttons">
+            <button class="btn-export" data-type="sales" data-format="csv">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Sales CSV
+            </button>
+            <button class="btn-export" data-type="games" data-format="csv">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Games CSV
+            </button>
+            <button class="btn-export" data-type="users" data-format="csv">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Users CSV
+            </button>
+            <button class="btn-export" data-type="overview" data-format="json">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Overview JSON
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="analyticsLoading" class="analytics-loading" style="display: none;">
+        <div class="spinner"></div>
+        <p>Loading analytics data...</p>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="metrics-grid" id="metricsGrid">
+        <div class="metric-card">
+            <div class="metric-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="metric-content">
+                <h3>Total Revenue</h3>
+                <p class="metric-value" id="totalRevenue">$0.00</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+            <div class="metric-content">
+                <h3>Total Orders</h3>
+                <p class="metric-value" id="totalOrders">0</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <div class="metric-content">
+                <h3>Items Sold</h3>
+                <p class="metric-value" id="itemsSold">0</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+            </div>
+            <div class="metric-content">
+                <h3>Active Users</h3>
+                <p class="metric-value" id="activeUsers">0</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+            </div>
+            <div class="metric-content">
+                <h3>New Users</h3>
+                <p class="metric-value" id="newUsers">0</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="metric-content">
+                <h3>Avg Order Value</h3>
+                <p class="metric-value" id="avgOrderValue">$0.00</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <!-- Sales Trend Chart -->
+        <div class="chart-container">
+            <h2>Sales Trend</h2>
+            <canvas id="salesTrendChart"></canvas>
+        </div>
+
+        <!-- Category Performance Chart -->
+        <div class="chart-container">
+            <h2>Revenue by Category</h2>
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Top Games Table -->
+    <div class="analytics-section">
+        <h2>Top Selling Games</h2>
+        <div class="table-wrapper">
+            <table class="analytics-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Game Title</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Quantity Sold</th>
+                        <th>Revenue</th>
+                        <th>Avg Rating</th>
+                    </tr>
+                </thead>
+                <tbody id="topGamesTable">
+                    <tr>
+                        <td colspan="7" class="empty-state">Loading data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/analytics.js' %}"></script>
+{% endblock %}
