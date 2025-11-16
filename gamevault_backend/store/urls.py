@@ -5,6 +5,7 @@ Simple URL patterns for the game store.
 from django.urls import path
 from . import views
 from .views import api_wishlist, api_wishlist_delete
+from . import analytics_views
 
 app_name = 'store'
 
@@ -57,4 +58,14 @@ urlpatterns = [
     path('api/reviews/<int:review_id>/update/', views.api_update_review, name='api_update_review'),
     path('api/reviews/<int:review_id>/delete/', views.api_delete_review, name='api_delete_review'),
     path('api/reviews/<int:game_id>/stats/', views.api_get_game_rating_stats, name='api_get_game_rating_stats'),
+
+    # Analytics endpoints (Module 15)
+    path('admin/analytics/', analytics_views.analytics_dashboard, name='analytics_dashboard'),
+    path('api/analytics/overview/', analytics_views.api_analytics_overview, name='api_analytics_overview'),
+    path('api/analytics/sales-trend/', analytics_views.api_analytics_sales_trend, name='api_analytics_sales_trend'),
+    path('api/analytics/user-engagement/', analytics_views.api_analytics_user_engagement, name='api_analytics_user_engagement'),
+    path('api/analytics/top-games/', analytics_views.api_analytics_top_games, name='api_analytics_top_games'),
+    path('api/analytics/category-performance/', analytics_views.api_analytics_category_performance, name='api_analytics_category_performance'),
+    path('api/analytics/export/csv/', analytics_views.export_analytics_csv, name='export_analytics_csv'),
+    path('api/analytics/export/json/', analytics_views.export_analytics_json, name='export_analytics_json'),
 ]
