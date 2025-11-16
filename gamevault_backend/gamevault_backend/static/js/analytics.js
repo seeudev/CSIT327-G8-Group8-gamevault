@@ -221,7 +221,7 @@ function renderSalesTrendChart(data) {
                     display: true,
                     position: 'top',
                     labels: {
-                        color: '#e0e0e0',
+                        color: '#000000ff',
                         font: {
                             size: 12
                         }
@@ -359,7 +359,7 @@ function renderCategoryChart(data) {
                     display: true,
                     position: 'right',
                     labels: {
-                        color: '#e0e0e0',
+                        color: '#000000ff',
                         font: {
                             size: 12
                         },
