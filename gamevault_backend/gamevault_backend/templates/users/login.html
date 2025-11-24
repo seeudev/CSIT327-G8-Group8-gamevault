@@ -6,6 +6,31 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/modules/auth.css' %}">
 <link rel="stylesheet" href="{% static 'css/modules/animations.css' %}">
+<style>
+    .lockout-timer {
+        background: rgba(230, 57, 70, 0.1);
+        border: 1px solid var(--color-primary);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    .lockout-timer h3 {
+        color: var(--color-primary);
+        margin: 0 0 0.5rem 0;
+        font-size: 1.1rem;
+    }
+    .lockout-timer p {
+        margin: 0;
+        color: var(--color-text);
+    }
+    .timer-display {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--color-primary);
+        margin: 0.5rem 0;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -31,23 +56,38 @@
             <p class="auth-subtitle">Sign in to your GameVault account</p>
         </div>
         
-        <form method="post" class="auth-form">
+        {% if locked_out %}
+        <div class="lockout-timer" id="lockoutTimer">
+            <h3>Account Temporarily Locked</h3>
+            <p>Too many failed login attempts.</p>
+            <p class="timer-display" id="timerDisplay">15:00</p>
+            <p>Please try again later.</p>
+        </div>
+        {% endif %}
+        
+        <form method="post" class="auth-form" id="loginForm">
             {% csrf_token %}
             <div class="form-group">
                 <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-input" id="username" name="username" required autofocus>
+                <input type="text" class="form-input" id="username" name="username" 
+                       required autofocus {% if locked_out %}disabled{% endif %}
+                       value="{{ request.POST.username|default:'' }}">
             </div>
 
             <div class="form-group">
                 <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-input" id="password" name="password" required>
+                <input type="password" class="form-input" id="password" name="password" 
+                       required {% if locked_out %}disabled{% endif %}>
             </div>
 
             <div class="form-footer">
                 <a href="{% url 'users:password_reset_request' %}" class="link-secondary">Forgot Password?</a>
             </div>
 
-            <button type="submit" class="btn-primary btn-block">Sign In</button>
+            <button type="submit" class="btn-primary btn-block" id="submitBtn"
+                    {% if locked_out %}disabled{% endif %}>
+                Sign In
+            </button>
         </form>
         
         <div class="auth-alt">
@@ -58,4 +98,55 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+    // Clear password field on failed login
+    {% if clear_password %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordField = document.getElementById('password');
+        if (passwordField) {
+            passwordField.value = '';
+            passwordField.focus();
+        }
+    });
+    {% endif %}
+
+    // Lockout timer countdown
+    {% if locked_out and remaining_seconds %}
+    (function() {
+        let remainingSeconds = {{ remaining_seconds }};
+        const timerDisplay = document.getElementById('timerDisplay');
+        const submitBtn = document.getElementById('submitBtn');
+        const usernameField = document.getElementById('username');
+        const passwordField = document.getElementById('password');
+        const lockoutTimer = document.getElementById('lockoutTimer');
+
+        function updateTimer() {
+            if (remainingSeconds <= 0) {
+                // Re-enable form
+                if (submitBtn) submitBtn.disabled = false;
+                if (usernameField) usernameField.disabled = false;
+                if (passwordField) passwordField.disabled = false;
+                if (lockoutTimer) lockoutTimer.style.display = 'none';
+                return;
+            }
+
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = remainingSeconds % 60;
+            const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timerDisplay) {
+                timerDisplay.textContent = display;
+            }
+
+            remainingSeconds--;
+            setTimeout(updateTimer, 1000);
+        }
+
+        updateTimer();
+    })();
+    {% endif %}
+</script>
+{% endblock %}
 {% endblock %}
