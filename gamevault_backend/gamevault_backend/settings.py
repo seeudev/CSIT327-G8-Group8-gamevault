@@ -155,11 +155,14 @@ STORAGES = {
     },
 }
 
-# WhiteNoise settings
-WHITENOISE_USE_FINDERS = False  # Always serve from STATIC_ROOT in production
+# WhiteNoise settings - allow serving from source directories if STATIC_ROOT doesn't exist
+WHITENOISE_USE_FINDERS = True if not os.path.exists(os.path.join(BASE_DIR, 'staticfiles')) else False
 WHITENOISE_AUTOREFRESH = False  # Disable autorefresh for production
 WHITENOISE_ALLOW_ALL_ORIGINS = True  # Allow CORS for static files
 WHITENOISE_MAX_AGE = 31536000  # Cache static files for 1 year
+
+# Create staticfiles directory if it doesn't exist (prevents warning)
+os.makedirs(STATIC_ROOT, exist_ok=True)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
