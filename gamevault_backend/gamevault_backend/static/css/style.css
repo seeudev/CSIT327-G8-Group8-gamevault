@@ -1464,14 +1464,23 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
    ============================================ */
 
 .btn-wishlist{
-    background:none;
+    position:absolute;
+    top:var(--space-sm);
+    right:var(--space-sm);
+    background:rgba(255,255,255,0.95);
     border:none;
     cursor:pointer;
-    margin-left:var(--space-sm);
     color:var(--color-primary);
-    transition:transform var(--transition-base),color var(--transition-base);
-    padding:var(--space-xs);
-    border-radius:var(--radius-md);
+    transition:transform var(--transition-base),background var(--transition-base),box-shadow var(--transition-base);
+    padding:var(--space-sm);
+    border-radius:50%;
+    box-shadow:0 2px 8px rgba(0,0,0,0.15);
+    z-index:10;
+    width:40px;
+    height:40px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 
 .btn-wishlist svg{
@@ -1487,7 +1496,18 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 }
 
 .btn-wishlist:hover{
-    transform:scale(1.15);
+    transform:scale(1.1);
+    background:rgba(255,255,255,1);
+    box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+
+.btn-wishlist.active{
+    background:var(--color-primary);
+    color:white;
+}
+
+.btn-wishlist.active svg{
+    stroke:white;
 }
 
 .btn-wishlist:focus-visible{

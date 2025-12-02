@@ -130,7 +130,16 @@
             <div class="purchase-card card-interactive">
                 <div class="price-section">
                     <span class="price-label">Price</span>
-                    <span class="price-value">${{ game.price }}</span>
+                    {% if game.has_promotion %}
+                        <div class="price-discount-wrapper">
+                            <span class="discount-badge-detail">{{ game.discount_label }}</span>
+                            <span class="price-value price-discounted">${{ game.discounted_price }}</span>
+                            <span class="price-original">${{ game.price }}</span>
+                            <span class="savings-text">Save ${{ game.savings_amount|floatformat:2 }}</span>
+                        </div>
+                    {% else %}
+                        <span class="price-value">${{ game.price }}</span>
+                    {% endif %}
                 </div>
 
                 <div class="purchase-actions">
