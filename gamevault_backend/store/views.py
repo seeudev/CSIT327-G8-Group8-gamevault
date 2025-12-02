@@ -450,12 +450,34 @@ def checkout(request):
         messages.success(request, 'Purchase completed successfully! Check your transaction details for game keys.')
         return redirect('store:transaction_detail', transaction_id=transaction.id)
     
-    # GET request - show checkout confirmation
-    total = cart.get_total()
+    # GET request - show checkout confirmation with promotional pricing
+    from .promotion_views import calculate_best_price
+    
+    total = Decimal('0.00')
+    original_total = Decimal('0.00')
+    total_savings = Decimal('0.00')
+    
+    # Calculate promotional prices for each item
+    for item in cart_items:
+        discounted_price, promotion = calculate_best_price(item.game)
+        item.discounted_price = discounted_price
+        item.has_promotion = promotion is not None
+        item.active_promotion = promotion
+        item.item_total = discounted_price * item.quantity
+        item.original_item_total = item.price_at_addition * item.quantity
+        item.item_savings = item.original_item_total - item.item_total
+        
+        total += item.item_total
+        original_total += item.original_item_total
+        total_savings += item.item_savings
+    
     return render(request, 'store/checkout.html', {
         'cart': cart,
         'cart_items': cart_items,
         'total': total,
+        'original_total': original_total,
+        'total_savings': total_savings,
+        'has_discounts': total_savings > 0,
     })
 
 

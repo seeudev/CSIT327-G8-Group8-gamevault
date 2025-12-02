@@ -3,44 +3,467 @@
 
 {% block title %}Checkout - GameVault{% endblock %}
 
+{% block extra_css %}
+<style>
+.checkout-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.checkout-container h1 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: var(--color-text-primary);
+}
+
+.checkout-section {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-md);
+}
+
+.checkout-section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--color-text-primary);
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 0.5rem;
+}
+
+.cart-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.cart-table th,
+.cart-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.cart-table th {
+    background: var(--color-background);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.cart-table tbody tr:hover {
+    background: var(--color-background);
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    margin-right: 0.5rem;
+}
+
+.discounted-price {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.discount-badge {
+    display: inline-block;
+    background: var(--gradient-primary);
+    color: white;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.savings-banner {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.payment-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-method {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.payment-method:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.payment-method.selected {
+    border-color: var(--color-primary);
+    background: rgba(230, 57, 70, 0.05);
+    box-shadow: var(--shadow-primary);
+}
+
+.payment-method input[type="radio"] {
+    display: none;
+}
+
+.payment-method-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    color: white;
+}
+
+.payment-method-icon svg {
+    width: 32px;
+    height: 32px;
+    stroke: white;
+    fill: none;
+}
+
+.payment-method-label {
+    display: block;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.payment-details {
+    display: none;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--color-background);
+    border-radius: var(--radius-md);
+}
+
+.payment-details.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.625rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-size: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+}
+
+.checkout-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.button-secondary {
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    border: 2px solid var(--color-border);
+}
+
+.button-secondary:hover {
+    background: var(--color-background);
+    transform: translateY(-2px);
+}
+
+.button-primary {
+    background: var(--gradient-primary);
+    color: white;
+    box-shadow: var(--shadow-primary);
+}
+
+.button-primary:hover {
+    box-shadow: var(--shadow-primary-lg);
+    transform: translateY(-2px);
+}
+
+.button-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .payment-methods {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .checkout-actions {
+        flex-direction: column;
+    }
+    
+    .cart-table {
+        font-size: 0.875rem;
+    }
+    
+    .cart-table th,
+    .cart-table td {
+        padding: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="checkout-container">
     <h1>Checkout</h1>
     
-    <h2>Order Summary</h2>
-    <table class="cart-table">
-        <thead>
-            <tr>
-                <th>Game</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in cart_items %}
+    <!-- Order Summary -->
+    <div class="checkout-section">
+        <h2>Order Summary</h2>
+        
+        {% if has_discounts %}
+        <div class="savings-banner">
+            You're saving ${{ total_savings|floatformat:2 }}!
+        </div>
+        {% endif %}
+        
+        <table class="cart-table">
+            <thead>
                 <tr>
-                    <td>{{ item.game.title }}</td>
-                    <td>${{ item.price_at_addition }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>${{ item.get_subtotal }}</td>
+                    <th>Game</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="3"><strong>Total:</strong></td>
-                <td><strong>${{ total }}</strong></td>
-            </tr>
-        </tfoot>
-    </table>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                    <tr>
+                        <td>{{ item.game.title }}</td>
+                        <td>
+                            {% if item.has_promotion %}
+                                <span class="original-price">${{ item.price_at_addition|floatformat:2 }}</span>
+                                <span class="discounted-price">${{ item.discounted_price|floatformat:2 }}</span>
+                                <span class="discount-badge">SALE</span>
+                            {% else %}
+                                ${{ item.price_at_addition|floatformat:2 }}
+                            {% endif %}
+                        </td>
+                        <td>{{ item.quantity }}</td>
+                        <td>
+                            {% if item.has_promotion %}
+                                <span class="original-price">${{ item.original_item_total|floatformat:2 }}</span>
+                                <span class="discounted-price">${{ item.item_total|floatformat:2 }}</span>
+                            {% else %}
+                                ${{ item.item_total|floatformat:2 }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                {% if has_discounts %}
+                <tr>
+                    <td colspan="3">Original Total:</td>
+                    <td><span class="original-price">${{ original_total|floatformat:2 }}</span></td>
+                </tr>
+                <tr>
+                    <td colspan="3">Discount:</td>
+                    <td style="color: var(--color-success);">-${{ total_savings|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+                <tr style="font-size: 1.125rem;">
+                    <td colspan="3"><strong>Total:</strong></td>
+                    <td><strong class="discounted-price">${{ total|floatformat:2 }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
     
-    <div class="checkout-actions">
-        <a href="{% url 'store:cart' %}" class="button">Back to Cart</a>
-        <form method="post" style="display:inline;">
+    <!-- Payment Method Selection -->
+    <div class="checkout-section">
+        <h2>Payment Method</h2>
+        
+        <form method="post" id="checkoutForm">
             {% csrf_token %}
-            <button type="submit" class="button">Complete Purchase</button>
+            
+            <div class="payment-methods">
+                <!-- Credit/Debit Card -->
+                <label class="payment-method" for="payment-card" onclick="selectPaymentMethod('card')">
+                    <input type="radio" name="payment_method" id="payment-card" value="card" required>
+                    <div class="payment-method-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                            <line x1="1" y1="10" x2="23" y2="10"></line>
+                        </svg>
+                    </div>
+                    <span class="payment-method-label">Credit/Debit Card</span>
+                </label>
+                
+                <!-- Digital Wallet -->
+                <label class="payment-method" for="payment-wallet" onclick="selectPaymentMethod('wallet')">
+                    <input type="radio" name="payment_method" id="payment-wallet" value="wallet" required>
+                    <div class="payment-method-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                        </svg>
+                    </div>
+                    <span class="payment-method-label">Digital Wallet</span>
+                </label>
+            </div>
+            
+            <!-- Card Payment Details -->
+            <div id="card-details" class="payment-details">
+                <div class="form-group">
+                    <label for="card-number">Card Number</label>
+                    <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19">
+                </div>
+                <div class="form-group">
+                    <label for="card-name">Cardholder Name</label>
+                    <input type="text" id="card-name" placeholder="John Doe">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="card-expiry">Expiry Date</label>
+                        <input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="card-cvv">CVV</label>
+                        <input type="text" id="card-cvv" placeholder="123" maxlength="4">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Wallet Payment Details -->
+            <div id="wallet-details" class="payment-details">
+                <div class="form-group">
+                    <label for="wallet-provider">Select Wallet Provider</label>
+                    <select id="wallet-provider">
+                        <option value="">Choose a provider</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="applepay">Apple Pay</option>
+                        <option value="googlepay">Google Pay</option>
+                        <option value="gcash">GCash</option>
+                        <option value="paymaya">PayMaya</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="wallet-email">Email Address</label>
+                    <input type="email" id="wallet-email" placeholder="your@email.com">
+                </div>
+            </div>
+            
+            <div class="checkout-actions">
+                <a href="{% url 'store:cart' %}" class="button button-secondary">Back to Cart</a>
+                <button type="submit" class="button button-primary" id="completeButton" disabled>Complete Purchase</button>
+            </div>
         </form>
     </div>
 </div>
+
+<script>
+function selectPaymentMethod(method) {
+    // Remove selected class from all payment methods
+    document.querySelectorAll('.payment-method').forEach(el => {
+        el.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked method
+    const selectedMethod = document.getElementById(`payment-${method}`);
+    selectedMethod.checked = true;
+    selectedMethod.closest('.payment-method').classList.add('selected');
+    
+    // Hide all payment details
+    document.querySelectorAll('.payment-details').forEach(el => {
+        el.classList.remove('active');
+    });
+    
+    // Show relevant payment details
+    document.getElementById(`${method}-details`).classList.add('active');
+    
+    // Enable submit button
+    document.getElementById('completeButton').disabled = false;
+}
+
+// Format card number input (add spaces every 4 digits)
+document.getElementById('card-number')?.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\s/g, '');
+    let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+    e.target.value = formattedValue;
+});
+
+// Format expiry date input (add slash after 2 digits)
+document.getElementById('card-expiry')?.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 2) {
+        e.target.value = value.slice(0, 2) + '/' + value.slice(2, 4);
+    } else {
+        e.target.value = value;
+    }
+});
+
+// Only allow numbers in CVV and card number
+document.getElementById('card-cvv')?.addEventListener('input', function(e) {
+    e.target.value = e.target.value.replace(/\D/g, '');
+});
+
+// Form validation on submit
+document.getElementById('checkoutForm')?.addEventListener('submit', function(e) {
+    const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value;
+    
+    if (!paymentMethod) {
+        e.preventDefault();
+        showToast('Please select a payment method', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = document.getElementById('completeButton');
+    submitBtn.textContent = 'Processing...';
+    submitBtn.disabled = true;
+});
+</script>
 {% endblock %}

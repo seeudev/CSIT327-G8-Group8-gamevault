@@ -158,6 +158,37 @@ header{
     position:relative;
 }
 
+.cart-badge{
+    position:absolute;
+    top:-6px;
+    right:-8px;
+    background:var(--gradient-primary);
+    color:white;
+    font-size:0.625rem;
+    font-weight:700;
+    min-width:18px;
+    height:18px;
+    padding:0 4px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:var(--shadow-primary);
+    animation:cart-badge-pulse 0.3s ease-out;
+}
+
+@keyframes cart-badge-pulse{
+    0%{
+        transform:scale(0);
+    }
+    50%{
+        transform:scale(1.2);
+    }
+    100%{
+        transform:scale(1);
+    }
+}
+
 /* User Dropdown */
 .nav-dropdown{
     position:relative;
