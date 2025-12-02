@@ -8,8 +8,8 @@ pip install -r requirements.txt
 # Navigate to Django project directory
 cd gamevault_backend
 
-# Collect static files
-python manage.py collectstatic --no-input
+# Collect static files (--clear removes old files, --no-input runs without prompts)
+python manage.py collectstatic --no-input --clear
 
 # Run migrations
 python manage.py migrate
