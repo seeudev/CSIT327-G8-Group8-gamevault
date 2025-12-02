@@ -145,7 +145,10 @@
                                 </svg>
                             </div>
                         {% endif %}
-                        <div class="game-badge">{{ game.category }}</div>
+                        <div class="game-badge category-badge">{{ game.category }}</div>
+                        {% if game.has_promotion %}
+                        <div class="game-badge discount-badge-img">{{ game.discount_label }}</div>
+                        {% endif %}
                     </div>
                     
                     <div class="game-card-body">
@@ -156,15 +159,14 @@
                             <div class="game-price-section">
                                 {% if game.has_promotion %}
                                     <div class="price-with-discount">
-                                        <div class="discount-row">
-                                            <span class="game-price-value discounted">${{ game.discounted_price|floatformat:2 }}</span>
-                                            <span class="discount-badge">{{ game.discount_label }}</span>
-                                        </div>
+                                        <span class="game-price-value discounted">${{ game.discounted_price|floatformat:2 }}</span>
                                         <span class="original-price">${{ game.price }}</span>
                                     </div>
                                 {% else %}
-                                    <span class="game-price-label">From</span>
-                                    <span class="game-price-value">${{ game.price }}</span>
+                                    <div class="price-regular">
+                                        <span class="game-price-label">From</span>
+                                        <span class="game-price-value">${{ game.price }}</span>
+                                    </div>
                                 {% endif %}
                             </div>
                             <div class="game-card-actions">
