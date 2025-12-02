@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Create{% endif %} Promotion - GameVault Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modules/admin.css' %}">
+<style>
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-field label {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: 0.9rem;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+}
+
+.form-field textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.checkbox-field input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 1rem;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-secondary);
+}
+
+.selection-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.selection-item input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.help-text {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-top: 0.25rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <h1>{% if is_edit %}Edit{% else %}Create{% endif %} Promotion</h1>
+
+    <div class="admin-actions">
+        <a href="{% url 'store:promotion_list' %}" class="button">Back to Promotions</a>
+    </div>
+
+    <div class="dashboard-section">
+        <form method="post" style="background: var(--color-bg-primary); padding: 2rem; border-radius: var(--card-radius); box-shadow: var(--card-shadow);">
+            {% csrf_token %}
+
+            <div class="form-grid">
+                <div class="form-field">
+                    <label for="name">Promotion Name *</label>
+                    <input type="text" id="name" name="name" required 
+                           value="{% if promotion %}{{ promotion.name }}{% endif %}"
+                           placeholder="e.g., Summer Sale 2024">
+                    <span class="help-text">Internal name for reference</span>
+                </div>
+
+                <div class="form-field">
+                    <label for="discount_type">Discount Type *</label>
+                    <select id="discount_type" name="discount_type" required onchange="updateDiscountHelp()">
+                        <option value="percentage" {% if promotion and promotion.discount_type == 'percentage' %}selected{% endif %}>Percentage (%)</option>
+                        <option value="fixed" {% if promotion and promotion.discount_type == 'fixed' %}selected{% endif %}>Fixed Amount ($)</option>
+                    </select>
+                </div>
+
+                <div class="form-field">
+                    <label for="discount_value">Discount Value *</label>
+                    <input type="number" id="discount_value" name="discount_value" required 
+                           step="0.01" min="0" max="100"
+                           value="{% if promotion %}{{ promotion.discount_value }}{% endif %}"
+                           placeholder="e.g., 20">
+                    <span class="help-text" id="discount-help">Enter percentage (0-100)</span>
+                </div>
+
+                <div class="form-field">
+                    <label for="start_date">Start Date & Time *</label>
+                    <input type="datetime-local" id="start_date" name="start_date" required
+                           value="{% if promotion %}{{ promotion.start_date|date:'Y-m-d\TH:i' }}{% endif %}">
+                    <span class="help-text">When promotion becomes active</span>
+                </div>
+
+                <div class="form-field">
+                    <label for="end_date">End Date & Time *</label>
+                    <input type="datetime-local" id="end_date" name="end_date" required
+                           value="{% if promotion %}{{ promotion.end_date|date:'Y-m-d\TH:i' }}{% endif %}">
+                    <span class="help-text">When promotion expires</span>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" 
+                          placeholder="Optional description of the promotion...">{% if promotion %}{{ promotion.description }}{% endif %}</textarea>
+            </div>
+
+            <div class="checkbox-field">
+                <input type="checkbox" id="is_active" name="is_active" 
+                       {% if not promotion or promotion.is_active %}checked{% endif %}>
+                <label for="is_active">Promotion is Active (can be toggled manually)</label>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Apply to Specific Games</h3>
+            <p class="help-text" style="margin-bottom: 1rem;">Select individual games this promotion applies to. Leave empty to apply based on categories only.</p>
+            <div class="selection-grid">
+                {% for game in games %}
+                <div class="selection-item">
+                    <input type="checkbox" id="game_{{ game.id }}" name="games" value="{{ game.id }}"
+                           {% if game.id in selected_game_ids %}checked{% endif %}>
+                    <label for="game_{{ game.id }}">{{ game.title }}</label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Apply to Categories</h3>
+            <p class="help-text" style="margin-bottom: 1rem;">Select categories to apply this promotion to all games in those categories.</p>
+            <div class="selection-grid" style="max-height: 150px;">
+                {% for category in categories %}
+                <div class="selection-item">
+                    <input type="checkbox" id="category_{{ category.id }}" name="categories" value="{{ category.id }}"
+                           {% if category.id in selected_category_ids %}checked{% endif %}>
+                    <label for="category_{{ category.id }}">{{ category.name }}</label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary" style="padding: 0.75rem 2rem;">
+                    {% if is_edit %}Update{% else %}Create{% endif %} Promotion
+                </button>
+                <a href="{% url 'store:promotion_list' %}" class="btn-secondary" style="padding: 0.75rem 2rem; display: inline-block; text-decoration: none; text-align: center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function updateDiscountHelp() {
+    const discountType = document.getElementById('discount_type').value;
+    const discountValue = document.getElementById('discount_value');
+    const helpText = document.getElementById('discount-help');
+    
+    if (discountType === 'percentage') {
+        discountValue.max = '100';
+        helpText.textContent = 'Enter percentage (0-100)';
+    } else {
+        discountValue.max = '99999';
+        helpText.textContent = 'Enter fixed dollar amount';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', updateDiscountHelp);
+</script>
+{% endblock %}

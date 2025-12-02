@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Promotions - GameVault Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modules/admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <h1>Promotions Management</h1>
+
+    <!-- Action Bar -->
+    <div class="admin-actions">
+        <a href="{% url 'store:promotion_create' %}" class="button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Create Promotion
+        </a>
+        <a href="{% url 'store:admin_dashboard' %}" class="button">Back to Dashboard</a>
+    </div>
+
+    <!-- Filters -->
+    <div class="analytics-filters" style="margin-bottom: 2rem;">
+        <form method="get" style="display: flex; flex-wrap: wrap; gap: 1rem; width: 100%;">
+            <div class="filter-group">
+                <label for="search">Search by Name:</label>
+                <input type="text" id="search" name="search" value="{{ search }}" 
+                       placeholder="Promotion name..." style="padding: 0.5rem; border-radius: 6px; border: 1px solid #ddd;">
+            </div>
+            
+            <div class="filter-group">
+                <label for="status">Status:</label>
+                <select id="status" name="status" class="filter-select">
+                    <option value="">All Promotions</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Currently Active</option>
+                    <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                    <option value="expired" {% if status_filter == 'expired' %}selected{% endif %}>Expired</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Manually Inactive</option>
+                </select>
+            </div>
+            
+            <div class="filter-group" style="align-self: flex-end;">
+                <button type="submit" class="btn-primary">Apply Filters</button>
+                <a href="{% url 'store:promotion_list' %}" class="btn-secondary" style="margin-left: 0.5rem;">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Promotions Table -->
+    <div class="dashboard-section">
+        <h2>All Promotions</h2>
+        
+        {% if promotions %}
+        <div class="table-wrapper">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Discount</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th>Usage</th>
+                        <th>Total Savings</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for promotion in promotions %}
+                    <tr data-promotion-id="{{ promotion.id }}">
+                        <td data-label="Name">{{ promotion.name }}</td>
+                        <td data-label="Discount">
+                            {% if promotion.discount_type == 'percentage' %}
+                                {{ promotion.discount_value|floatformat:0 }}%
+                            {% else %}
+                                ${{ promotion.discount_value }}
+                            {% endif %}
+                        </td>
+                        <td data-label="Start Date">{{ promotion.start_date|date:"M d, Y H:i" }}</td>
+                        <td data-label="End Date">{{ promotion.end_date|date:"M d, Y H:i" }}</td>
+                        <td data-label="Status">
+                            {% if promotion.currently_active %}
+                                <span style="color: #2ecc71; font-weight: 600;">● Active</span>
+                            {% elif not promotion.is_active %}
+                                <span style="color: #95a5a6;">○ Inactive</span>
+                            {% elif promotion.start_date > now %}
+                                <span style="color: #3498db;">○ Upcoming</span>
+                            {% else %}
+                                <span style="color: #e74c3c;">○ Expired</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Usage">{{ promotion.total_uses }}</td>
+                        <td data-label="Total Savings">${{ promotion.total_savings|floatformat:2 }}</td>
+                        <td data-label="Actions" style="white-space: nowrap;">
+                            <a href="{% url 'store:promotion_detail' promotion.id %}" 
+                               style="color: #3498db; margin-right: 10px;" title="View Details">View</a>
+                            <a href="{% url 'store:promotion_edit' promotion.id %}" 
+                               style="color: #f39c12; margin-right: 10px;" title="Edit">Edit</a>
+                            <button onclick="togglePromotion({{ promotion.id }}, {{ promotion.is_active|yesno:'false,true' }})"
+                                    style="background: none; border: none; color: {% if promotion.is_active %}#e74c3c{% else %}#2ecc71{% endif %}; cursor: pointer; padding: 0; margin-right: 10px;"
+                                    title="{% if promotion.is_active %}Deactivate{% else %}Activate{% endif %}">
+                                {% if promotion.is_active %}Deactivate{% else %}Activate{% endif %}
+                            </button>
+                            <button onclick="deletePromotion({{ promotion.id }}, '{{ promotion.name|escapejs }}')"
+                                    style="background: none; border: none; color: #e74c3c; cursor: pointer; padding: 0;"
+                                    title="Delete">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty-state">No promotions found. <a href="{% url 'store:promotion_create' %}">Create your first promotion</a></p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function getCSRFToken() {
+    return document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+}
+
+function togglePromotion(promotionId, activate) {
+    if (!confirm(`Are you sure you want to ${activate ? 'activate' : 'deactivate'} this promotion?`)) {
+        return;
+    }
+    
+    fetch(`/store/admin/promotions/${promotionId}/toggle/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage(data.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showMessage(data.error || 'Failed to toggle promotion', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Error: ' + error.message, 'error');
+    });
+}
+
+function deletePromotion(promotionId, promotionName) {
+    if (!confirm(`Are you sure you want to delete "${promotionName}"? This action cannot be undone.`)) {
+        return;
+    }
+    
+    fetch(`/store/admin/promotions/${promotionId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage(data.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showMessage(data.error || 'Failed to delete promotion', 'error');
+        }
+    })
+    .catch(error => {
+        showMessage('Error: ' + error.message, 'error');
+    });
+}
+</script>
+{% endblock %}
