@@ -6,6 +6,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/modules/game-detail.css' %}">
 <link rel="stylesheet" href="{% static 'css/modules/animations.css' %}">
+<link rel="stylesheet" href="{% static 'css/modules/ai-consensus.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -73,6 +74,78 @@
                             <span class="feature-value">{{ game.upload_date|date:"M d, Y" }}</span>
                         </div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- AI Market Analysis Section (Module 17) -->
+            <div class="ai-consensus-section card-interactive" id="aiConsensusSection">
+                <div class="consensus-header">
+                    <h2 class="section-title">
+                        <span class="ai-badge">AI</span> Market Analysis
+                    </h2>
+                    {% if user.is_admin %}
+                    <button onclick="refreshConsensus()" class="btn-refresh-ai" id="refreshBtn">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        </svg>
+                        Refresh
+                    </button>
+                    {% endif %}
+                </div>
+                
+                <div id="consensusLoading" class="consensus-loading">
+                    <div class="loading-spinner-sm"></div>
+                    <span>Analyzing market data...</span>
+                </div>
+                
+                <div id="consensusContent" class="consensus-content" style="display: none;">
+                    <!-- Consensus Matrix -->
+                    <div class="consensus-matrix">
+                        <div class="sentiment-card local-sentiment">
+                            <h3>Local Buyers</h3>
+                            <div class="sentiment-score" id="localScore">--</div>
+                            <div class="sentiment-label">Based on <span id="localCount">0</span> reviews</div>
+                            <div class="sentiment-bar">
+                                <div class="sentiment-fill local-fill" id="localBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="sentiment-vs">VS</div>
+                        
+                        <div class="sentiment-card global-sentiment">
+                            <h3>Global Web</h3>
+                            <div class="sentiment-score" id="globalScore">--</div>
+                            <div class="sentiment-label" id="globalLabel">External sources</div>
+                            <div class="sentiment-bar">
+                                <div class="sentiment-fill global-fill" id="globalBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Verdict -->
+                    <div class="ai-verdict" id="aiVerdict">
+                        <h3>AI Verdict</h3>
+                        <p id="verdictText">Loading analysis...</p>
+                    </div>
+                    
+                    <!-- Verified Sources -->
+                    <div class="verified-sources" id="verifiedSources" style="display: none;">
+                        <h3>Verified External Sources</h3>
+                        <div class="sources-grid" id="sourcesGrid"></div>
+                    </div>
+                    
+                    <div class="consensus-disclaimer">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        AI analysis synthesizes local reviews with real-time web data. Sources verified via Google Search.
+                    </div>
+                </div>
+                
+                <div id="consensusError" class="consensus-error" style="display: none;">
+                    <p>Unable to load AI analysis at this time.</p>
                 </div>
             </div>
             
@@ -173,18 +246,20 @@
                 </aside>
     </div>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'js/game-detail.js' %}"></script>
 <script src="{% static 'js/reviews.js' %}"></script>
+<script src="{% static 'js/ai-consensus.js' %}"></script>
 <script>
     const gameId = {{ game.id }};
     const isAuthenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
     
-    // Initialize reviews when page loads
+    // Initialize reviews and AI consensus when page loads
     document.addEventListener('DOMContentLoaded', function() {
         ReviewSystem.init(gameId, isAuthenticated);
+        AIConsensus.init(gameId);
     });
 </script>
-{% endblock %}
 {% endblock %}

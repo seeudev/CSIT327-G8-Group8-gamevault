@@ -7,6 +7,7 @@ from . import views
 from .views import api_wishlist, api_wishlist_delete, api_users_list, api_grant_admin
 from . import analytics_views
 from . import promotion_views
+from . import ai_views
 
 app_name = 'store'
 
@@ -82,4 +83,8 @@ urlpatterns = [
     path('admin/promotions/<int:promotion_id>/delete/', promotion_views.promotion_delete, name='promotion_delete'),
     path('admin/promotions/<int:promotion_id>/toggle/', promotion_views.promotion_toggle, name='promotion_toggle'),
     path('admin/promotions/<int:promotion_id>/report/', promotion_views.promotion_report, name='promotion_report'),
+    
+    # AI Market Analysis endpoints (Module 17)
+    path('api/ai/consensus/<int:game_id>/', ai_views.api_game_consensus, name='api_game_consensus'),
+    path('api/ai/consensus/<int:game_id>/refresh/', ai_views.api_refresh_consensus, name='api_refresh_consensus'),
 ]

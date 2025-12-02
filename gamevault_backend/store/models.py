@@ -58,6 +58,7 @@ class GameTag(models.Model):
 class Game(models.Model):
     """
     Simple Game model for storing game information in the store.
+    Module 17: AI Hybrid Market Analysis fields added.
     """
     # game_id is the primary key (id field by default)
     title = models.CharField(max_length=200)
@@ -68,6 +69,15 @@ class Game(models.Model):
     file_url = models.URLField(blank=True, null=True)  # URL to download the game file
     upload_date = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField(Tag, through='GameTag', related_name='games')
+    
+    # Module 17: AI Hybrid Market Analysis
+    external_sources = models.JSONField(default=list, blank=True, null=True, help_text="Citation metadata: [{source_name, url, sentiment}]")
+    global_sentiment_score = models.FloatField(null=True, blank=True, help_text="Web sentiment score (0-100)")
+    local_rating = models.FloatField(null=True, blank=True, help_text="Local buyer rating (0-5 stars converted to 0-100)")
+    ai_verdict = models.TextField(blank=True, null=True, help_text="AI-generated consensus summary")
+    last_external_sync = models.DateTimeField(null=True, blank=True, help_text="Last time external data was fetched")
+    last_local_sync = models.DateTimeField(null=True, blank=True, help_text="Last time local reviews were analyzed")
+    game_exists_externally = models.BooleanField(default=True, help_text="Whether game exists in external sources")
 
     class Meta:
         db_table = 'games'

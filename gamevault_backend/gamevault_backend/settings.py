@@ -162,8 +162,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Static files configuration
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-#WHITENOISE CONFIGURATION
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# WhiteNoise Configuration
+# Use CompressedStaticFilesStorage for better compatibility (no manifest requirement)
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 # Email Configuration (Module 5: Secure Game Delivery)
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
