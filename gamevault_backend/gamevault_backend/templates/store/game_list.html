@@ -154,8 +154,18 @@
                         
                         <div class="game-card-footer">
                             <div class="game-price-section">
-                                <span class="game-price-label">From</span>
-                                <span class="game-price-value">${{ game.price }}</span>
+                                {% if game.has_promotion %}
+                                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <span class="game-price-value" style="color: var(--color-primary); font-size: 1.25rem;">${{ game.discounted_price|floatformat:2 }}</span>
+                                            <span style="background: var(--color-primary); color: white; padding: 0.125rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">{{ game.discount_label }}</span>
+                                        </div>
+                                        <span style="text-decoration: line-through; color: #999; font-size: 0.85rem;">${{ game.price }}</span>
+                                    </div>
+                                {% else %}
+                                    <span class="game-price-label">From</span>
+                                    <span class="game-price-value">${{ game.price }}</span>
+                                {% endif %}
                             </div>
                             <div class="game-card-actions">
                                 {% if user.is_authenticated %}
