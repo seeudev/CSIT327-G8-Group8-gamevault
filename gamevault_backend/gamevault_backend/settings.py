@@ -134,9 +134,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'gamevault_backend' / 'static',
-]
+
+# Only set STATICFILES_DIRS in development or when static files aren't collected
+# In production, all static files should be in STATIC_ROOT after collectstatic
+if DEBUG or not (BASE_DIR / 'staticfiles').exists():
+    STATICFILES_DIRS = [
+        BASE_DIR / 'gamevault_backend' / 'static',
+    ]
+else:
+    STATICFILES_DIRS = []
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -163,20 +169,21 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # WhiteNoise Configuration
-# CompressedManifestStaticFilesStorage provides compression and cache-busting
+# Use CompressedStaticFilesStorage - more forgiving, doesn't require manifest
+# Falls back gracefully if collectstatic hasn't run yet
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
-# WhiteNoise settings for production
-WHITENOISE_USE_FINDERS = True  # Allow WhiteNoise to use Django's staticfiles finders
-WHITENOISE_AUTOREFRESH = DEBUG  # Auto-refresh in development
-WHITENOISE_SKIP_COMPRESS_EXTENSIONS = []  # Compress all file types
+# WhiteNoise settings
+WHITENOISE_USE_FINDERS = DEBUG  # Only use finders in development
+WHITENOISE_AUTOREFRESH = DEBUG  # Auto-refresh in development only
+WHITENOISE_ALLOW_ALL_ORIGINS = True  # Allow CORS for static files
 
 # Email Configuration (Module 5: Secure Game Delivery)
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
@@ -190,3 +197,37 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@gamevault.com')
 
 # Site URL for email templates
 SITE_URL = os.getenv('SITE_URL', 'http://localhost:8000')
+
+# Logging configuration for production debugging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO' if not DEBUG else 'DEBUG',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',  # Log all request errors
+            'propagate': False,
+        },
+    },
+}

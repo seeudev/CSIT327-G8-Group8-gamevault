@@ -75,3 +75,6 @@ coverage.xml
 #Documentation
 .github
 TODO.md
+
+#STATIC FILES
+gamevault_backend/staticfiles/
