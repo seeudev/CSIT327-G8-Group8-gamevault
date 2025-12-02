@@ -1,1 +1,1 @@
-web: cd gamevault_backend && gunicorn gamevault_backend.wsgi:application --bind 0.0.0.0:$PORT
+web: cd gamevault_backend && ls -la staticfiles/ && gunicorn gamevault_backend.wsgi:application --bind 0.0.0.0:$PORT
