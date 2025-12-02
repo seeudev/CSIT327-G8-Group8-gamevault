@@ -15,31 +15,29 @@
             <a href="{% url 'store:transaction_history' %}" class="breadcrumb-link">← Back to Transaction History</a>
         </nav>
         <h1 class="detail-title">
-            <span class="title-icon">📦</span>
             Order #{{ transaction.id }}
         </h1>
         
         <div class="detail-meta">
             <div class="meta-item">
-                <span class="meta-label">📅 Order Date</span>
+                <span class="meta-label">Order Date</span>
                 <span class="meta-value">{{ transaction.transaction_date|date:"F d, Y" }}</span>
                 <span class="meta-date">{{ transaction.transaction_date|date:"h:i A" }}</span>
             </div>
             <div class="meta-item">
-                <span class="meta-label">📊 Status</span>
+                <span class="meta-label">Status</span>
                 <span class="meta-value">
                     <span class="status-badge-large status-{{ transaction.payment_status }}">
-                        <span class="status-icon">{% if transaction.payment_status == 'completed' %}✓{% elif transaction.payment_status == 'pending' %}⏳{% else %}✗{% endif %}</span>
                         {{ transaction.get_payment_status_display }}
                     </span>
                 </span>
             </div>
             <div class="meta-item">
-                <span class="meta-label">🎮 Total Items</span>
+                <span class="meta-label">Total Items</span>
                 <span class="meta-value">{{ transaction_items|length }}</span>
             </div>
             <div class="meta-item">
-                <span class="meta-label">💰 Total Amount</span>
+                <span class="meta-label">Total Amount</span>
                 <span class="meta-value" style="color:var(--color-primary)">${{ transaction.total_amount }}</span>
             </div>
         </div>
@@ -47,7 +45,6 @@
     
     <div class="games-section">
         <h2 class="section-title-detail">
-            <span>🎮</span>
             Your Games
         </h2>
         
@@ -64,16 +61,16 @@
                     
                     {% if item.game_key %}
                         <div class="game-key-section">
-                            <div class="key-label">🔑 Activation Key</div>
+                            <div class="key-label">Activation Key</div>
                             <div class="game-key-modern">
                                 <code class="key-code" id="key-{{ item.id }}">{{ item.game_key }}</code>
                                 <button class="btn-copy-key" onclick="copyKey('{{ item.game_key }}', {{ item.id }})" title="Copy key">
-                                    📋 Copy
+                                    Copy
                                 </button>
                             </div>
                             {% if item.key_sent_at %}
                                 <div class="key-status-detail">
-                                    ✅ Key sent to {{ user.email }} on {{ item.key_sent_at|date:"M d, Y" }}
+                                    Key sent to {{ user.email }} on {{ item.key_sent_at|date:"M d, Y" }}
                                 </div>
                             {% endif %}
                         </div>
@@ -82,7 +79,7 @@
                     <div class="game-actions">
                         {% if item.game.file_url %}
                             <a href="{% url 'store:download_game' transaction.id item.game.id %}" class="btn-action btn-download">
-                                ⬇️ Download Game
+                                Download Game
                             </a>
                         {% else %}
                             <button class="btn-action" disabled>
@@ -96,7 +93,7 @@
                             data-transaction-id="{{ transaction.id }}"
                             onclick="sendKey(this)"
                             {% if item.key_sent_at %}disabled{% endif %}>
-                            {% if item.key_sent_at %}✅ Key Sent{% else %}📧 Email Key{% endif %}
+                            {% if item.key_sent_at %}Key Sent{% else %}Email Key{% endif %}
                         </button>
                     </div>
                     

@@ -158,6 +158,37 @@ header{
     position:relative;
 }
 
+.cart-badge{
+    position:absolute;
+    top:-6px;
+    right:-8px;
+    background:var(--gradient-primary);
+    color:white;
+    font-size:0.625rem;
+    font-weight:700;
+    min-width:18px;
+    height:18px;
+    padding:0 4px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:var(--shadow-primary);
+    animation:cart-badge-pulse 0.3s ease-out;
+}
+
+@keyframes cart-badge-pulse{
+    0%{
+        transform:scale(0);
+    }
+    50%{
+        transform:scale(1.2);
+    }
+    100%{
+        transform:scale(1);
+    }
+}
+
 /* User Dropdown */
 .nav-dropdown{
     position:relative;
@@ -1464,33 +1495,57 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
    ============================================ */
 
 .btn-wishlist{
-    background:none;
-    border:none;
+    position:absolute;
+    top:12px;
+    right:12px;
+    background:rgba(255,255,255,0.95);
+    backdrop-filter:blur(8px);
+    border:2px solid transparent;
     cursor:pointer;
-    margin-left:var(--space-sm);
-    color:var(--color-primary);
-    transition:transform var(--transition-base),color var(--transition-base);
-    padding:var(--space-xs);
-    border-radius:var(--radius-md);
+    transition:all var(--transition-base);
+    padding:0;
+    border-radius:50%;
+    box-shadow:0 2px 12px rgba(0,0,0,0.1);
+    z-index:10;
+    width:36px;
+    height:36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 
 .btn-wishlist svg{
-    width:20px;
-    height:20px;
+    width:18px;
+    height:18px;
     stroke:var(--color-primary);
-    transition:var(--transition-base);
-}
-
-.btn-wishlist.active svg{
-    fill:var(--color-primary);
-    stroke:var(--color-primary);
+    fill:none;
+    transition:all var(--transition-base);
+    stroke-width:2.5;
 }
 
 .btn-wishlist:hover{
     transform:scale(1.15);
+    background:rgba(255,255,255,1);
+    box-shadow:0 4px 16px rgba(230,57,70,0.25);
+    border-color:var(--color-primary);
+}
+
+.btn-wishlist.active{
+    background:var(--color-primary);
+    border-color:var(--color-primary);
+}
+
+.btn-wishlist.active svg{
+    fill:white;
+    stroke:white;
+}
+
+.btn-wishlist:hover:not(.active) svg{
+    stroke:var(--color-primary-dark);
+    transform:scale(1.1);
 }
 
 .btn-wishlist:focus-visible{
-    outline:3px solid var(--color-primary);
-    outline-offset:2px;
+    outline:2px solid var(--color-primary);
+    outline-offset:3px;
 }

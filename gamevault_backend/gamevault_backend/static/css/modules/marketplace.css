@@ -73,14 +73,16 @@
 .games-grid{max-width:1400px;margin:0 auto;padding:0 var(--space-xl) var(--space-2xl);display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--space-lg)}
 
 /* Modern Game Card */
-.game-card-modern{background:var(--color-bg-primary);border-radius:var(--card-radius);overflow:hidden;transition:var(--transition-all);box-shadow:var(--card-shadow);height:100%;display:flex;flex-direction:column}
+.game-card-modern{background:var(--color-bg-primary);border-radius:var(--card-radius);overflow:hidden;transition:var(--transition-all);box-shadow:var(--card-shadow);height:100%;display:flex;flex-direction:column;position:relative}
 .game-card-modern:hover{transform:translateY(-4px);box-shadow:var(--card-shadow-hover)}
 .game-card-link{text-decoration:none;color:inherit;display:flex;flex-direction:column;height:100%}
 .game-card-image{position:relative;width:100%;height:180px;overflow:hidden;background:var(--gradient-card)}
 .game-card-image img{width:100%;height:100%;object-fit:cover;transition:transform var(--transition-slow)}
 .game-card-modern:hover .game-card-image img{transform:scale(1.05)}
 .game-image-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.6)}
-.game-badge{position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.75);color:var(--color-text-inverse);padding:var(--space-sm) var(--space-md);border-radius:var(--radius-full);font-size:var(--font-size-xs);font-weight:var(--font-weight-semibold);text-transform:uppercase;letter-spacing:0.5px}
+.game-badge{position:absolute;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);color:var(--color-text-inverse);padding:var(--space-sm) var(--space-md);border-radius:var(--radius-full);font-size:var(--font-size-xs);font-weight:var(--font-weight-semibold);text-transform:uppercase;letter-spacing:0.5px}
+.category-badge{top:12px;left:12px}
+.discount-badge-img{bottom:12px;left:12px;background:var(--gradient-primary);box-shadow:0 2px 8px rgba(230,57,70,0.4)}
 .game-card-body{padding:var(--card-padding);display:flex;flex-direction:column;flex:1}
 .game-card-title{font-size:var(--font-size-lg);font-weight:var(--font-weight-bold);margin-bottom:var(--space-sm);color:var(--color-text-primary);line-height:var(--line-height-tight);display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .game-card-description{color:var(--color-text-secondary);font-size:var(--font-size-sm);line-height:var(--line-height-normal);margin-bottom:var(--space-md);flex:1;display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -88,6 +90,13 @@
 .game-price-section{display:flex;flex-direction:column;gap:var(--space-xs)}
 .game-price-label{font-size:var(--font-size-xs);color:var(--color-text-tertiary);text-transform:uppercase;font-weight:var(--font-weight-semibold);letter-spacing:0.5px}
 .game-price-value{font-size:var(--font-size-2xl);font-weight:var(--font-weight-bold);color:var(--color-primary)}
+
+/* Promotional Pricing */
+.price-with-discount{display:flex;flex-direction:column;gap:0.25rem}
+.price-regular{display:flex;flex-direction:column;gap:0.25rem}
+.game-price-value.discounted{color:var(--color-primary);font-size:var(--font-size-2xl);font-weight:var(--font-weight-bold)}
+.original-price{color:var(--color-text-tertiary);font-size:0.875rem;text-decoration:line-through;font-weight:var(--font-weight-medium)}
+
 .game-card-actions{display:flex;gap:var(--space-sm)}
 .add-cart-form{display:inline-block}
 .btn-add-cart{display:flex;align-items:center;gap:var(--space-sm);padding:var(--btn-padding-md);background:var(--gradient-primary);color:var(--color-text-inverse);border:none;border-radius:var(--radius-md);font-weight:var(--font-weight-semibold);font-size:var(--font-size-sm);cursor:pointer;transition:var(--transition-all);white-space:nowrap}

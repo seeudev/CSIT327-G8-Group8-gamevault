@@ -44,6 +44,11 @@
 .price-section{text-align:center;padding:var(--space-lg);background:var(--gradient-primary);border-radius:var(--radius-xl);margin-bottom:var(--space-lg);color:var(--color-text-inverse)}
 .price-label{display:block;font-size:var(--font-size-sm);opacity:0.9;margin-bottom:var(--space-sm);text-transform:uppercase;letter-spacing:1px}
 .price-value{font-size:var(--font-size-5xl);font-weight:var(--font-weight-bold);display:block}
+.price-discount-wrapper{display:flex;flex-direction:column;gap:var(--space-sm)}
+.discount-badge-detail{background:rgba(255,255,255,0.25);padding:var(--space-xs) var(--space-md);border-radius:var(--radius-full);font-size:var(--font-size-sm);font-weight:var(--font-weight-bold);text-transform:uppercase;letter-spacing:1px;display:inline-block;margin-bottom:var(--space-xs)}
+.price-discounted{font-size:var(--font-size-5xl);font-weight:var(--font-weight-bold);display:block;color:var(--color-text-inverse)}
+.price-original{font-size:var(--font-size-xl);text-decoration:line-through;opacity:0.7;display:block;margin-top:var(--space-xs)}
+.savings-text{font-size:var(--font-size-sm);opacity:0.9;font-weight:var(--font-weight-semibold);margin-top:var(--space-xs)}
 .purchase-actions{margin-bottom:var(--space-lg)}
 .add-cart-form-detail{width:100%}
 .btn-purchase{width:100%;display:flex;align-items:center;justify-content:center;gap:var(--space-md);padding:var(--space-md) var(--space-xl);background:var(--gradient-primary);color:var(--color-text-inverse);border:none;border-radius:var(--radius-lg);font-size:var(--font-size-lg);font-weight:var(--font-weight-bold);cursor:pointer;transition:var(--transition-all);text-decoration:none}

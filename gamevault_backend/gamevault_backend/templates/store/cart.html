@@ -5,6 +5,40 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/modules/cart.css' %}">
+<style>
+.original-price {
+    text-decoration: line-through;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    margin-right: 0.5rem;
+}
+
+.discounted-price {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.discount-badge {
+    display: inline-block;
+    background: var(--gradient-primary);
+    color: white;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.savings-banner {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -12,6 +46,12 @@
     <h1 class="cart-title">Shopping Cart</h1>
     
     {% if cart_items %}
+        {% if has_discounts %}
+        <div class="savings-banner">
+            You're saving ${{ total_savings|floatformat:2 }}!
+        </div>
+        {% endif %}
+        
         <table class="cart-table">
             <thead>
                 <tr>
@@ -26,7 +66,15 @@
                 {% for item in cart_items %}
                     <tr>
                         <td>{{ item.game.title }}</td>
-                        <td>${{ item.price_at_addition }}</td>
+                        <td>
+                            {% if item.has_promotion %}
+                                <span class="original-price">${{ item.price_at_addition|floatformat:2 }}</span>
+                                <span class="discounted-price">${{ item.discounted_price|floatformat:2 }}</span>
+                                <span class="discount-badge">SALE</span>
+                            {% else %}
+                                ${{ item.price_at_addition|floatformat:2 }}
+                            {% endif %}
+                        </td>
                         <td>
                             <form method="post" action="{% url 'store:update_cart_quantity' item.id %}" class="inline-form">
                                 {% csrf_token %}
@@ -34,7 +82,14 @@
                                 <button type="submit" class="small-button">Update</button>
                             </form>
                         </td>
-                        <td>${{ item.get_subtotal }}</td>
+                        <td>
+                            {% if item.has_promotion %}
+                                <span class="original-price">${{ item.original_item_total|floatformat:2 }}</span>
+                                <span class="discounted-price">${{ item.item_total|floatformat:2 }}</span>
+                            {% else %}
+                                ${{ item.item_total|floatformat:2 }}
+                            {% endif %}
+                        </td>
                         <td>
                             <form method="post" action="{% url 'store:remove_from_cart' item.id %}" class="inline-form">
                                 {% csrf_token %}
@@ -45,10 +100,19 @@
                 {% endfor %}
             </tbody>
             <tfoot>
+                {% if has_discounts %}
+                <tr>
+                    <td colspan="3">Original Total:</td>
+                    <td colspan="2"><span class="original-price">${{ original_total|floatformat:2 }}</span></td>
+                </tr>
+                <tr>
+                    <td colspan="3">Discount:</td>
+                    <td colspan="2" style="color: var(--color-success);">-${{ total_savings|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
                 <tr>
                     <td colspan="3"><strong>Total:</strong></td>
-                    <td><strong>${{ total }}</strong></td>
-                    <td></td>
+                    <td colspan="2"><strong class="discounted-price">${{ total|floatformat:2 }}</strong></td>
                 </tr>
             </tfoot>
         </table>

@@ -4,8 +4,9 @@ Simple URL patterns for the game store.
 
 from django.urls import path
 from . import views
-from .views import api_wishlist, api_wishlist_delete
+from .views import api_wishlist, api_wishlist_delete, api_users_list, api_grant_admin
 from . import analytics_views
+from . import promotion_views
 
 app_name = 'store'
 
@@ -51,6 +52,10 @@ urlpatterns = [
     # Normal wishlist page (Module 10)
     path('wishlist/', views.wishlist, name='wishlist'),
     path('wishlist/remove/<int:game_id>/', views.wishlist_remove, name='wishlist_remove'),
+    
+    # User management API endpoints
+    path('api/users/', api_users_list, name='api_users_list'),
+    path('api/users/<int:user_id>/grant-admin/', api_grant_admin, name='api_grant_admin'),
 
     # Review API endpoints (Module 11)
     path('api/reviews/<int:game_id>/', views.api_get_game_reviews, name='api_get_game_reviews'),
@@ -68,4 +73,13 @@ urlpatterns = [
     path('api/analytics/category-performance/', analytics_views.api_analytics_category_performance, name='api_analytics_category_performance'),
     path('api/analytics/export/csv/', analytics_views.export_analytics_csv, name='export_analytics_csv'),
     path('api/analytics/export/json/', analytics_views.export_analytics_json, name='export_analytics_json'),
+    
+    # Promotion endpoints (Module 16)
+    path('admin/promotions/', promotion_views.promotion_list, name='promotion_list'),
+    path('admin/promotions/create/', promotion_views.promotion_create, name='promotion_create'),
+    path('admin/promotions/<int:promotion_id>/', promotion_views.promotion_detail, name='promotion_detail'),
+    path('admin/promotions/<int:promotion_id>/edit/', promotion_views.promotion_edit, name='promotion_edit'),
+    path('admin/promotions/<int:promotion_id>/delete/', promotion_views.promotion_delete, name='promotion_delete'),
+    path('admin/promotions/<int:promotion_id>/toggle/', promotion_views.promotion_toggle, name='promotion_toggle'),
+    path('admin/promotions/<int:promotion_id>/report/', promotion_views.promotion_report, name='promotion_report'),
 ]

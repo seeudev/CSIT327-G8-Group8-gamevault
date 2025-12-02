@@ -100,6 +100,19 @@ def game_list(request):
     # Get featured games with screenshots for hero slideshow (limit to 8)
     featured_games = Game.objects.filter(screenshot_url__isnull=False).exclude(screenshot_url='')[:8]
 
+    # Add promotion information to games
+    from .promotion_views import get_active_promotions_for_game, calculate_best_price
+    for game in games:
+        discounted_price, promotion = calculate_best_price(game)
+        game.discounted_price = discounted_price
+        game.has_promotion = promotion is not None
+        game.active_promotion = promotion
+        if promotion:
+            if promotion.discount_type == 'percentage':
+                game.discount_label = f'{int(promotion.discount_value)}% OFF'
+            else:
+                game.discount_label = f'${promotion.discount_value} OFF'
+
     # Filter display info
     filter_type = ''
     filter_value = ''
@@ -232,6 +245,23 @@ def game_detail(request, game_id):
     Display details of a single game.
     """
     game = get_object_or_404(Game, id=game_id)
+    
+    # Add promotion information
+    from .promotion_views import get_active_promotions_for_game, calculate_best_price
+    discounted_price, promotion = calculate_best_price(game)
+    game.discounted_price = discounted_price
+    game.has_promotion = promotion is not None
+    game.active_promotion = promotion
+    if promotion:
+        if promotion.discount_type == 'percentage':
+            game.discount_label = f'{int(promotion.discount_value)}% OFF'
+            game.savings_amount = game.price - discounted_price
+            game.savings_percentage = promotion.discount_value
+        else:
+            game.discount_label = f'${promotion.discount_value} OFF'
+            game.savings_amount = promotion.discount_value
+            game.savings_percentage = (promotion.discount_value / game.price * 100) if game.price > 0 else 0
+    
     return render(request, 'store/game_detail.html', {
         'game': game
     })
@@ -240,7 +270,7 @@ def game_detail(request, game_id):
 @login_required
 def cart_view(request):
     """
-    Display user's shopping cart.
+    Display user's shopping cart with promotional pricing.
     """
     # Get or create active cart for user
     cart, created = Cart.objects.get_or_create(
@@ -249,12 +279,33 @@ def cart_view(request):
     )
     
     cart_items = cart.items.all()
-    total = cart.get_total()
+    
+    # Add promotion information to cart items
+    from .promotion_views import calculate_best_price
+    total = Decimal('0.00')
+    original_total = Decimal('0.00')
+    total_savings = Decimal('0.00')
+    
+    for item in cart_items:
+        discounted_price, promotion = calculate_best_price(item.game)
+        item.discounted_price = discounted_price
+        item.has_promotion = promotion is not None
+        item.active_promotion = promotion
+        item.item_total = discounted_price * item.quantity
+        item.original_item_total = item.price_at_addition * item.quantity
+        item.item_savings = item.original_item_total - item.item_total
+        
+        total += item.item_total
+        original_total += item.original_item_total
+        total_savings += item.item_savings
     
     return render(request, 'store/cart.html', {
         'cart': cart,
         'cart_items': cart_items,
         'total': total,
+        'original_total': original_total,
+        'total_savings': total_savings,
+        'has_discounts': total_savings > 0,
     })
 
 
@@ -342,8 +393,26 @@ def checkout(request):
         return redirect('store:cart')
     
     if request.method == 'POST':
-        # Calculate total
-        total = cart.get_total()
+        # Import promotion helpers
+        from .promotion_views import calculate_best_price
+        from .models import PromotionUsage
+        
+        # Calculate total with promotions applied
+        total = Decimal('0.00')
+        items_with_prices = []
+        
+        for cart_item in cart_items:
+            # Check for active promotions
+            discounted_price, promotion = calculate_best_price(cart_item.game)
+            final_price = discounted_price * cart_item.quantity
+            total += final_price
+            
+            items_with_prices.append({
+                'cart_item': cart_item,
+                'final_price': discounted_price,
+                'promotion': promotion,
+                'original_price': cart_item.price_at_addition
+            })
         
         # Create transaction
         transaction = Transaction.objects.create(
@@ -352,15 +421,27 @@ def checkout(request):
             payment_status='completed'  # In a real app, this would be 'pending' until payment
         )
         
-        # Create transaction items from cart items and generate game keys
-        for cart_item in cart_items:
+        # Create transaction items from cart items and track promotion usage
+        for item_data in items_with_prices:
+            cart_item = item_data['cart_item']
             transaction_item = TransactionItem.objects.create(
                 transaction=transaction,
                 game=cart_item.game,
-                price_at_purchase=cart_item.price_at_addition
+                price_at_purchase=item_data['final_price']  # Store discounted price
             )
             # Auto-generate game key for each purchased item
             transaction_item.generate_game_key()
+            
+            # Track promotion usage if applicable
+            if item_data['promotion']:
+                PromotionUsage.objects.create(
+                    promotion=item_data['promotion'],
+                    transaction=transaction,
+                    game=cart_item.game,
+                    original_price=item_data['original_price'],
+                    discounted_price=item_data['final_price'],
+                    discount_amount=item_data['original_price'] - item_data['final_price']
+                )
         
         # Mark cart as checked out
         cart.status = 'checked_out'
@@ -369,12 +450,34 @@ def checkout(request):
         messages.success(request, 'Purchase completed successfully! Check your transaction details for game keys.')
         return redirect('store:transaction_detail', transaction_id=transaction.id)
     
-    # GET request - show checkout confirmation
-    total = cart.get_total()
+    # GET request - show checkout confirmation with promotional pricing
+    from .promotion_views import calculate_best_price
+    
+    total = Decimal('0.00')
+    original_total = Decimal('0.00')
+    total_savings = Decimal('0.00')
+    
+    # Calculate promotional prices for each item
+    for item in cart_items:
+        discounted_price, promotion = calculate_best_price(item.game)
+        item.discounted_price = discounted_price
+        item.has_promotion = promotion is not None
+        item.active_promotion = promotion
+        item.item_total = discounted_price * item.quantity
+        item.original_item_total = item.price_at_addition * item.quantity
+        item.item_savings = item.original_item_total - item.item_total
+        
+        total += item.item_total
+        original_total += item.original_item_total
+        total_savings += item.item_savings
+    
     return render(request, 'store/checkout.html', {
         'cart': cart,
         'cart_items': cart_items,
         'total': total,
+        'original_total': original_total,
+        'total_savings': total_savings,
+        'has_discounts': total_savings > 0,
     })
 
 
@@ -1211,5 +1314,84 @@ def api_wishlist_delete(request, game_id):
         game_title = wishlist_item.game.title
         wishlist_item.delete()
         return JsonResponse({'success': True, 'message': f'{game_title} removed from wishlist'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def api_users_list(request):
+    """
+    GET /store/api/users/ -> list all users (admin only)
+    Supports search and role filtering
+    """
+    if not request.user.is_admin:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    
+    try:
+        users = User.objects.all().order_by('-registration_date')
+        
+        # Search filter
+        search = request.GET.get('search', '').strip()
+        if search:
+            users = users.filter(
+                Q(username__icontains=search) | Q(email__icontains=search)
+            )
+        
+        # Role filter
+        role = request.GET.get('role', '').strip()
+        if role == 'admin':
+            users = users.filter(is_admin=True)
+        elif role == 'user':
+            users = users.filter(is_admin=False)
+        
+        users_data = [{
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'is_admin': user.is_admin,
+            'is_active': user.is_active,
+            'registration_date': user.registration_date.isoformat() if user.registration_date else None,
+            'last_login': user.last_login.isoformat() if user.last_login else None,
+        } for user in users]
+        
+        return JsonResponse({
+            'success': True,
+            'users': users_data,
+            'total': len(users_data)
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def api_grant_admin(request, user_id):
+    """
+    POST /store/api/users/<user_id>/grant-admin/ -> grant admin privileges to user
+    Admin only
+    """
+    if not request.user.is_admin:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    
+    try:
+        target_user = get_object_or_404(User, id=user_id)
+        
+        if target_user.is_admin:
+            return JsonResponse({'success': False, 'error': 'User is already an admin'}, status=400)
+        
+        target_user.is_admin = True
+        target_user.save()
+        
+        # Log the action
+        AdminActionLog.objects.create(
+            admin=request.user,
+            action_type='other',
+            notes=f'Granted admin privileges to user: {target_user.username}'
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Successfully granted admin privileges to {target_user.username}'
+        })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)

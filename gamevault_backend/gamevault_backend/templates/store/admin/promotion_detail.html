@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ promotion.name }} - Promotion Details{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/modules/admin.css' %}">
+<link rel="stylesheet" href="{% static 'css/modules/analytics.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <div class="dashboard-header">
+        <h1>{{ promotion.name }}</h1>
+    </div>
+
+    <div class="admin-actions">
+        <a href="{% url 'store:promotion_edit' promotion.id %}" class="button">Edit Promotion</a>
+        <a href="{% url 'store:promotion_report' promotion.id %}" class="button">Download Report (CSV)</a>
+        <a href="{% url 'store:promotion_list' %}" class="button">Back to Promotions</a>
+    </div>
+
+    <!-- Promotion Info -->
+    <div class="analytics-section">
+        <h2>Promotion Details</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+            <div>
+                <strong>Discount:</strong>
+                {% if promotion.discount_type == 'percentage' %}
+                    {{ promotion.discount_value|floatformat:0 }}% OFF
+                {% else %}
+                    ${{ promotion.discount_value }} OFF
+                {% endif %}
+            </div>
+            <div>
+                <strong>Start Date:</strong> {{ promotion.start_date|date:"M d, Y H:i" }}
+            </div>
+            <div>
+                <strong>End Date:</strong> {{ promotion.end_date|date:"M d, Y H:i" }}
+            </div>
+            <div>
+                <strong>Status:</strong>
+                {% if is_currently_active %}
+                    <span style="color: #2ecc71; font-weight: 600;">● Active Now</span>
+                {% elif not promotion.is_active %}
+                    <span style="color: #95a5a6;">○ Inactive</span>
+                {% elif promotion.start_date > now %}
+                    <span style="color: #3498db;">○ Upcoming</span>
+                {% else %}
+                    <span style="color: #e74c3c;">○ Expired</span>
+                {% endif %}
+            </div>
+            <div>
+                <strong>Applicable Games:</strong> {{ applicable_games_count }}
+            </div>
+            <div>
+                <strong>Created By:</strong> {{ promotion.created_by.username }}
+            </div>
+        </div>
+        {% if promotion.description %}
+        <div style="margin-top: 1rem;">
+            <strong>Description:</strong>
+            <p>{{ promotion.description }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+            </div>
+            <div class="metric-content">
+                <h3>Total Revenue</h3>
+                <p class="metric-value">${{ total_revenue|floatformat:2 }}</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <div class="metric-content">
+                <h3>Total Uses</h3>
+                <p class="metric-value">{{ total_uses }}</p>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+            </div>
+            <div class="metric-content">
+                <h3>Customer Savings</h3>
+                <p class="metric-value">${{ total_savings|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Games -->
+    <div class="analytics-section">
+        <h2>Top Selling Games with This Promotion</h2>
+        {% if top_games %}
+        <div class="table-wrapper">
+            <table class="analytics-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Game Title</th>
+                        <th>Quantity Sold</th>
+                        <th>Revenue</th>
+                        <th>Customer Savings</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for game in top_games %}
+                    <tr>
+                        <td data-label="Rank">{{ forloop.counter }}</td>
+                        <td data-label="Game Title">{{ game.game__title }}</td>
+                        <td data-label="Quantity Sold">{{ game.quantity }}</td>
+                        <td data-label="Revenue">${{ game.revenue|floatformat:2 }}</td>
+                        <td data-label="Customer Savings">${{ game.savings|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty-state">No sales yet for this promotion.</p>
+        {% endif %}
+    </div>
+
+    <!-- Daily Usage Trend -->
+    {% if daily_usage %}
+    <div class="charts-section">
+        <div class="chart-container">
+            <h2>Daily Usage Trend</h2>
+            <canvas id="usageChart" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if daily_usage %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// Prepare data for chart
+const dailyData = {{ daily_usage|safe }}.map(item => ({
+    date: item.used_at__date,
+    uses: item.uses,
+    revenue: parseFloat(item.revenue),
+    savings: parseFloat(item.savings)
+}));
+
+const labels = dailyData.map(d => d.date);
+const usesData = dailyData.map(d => d.uses);
+const revenueData = dailyData.map(d => d.revenue);
+
+// Create chart
+const ctx = document.getElementById('usageChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Uses',
+            data: usesData,
+            borderColor: '#e63946',
+            backgroundColor: 'rgba(230, 57, 70, 0.1)',
+            tension: 0.4,
+            fill: true,
+            yAxisID: 'y1'
+        }, {
+            label: 'Revenue ($)',
+            data: revenueData,
+            borderColor: '#2ecc71',
+            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+            tension: 0.4,
+            fill: true,
+            yAxisID: 'y'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    color: '#222222',
+                    font: {
+                        size: 14,
+                        weight: '600'
+                    },
+                    padding: 16,
+                    usePointStyle: true
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                },
+                ticks: {
+                    color: '#666666'
+                }
+            },
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                },
+                ticks: {
+                    color: '#666666',
+                    callback: function(value) {
+                        return '$' + value;
+                    }
+                }
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                grid: {
+                    drawOnChartArea: false
+                },
+                ticks: {
+                    color: '#666666'
+                }
+            }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

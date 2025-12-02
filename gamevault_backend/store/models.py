@@ -291,3 +291,110 @@ class Review(models.Model):
         if stats['avg_rating']:
             stats['avg_rating'] = round(stats['avg_rating'], 1)
         return stats
+
+
+class Promotion(models.Model):
+    """
+    Promotion model for managing discounts on games and categories (Module 16).
+    Supports both percentage and fixed amount discounts.
+    """
+    name = models.CharField(max_length=200, help_text='Promotion name for admin reference')
+    description = models.TextField(blank=True, help_text='Promotion description')
+    
+    DISCOUNT_TYPE_CHOICES = [
+        ('percentage', 'Percentage Discount'),
+        ('fixed', 'Fixed Amount Discount'),
+    ]
+    discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPE_CHOICES, default='percentage')
+    discount_value = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        help_text='Percentage (0-100) or fixed amount'
+    )
+    
+    # Promotion can apply to specific games or entire categories
+    games = models.ManyToManyField(Game, blank=True, related_name='promotions')
+    categories = models.ManyToManyField(Category, blank=True, related_name='promotions')
+    
+    # Date range for automatic activation/deactivation
+    start_date = models.DateTimeField(help_text='Promotion start date and time')
+    end_date = models.DateTimeField(help_text='Promotion end date and time')
+    
+    # Manual override
+    is_active = models.BooleanField(default=True, help_text='Manually activate/deactivate promotion')
+    
+    # Tracking
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_promotions')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'promotions'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['start_date', 'end_date', 'is_active']),  # For active promotion queries
+        ]
+
+    def __str__(self):
+        discount_display = f"{self.discount_value}%" if self.discount_type == 'percentage' else f"${self.discount_value}"
+        return f"{self.name} - {discount_display}"
+
+    def is_currently_active(self):
+        """Check if promotion is currently active based on dates and manual override."""
+        from django.utils import timezone
+        now = timezone.now()
+        return (
+            self.is_active and 
+            self.start_date <= now <= self.end_date
+        )
+
+    def calculate_discounted_price(self, original_price):
+        """Calculate discounted price for a given original price."""
+        if not self.is_currently_active():
+            return original_price
+        
+        if self.discount_type == 'percentage':
+            discount_amount = original_price * (self.discount_value / Decimal('100'))
+            discounted_price = original_price - discount_amount
+        else:  # fixed
+            discounted_price = original_price - self.discount_value
+        
+        # Ensure price doesn't go below 0
+        return max(discounted_price, Decimal('0.00'))
+
+    def get_applicable_games(self):
+        """Get all games this promotion applies to (including category games)."""
+        from django.db.models import Q
+        game_ids = set(self.games.values_list('id', flat=True))
+        
+        # Add games from categories
+        for category in self.categories.all():
+            category_game_ids = Game.objects.filter(category=category).values_list('id', flat=True)
+            game_ids.update(category_game_ids)
+        
+        return Game.objects.filter(id__in=game_ids)
+
+
+class PromotionUsage(models.Model):
+    """
+    Track promotion usage for sales reporting (Module 16).
+    Records each time a promotion is applied to a purchase.
+    """
+    promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE, related_name='usages')
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, related_name='promotions_used')
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    original_price = models.DecimalField(max_digits=10, decimal_places=2)
+    discounted_price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    used_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'promotion_usages'
+        ordering = ['-used_at']
+        indexes = [
+            models.Index(fields=['promotion', '-used_at']),  # For promotion reports
+            models.Index(fields=['transaction']),  # For transaction lookups
+        ]
+
+    def __str__(self):
+        return f"{self.promotion.name} applied to {self.game.title} - Saved ${self.discount_amount}"

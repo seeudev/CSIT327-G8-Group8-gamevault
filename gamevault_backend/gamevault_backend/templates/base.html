@@ -57,6 +57,9 @@
                                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                             </svg>
                             <span>Cart</span>
+                            {% if cart_count > 0 %}
+                            <span class="cart-badge">{{ cart_count }}</span>
+                            {% endif %}
                         </a>
                         <a href="{% url 'store:transaction_history' %}" class="nav-link">
                             <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
