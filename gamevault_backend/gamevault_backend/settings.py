@@ -163,15 +163,20 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # WhiteNoise Configuration
-# Use CompressedStaticFilesStorage for better compatibility (no manifest requirement)
+# CompressedManifestStaticFilesStorage provides compression and cache-busting
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+# WhiteNoise settings for production
+WHITENOISE_USE_FINDERS = True  # Allow WhiteNoise to use Django's staticfiles finders
+WHITENOISE_AUTOREFRESH = DEBUG  # Auto-refresh in development
+WHITENOISE_SKIP_COMPRESS_EXTENSIONS = []  # Compress all file types
 
 # Email Configuration (Module 5: Secure Game Delivery)
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
