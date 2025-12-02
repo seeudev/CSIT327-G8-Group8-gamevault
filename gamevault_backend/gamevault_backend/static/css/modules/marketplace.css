@@ -88,6 +88,14 @@
 .game-price-section{display:flex;flex-direction:column;gap:var(--space-xs)}
 .game-price-label{font-size:var(--font-size-xs);color:var(--color-text-tertiary);text-transform:uppercase;font-weight:var(--font-weight-semibold);letter-spacing:0.5px}
 .game-price-value{font-size:var(--font-size-2xl);font-weight:var(--font-weight-bold);color:var(--color-primary)}
+
+/* Promotional Pricing */
+.price-with-discount{display:flex;flex-direction:column;gap:0.25rem}
+.discount-row{display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
+.game-price-value.discounted{color:var(--color-primary);font-size:1.25rem;font-weight:var(--font-weight-bold)}
+.discount-badge{background:var(--gradient-primary);color:white;padding:0.25rem 0.625rem;border-radius:var(--radius-md);font-size:0.75rem;font-weight:var(--font-weight-bold);letter-spacing:0.3px;text-transform:uppercase;box-shadow:0 2px 6px rgba(230,57,70,0.3);white-space:nowrap}
+.original-price{color:var(--color-text-tertiary);font-size:0.875rem;text-decoration:line-through;font-weight:var(--font-weight-medium)}
+
 .game-card-actions{display:flex;gap:var(--space-sm)}
 .add-cart-form{display:inline-block}
 .btn-add-cart{display:flex;align-items:center;gap:var(--space-sm);padding:var(--btn-padding-md);background:var(--gradient-primary);color:var(--color-text-inverse);border:none;border-radius:var(--radius-md);font-weight:var(--font-weight-semibold);font-size:var(--font-size-sm);cursor:pointer;transition:var(--transition-all);white-space:nowrap}
