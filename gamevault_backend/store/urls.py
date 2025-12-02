@@ -6,6 +6,7 @@ from django.urls import path
 from . import views
 from .views import api_wishlist, api_wishlist_delete
 from . import analytics_views
+from . import promotion_views
 
 app_name = 'store'
 
@@ -68,4 +69,13 @@ urlpatterns = [
     path('api/analytics/category-performance/', analytics_views.api_analytics_category_performance, name='api_analytics_category_performance'),
     path('api/analytics/export/csv/', analytics_views.export_analytics_csv, name='export_analytics_csv'),
     path('api/analytics/export/json/', analytics_views.export_analytics_json, name='export_analytics_json'),
+    
+    # Promotion endpoints (Module 16)
+    path('admin/promotions/', promotion_views.promotion_list, name='promotion_list'),
+    path('admin/promotions/create/', promotion_views.promotion_create, name='promotion_create'),
+    path('admin/promotions/<int:promotion_id>/', promotion_views.promotion_detail, name='promotion_detail'),
+    path('admin/promotions/<int:promotion_id>/edit/', promotion_views.promotion_edit, name='promotion_edit'),
+    path('admin/promotions/<int:promotion_id>/delete/', promotion_views.promotion_delete, name='promotion_delete'),
+    path('admin/promotions/<int:promotion_id>/toggle/', promotion_views.promotion_toggle, name='promotion_toggle'),
+    path('admin/promotions/<int:promotion_id>/report/', promotion_views.promotion_report, name='promotion_report'),
 ]

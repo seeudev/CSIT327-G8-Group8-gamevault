@@ -221,10 +221,15 @@ function renderSalesTrendChart(data) {
                     display: true,
                     position: 'top',
                     labels: {
-                        color: '#000000ff',
+                        color: '#222222',
                         font: {
-                            size: 12
-                        }
+                            size: 14,
+                            weight: '600',
+                            family: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
+                        },
+                        padding: 16,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
                     }
                 },
                 tooltip: {
@@ -254,10 +259,13 @@ function renderSalesTrendChart(data) {
             scales: {
                 x: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                        color: 'rgba(0, 0, 0, 0.05)'
                     },
                     ticks: {
-                        color: '#a0a0a0'
+                        color: '#666666',
+                        font: {
+                            size: 12
+                        }
                     }
                 },
                 y: {
@@ -265,10 +273,13 @@ function renderSalesTrendChart(data) {
                     display: true,
                     position: 'left',
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                        color: 'rgba(0, 0, 0, 0.05)'
                     },
                     ticks: {
-                        color: '#a0a0a0',
+                        color: '#666666',
+                        font: {
+                            size: 12
+                        },
                         callback: function(value) {
                             return '$' + value;
                         }
@@ -359,11 +370,16 @@ function renderCategoryChart(data) {
                     display: true,
                     position: 'right',
                     labels: {
-                        color: '#000000ff',
+                        color: '#222222',
                         font: {
-                            size: 12
+                            size: 14,
+                            weight: '600',
+                            family: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
                         },
-                        padding: 15
+                        padding: 16,
+                        usePointStyle: true,
+                        pointStyle: 'rectRounded',
+                        boxWidth: 12
                     }
                 },
                 tooltip: {
