@@ -144,12 +144,14 @@ STATICFILES_DIRS = [
 ]
 
 # WhiteNoise Configuration - optimized for production
+# Use CompressedStaticFilesStorage (without manifest) for more forgiving behavior
+# This won't crash if a static file is missing, it will just return the original path
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
@@ -157,6 +159,7 @@ STORAGES = {
 WHITENOISE_USE_FINDERS = False  # Always serve from STATIC_ROOT in production
 WHITENOISE_AUTOREFRESH = False  # Disable autorefresh for production
 WHITENOISE_ALLOW_ALL_ORIGINS = True  # Allow CORS for static files
+WHITENOISE_MAX_AGE = 31536000  # Cache static files for 1 year
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
