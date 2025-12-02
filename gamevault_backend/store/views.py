@@ -1294,3 +1294,82 @@ def api_wishlist_delete(request, game_id):
         return JsonResponse({'success': True, 'message': f'{game_title} removed from wishlist'})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def api_users_list(request):
+    """
+    GET /store/api/users/ -> list all users (admin only)
+    Supports search and role filtering
+    """
+    if not request.user.is_admin:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    
+    try:
+        users = User.objects.all().order_by('-registration_date')
+        
+        # Search filter
+        search = request.GET.get('search', '').strip()
+        if search:
+            users = users.filter(
+                Q(username__icontains=search) | Q(email__icontains=search)
+            )
+        
+        # Role filter
+        role = request.GET.get('role', '').strip()
+        if role == 'admin':
+            users = users.filter(is_admin=True)
+        elif role == 'user':
+            users = users.filter(is_admin=False)
+        
+        users_data = [{
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'is_admin': user.is_admin,
+            'is_active': user.is_active,
+            'registration_date': user.registration_date.isoformat() if user.registration_date else None,
+            'last_login': user.last_login.isoformat() if user.last_login else None,
+        } for user in users]
+        
+        return JsonResponse({
+            'success': True,
+            'users': users_data,
+            'total': len(users_data)
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["POST"])
+def api_grant_admin(request, user_id):
+    """
+    POST /store/api/users/<user_id>/grant-admin/ -> grant admin privileges to user
+    Admin only
+    """
+    if not request.user.is_admin:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    
+    try:
+        target_user = get_object_or_404(User, id=user_id)
+        
+        if target_user.is_admin:
+            return JsonResponse({'success': False, 'error': 'User is already an admin'}, status=400)
+        
+        target_user.is_admin = True
+        target_user.save()
+        
+        # Log the action
+        AdminActionLog.objects.create(
+            admin=request.user,
+            action_type='other',
+            notes=f'Granted admin privileges to user: {target_user.username}'
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Successfully granted admin privileges to {target_user.username}'
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

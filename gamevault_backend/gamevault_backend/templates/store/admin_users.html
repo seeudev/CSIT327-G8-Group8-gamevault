@@ -36,6 +36,7 @@
                 <th>Registration Date</th>
                 <th>Last Login</th>
                 <th>Status</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody id="usersTableBody">
@@ -105,10 +106,13 @@
                 <td>${user.id}</td>
                 <td>${escapeHtml(user.username)}</td>
                 <td>${escapeHtml(user.email)}</td>
-                <td>${user.is_admin ? 'Admin' : 'User'}</td>
+                <td>${user.is_admin ? '<span style="color: var(--color-primary); font-weight: 600;">Admin</span>' : 'User'}</td>
                 <td>${formatDate(user.registration_date)}</td>
                 <td>${user.last_login ? formatDate(user.last_login) : 'Never'}</td>
                 <td>${user.is_active ? 'Active' : 'Inactive'}</td>
+                <td>
+                    ${!user.is_admin ? `<button class="btn-grant-admin" onclick="grantAdmin(${user.id}, '${escapeHtml(user.username)}')">Grant Admin</button>` : '<span style="color: var(--color-text-tertiary);">—</span>'}
+                </td>
             </tr>
         `).join('');
     }
@@ -137,5 +141,69 @@
         div.textContent = text;
         return div.innerHTML;
     }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    function grantAdmin(userId, username) {
+        if (!confirm(`Are you sure you want to grant admin privileges to ${username}?`)) {
+            return;
+        }
+        
+        fetch(`/store/api/users/${userId}/grant-admin/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Successfully granted admin privileges to ${username}`);
+                loadUsers(); // Reload the table
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error granting admin privileges: ' + error.message);
+        });
+    }
 </script>
+
+<style>
+.btn-grant-admin {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-grant-admin:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-primary);
+}
+
+.btn-grant-admin:active {
+    transform: translateY(0);
+}
+</style>
 {% endblock %}

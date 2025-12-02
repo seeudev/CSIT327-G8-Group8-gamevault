@@ -133,12 +133,12 @@
                     {% if game.has_promotion %}
                         <div class="price-discount-wrapper">
                             <span class="discount-badge-detail">{{ game.discount_label }}</span>
-                            <span class="price-value price-discounted">${{ game.discounted_price }}</span>
-                            <span class="price-original">${{ game.price }}</span>
+                            <span class="price-value price-discounted">${{ game.discounted_price|floatformat:2 }}</span>
+                            <span class="price-original">${{ game.price|floatformat:2 }}</span>
                             <span class="savings-text">Save ${{ game.savings_amount|floatformat:2 }}</span>
                         </div>
                     {% else %}
-                        <span class="price-value">${{ game.price }}</span>
+                        <span class="price-value">${{ game.price|floatformat:2 }}</span>
                     {% endif %}
                 </div>
 

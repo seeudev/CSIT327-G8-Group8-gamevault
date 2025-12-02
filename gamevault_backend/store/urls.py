@@ -4,7 +4,7 @@ Simple URL patterns for the game store.
 
 from django.urls import path
 from . import views
-from .views import api_wishlist, api_wishlist_delete
+from .views import api_wishlist, api_wishlist_delete, api_users_list, api_grant_admin
 from . import analytics_views
 from . import promotion_views
 
@@ -52,6 +52,10 @@ urlpatterns = [
     # Normal wishlist page (Module 10)
     path('wishlist/', views.wishlist, name='wishlist'),
     path('wishlist/remove/<int:game_id>/', views.wishlist_remove, name='wishlist_remove'),
+    
+    # User management API endpoints
+    path('api/users/', api_users_list, name='api_users_list'),
+    path('api/users/<int:user_id>/grant-admin/', api_grant_admin, name='api_grant_admin'),
 
     # Review API endpoints (Module 11)
     path('api/reviews/<int:game_id>/', views.api_get_game_reviews, name='api_get_game_reviews'),
