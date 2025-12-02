@@ -12,7 +12,6 @@
 <div class="transaction-history-modern">
     <div class="page-header">
         <h1 class="page-title">
-            <span class="title-icon">📦</span>
             Purchase History
         </h1>
         <p class="page-subtitle">Track all your game purchases and download keys</p>
@@ -20,21 +19,18 @@
         <!-- Summary Statistics -->
         <div class="summary-stats">
             <div class="stat-card">
-                <span class="stat-icon">🎮</span>
                 <div class="stat-content">
                     <span class="stat-value">{{ total_games }}</span>
                     <span class="stat-label">Total Games</span>
                 </div>
             </div>
             <div class="stat-card">
-                <span class="stat-icon">🛍️</span>
                 <div class="stat-content">
                     <span class="stat-value">{{ transactions|length }}</span>
                     <span class="stat-label">Total Orders</span>
                 </div>
             </div>
             <div class="stat-card">
-                <span class="stat-icon">💰</span>
                 <div class="stat-content">
                     <span class="stat-value">${{ total_spent }}</span>
                     <span class="stat-label">Total Spent</span>
@@ -48,7 +44,6 @@
         <form method="get" class="filters-form">
             <div class="filter-group">
                 <label for="search">
-                    <span class="icon-search">🔍</span>
                     Search Games
                 </label>
                 <input 
@@ -62,7 +57,6 @@
             
             <div class="filter-group">
                 <label for="status">
-                    <span class="icon-filter">📊</span>
                     Status
                 </label>
                 <select id="status" name="status" class="filter-select">
@@ -76,7 +70,6 @@
             
             <div class="filter-group">
                 <label for="start_date">
-                    <span class="icon-calendar">📅</span>
                     From Date
                 </label>
                 <input 
@@ -89,7 +82,6 @@
             
             <div class="filter-group">
                 <label for="end_date">
-                    <span class="icon-calendar">📅</span>
                     To Date
                 </label>
                 <input 
@@ -130,13 +122,6 @@
                             <span class="badge-number">#{{ transaction.id }}</span>
                         </div>
                         <div class="status-badge status-{{ transaction.payment_status }}">
-                            {% if transaction.payment_status == 'completed' %}
-                                <span class="status-icon">✓</span>
-                            {% elif transaction.payment_status == 'pending' %}
-                                <span class="status-icon">⏳</span>
-                            {% else %}
-                                <span class="status-icon">✗</span>
-                            {% endif %}
                             {{ transaction.get_payment_status_display }}
                         </div>
                     </div>
@@ -144,19 +129,19 @@
                     <div class="transaction-body">
                         <div class="transaction-info-grid">
                             <div class="info-block">
-                                <span class="info-label">📅 Date</span>
+                                <span class="info-label">Date</span>
                                 <span class="info-value">{{ transaction.transaction_date|date:"M d, Y" }}</span>
                                 <span class="info-time">{{ transaction.transaction_date|date:"h:i A" }}</span>
                             </div>
                             
                             <div class="info-block">
-                                <span class="info-label">🎮 Items</span>
+                                <span class="info-label">Items</span>
                                 <span class="info-value">{{ transaction.items.count }}</span>
                                 <span class="info-time">Game{{ transaction.items.count|pluralize }}</span>
                             </div>
                             
                             <div class="info-block price-block">
-                                <span class="info-label">💰 Total</span>
+                                <span class="info-label">Total</span>
                                 <span class="info-value">${{ transaction.total_amount }}</span>
                             </div>
                         </div>
@@ -175,11 +160,10 @@
         </div>
     {% else %}
         <div class="empty-state">
-            <div class="empty-state-icon">🛒</div>
             <h3>No Purchases Yet</h3>
             <p>Start building your game library today!</p>
             <a href="{% url 'store:game_list' %}" class="btn-browse">
-                🎮 Browse Games
+                Browse Games
             </a>
         </div>
     {% endif %}
