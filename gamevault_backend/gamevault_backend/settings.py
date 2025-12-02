@@ -135,10 +135,28 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# Static files directory for collectstatic
+# Static files configuration for production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Static files directories for collectstatic
 STATICFILES_DIRS = [
     BASE_DIR / 'gamevault_backend' / 'static',
 ]
+
+# WhiteNoise Configuration - optimized for production
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+# WhiteNoise settings
+WHITENOISE_USE_FINDERS = False  # Always serve from STATIC_ROOT in production
+WHITENOISE_AUTOREFRESH = False  # Disable autorefresh for production
+WHITENOISE_ALLOW_ALL_ORIGINS = True  # Allow CORS for static files
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -160,26 +178,6 @@ LOGOUT_REDIRECT_URL = '/'
 # Media files configuration (for game screenshots and user uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Static files configuration
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# WhiteNoise Configuration
-# Use CompressedStaticFilesStorage - more forgiving, doesn't require manifest
-# Falls back gracefully if collectstatic hasn't run yet
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-    },
-}
-
-# WhiteNoise settings
-WHITENOISE_USE_FINDERS = DEBUG  # Only use finders in development
-WHITENOISE_AUTOREFRESH = DEBUG  # Auto-refresh in development only
-WHITENOISE_ALLOW_ALL_ORIGINS = True  # Allow CORS for static files
 
 # Email Configuration (Module 5: Secure Game Delivery)
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
