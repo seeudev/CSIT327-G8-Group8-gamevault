@@ -135,14 +135,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# Only set STATICFILES_DIRS in development or when static files aren't collected
-# In production, all static files should be in STATIC_ROOT after collectstatic
-if DEBUG or not (BASE_DIR / 'staticfiles').exists():
-    STATICFILES_DIRS = [
-        BASE_DIR / 'gamevault_backend' / 'static',
-    ]
-else:
-    STATICFILES_DIRS = []
+# Static files directory for collectstatic
+STATICFILES_DIRS = [
+    BASE_DIR / 'gamevault_backend' / 'static',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
